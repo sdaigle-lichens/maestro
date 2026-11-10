@@ -133,8 +133,15 @@ the interim markers. Each settlement appends one line through `appendSessionLog`
 - `settled_as` is `missing` (no hand-back) or `late_handback` (a hand-back landed after the stop; `label`
   holds its HANDOFF label, and `handoff_issue` appears only when it was judged wrong).
 - `origin` is `"main_session"`, like a `dispatch` entry, so `buildInstances` correlates it by `agent_id`.
-- **Known gap:** the desktop log view renders `interim_settled` as a generic entry for now. A follow-up
-  task will add a dedicated row, so read the record from its `log` text until then.
+- **Dedicated row** (`174`): `InterimSettledRow` (`apps/maestro/src/renderer/src/components/interim-settled-row.tsx`)
+  is built by `interimSettledRow` in `renderer/src/utils/session-log.ts`. `logRows` feeds it into both
+  `session-log-view.tsx` and `session-log-detail.tsx`, and it renders in the Main Session section, not on
+  the agent's own card. It shows `@agent`, `run <agent_id>`, `stop_ts` as "stopped" and `ts` as "settled", plus:
+  - `missing` → "missing hand-off · HANDOFF: <label|none>", styled as a problem (danger border and text).
+  - `late_handback` → "late hand-back · HANDOFF: <label|none>", styled as success.
+  - an optional `handoff_issue` (kind, verdict, label, message, files) listed under the row, which turns it red.
+  Every value is read from the entry alone. An unknown `settled_as` falls back to a plain line from `log`
+  (`humanizeLog`). Logs without the kind render unchanged.
 
 ## Hook registration (`hooks.json`)
 

@@ -23,3 +23,12 @@ Task 169 added a new session-log entry kind, interim_settled, written by the han
 ## Blocked by
 
 - `169-write-a-durable-session-log-record-when-an-interim-stop-is-settled-as-missing.md`
+
+## Post-Mortem
+
+- **Problem:** @frontend's first pass showed the label only for `late_handback` rows; a `missing` row omitted it although the acceptance criteria list label among the displayed fields. @test caught it, one loop-back to @frontend.
+  **Fix:** none
+- **Problem:** @test's re-run hit a pre-existing flake in `test/core/landing-guards-170.test.ts` (the `mixedCase` precondition depends on the temp repo's time-dependent SHA) and stopped as `blocked`; the user chose to fix it in-task, and @reviewer then found the fix incomplete (12-char prefix could still be all digits), needing a second @test pass.
+  **Fix:** none
+- **Problem:** @frontend's hint payload to @test (`.claude/channels/task-174/test/frontend.1.md`) was reported missing by @test, and @test's first FAIL hand-back wrote no payload until resumed.
+  **Fix:** none

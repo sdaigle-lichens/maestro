@@ -278,8 +278,8 @@
       "type": "component",
       "name": "Section",
       "filepath": "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
-      "start_line": 11,
-      "end_line": 18,
+      "start_line": 12,
+      "end_line": 19,
       "signature": "function Section({ title, children }: { title: string; children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "248f2d5cf93ea0cbcffacb74548c33dbbaba91f5fe56909712035dfe8620cd79",
       "status": "live",
@@ -308,14 +308,32 @@
       }
     },
     {
+      "_key": "27ea9999e03b08f48300d4b479f0d755",
+      "displayKey": "log-view::function::isBookkeeping",
+      "concept": "log-view",
+      "type": "function",
+      "name": "isBookkeeping",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 25,
+      "end_line": 26,
+      "signature": "isBookkeeping(rel: string): boolean",
+      "contentHash": "af64dbbf8c79c841250e55dcc49ed1a5dedc564fc9cb4572f0b9ce4d040957c8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "2f023a186a33f80fcda2c95318913693",
       "displayKey": "log-view::type-def::SessionLogDetailProps",
       "concept": "log-view",
       "type": "type-def",
       "name": "SessionLogDetailProps",
       "filepath": "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
-      "start_line": 6,
-      "end_line": 9,
+      "start_line": 7,
+      "end_line": 10,
       "signature": "interface SessionLogDetailProps {",
       "contentHash": "ba39e65a1f77d97b7cb779637ce53bd9bd2120404038551b12354ef29ed5e609",
       "status": "live",
@@ -458,10 +476,10 @@
       "type": "component",
       "name": "SessionLogDetail",
       "filepath": "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
-      "start_line": 20,
-      "end_line": 151,
+      "start_line": 21,
+      "end_line": 158,
       "signature": "function SessionLogDetail({ instance, cwd }: SessionLogDetailProps): import(\"react/jsx-runtime\").JSX.Element",
-      "contentHash": "a489b67ac07701311cee0c8860e672967a93b633cb5bb8d82a45d1a55ae079ab",
+      "contentHash": "26914e3c76c432b6146f65d338bb1487ee84d47f49ab583fb4c3e56484186265",
       "status": "live",
       "ast": {},
       "agent": {
@@ -548,8 +566,8 @@
       "type": "type-def",
       "name": "SessionLogViewProps",
       "filepath": "apps/maestro/src/renderer/src/components/session-log-view.tsx",
-      "start_line": 4,
-      "end_line": 11,
+      "start_line": 5,
+      "end_line": 12,
       "signature": "interface SessionLogViewProps {",
       "contentHash": "0bfc0afe8c5dbf99d022212b9507366feced39285fb844bab62c0e09a9208786",
       "status": "live",
@@ -614,6 +632,24 @@
       }
     },
     {
+      "_key": "447c1a5ff811b445bc5c310eeef73e0b",
+      "displayKey": "log-view::type-def::InterimSettledRow",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "InterimSettledRow",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 378,
+      "end_line": 391,
+      "signature": "export interface InterimSettledRow {",
+      "contentHash": "baeb891da7d97465b189ff01a9be61a86358e01f8d4ca1a552d871f3c2b1524f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "45f609817d57c7220490f505c2f348da",
       "displayKey": "log-view::function::within",
       "concept": "log-view",
@@ -642,6 +678,24 @@
       "end_line": 135,
       "signature": "function SessionLogPanes({\n  sessions,\n  projectState,\n  connected,\n  deletable = NO_KEYS,\n  titles = NO_TITLES,\n  onDelete,\n  empty,\n  fallbackRoot = \"\",\n  tabActions,\n}: SessionLogPanesProps): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "e95cc3d9796cd37814a0fd9d4b0b7e590fcb17c9081aaab9bb37c72569beb9d0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "488895323d206af0fdf33f5da14200a3",
+      "displayKey": "log-view::function::interimSettledRow",
+      "concept": "log-view",
+      "type": "function",
+      "name": "interimSettledRow",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 397,
+      "end_line": 410,
+      "signature": "function interimSettledRow(entry: SessionLogEntry): InterimSettledRow | null",
+      "contentHash": "dd5d2ac388d71133ea0e35b124a5ecbe60aedd16a2357df308655676f7a0d8a7",
       "status": "live",
       "ast": {},
       "agent": {
@@ -732,6 +786,24 @@
       "end_line": 300,
       "signature": "function tailSessionLogs(getProjectRoots: () => string[], events: Partial<MultiSessionLogTailEvents>, intervalMs = 1000, skipSession?: (projectRoot: string, sessionId: string) => boolean): () => void",
       "contentHash": "590afc3f71341acc80d951d1b85f86985fb014e1e57d2bee1984d0f11f83031e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5254c7b4159633d6a7f2fe24f33219c2",
+      "displayKey": "log-view::type-def::GitRunner",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "GitRunner",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 20,
+      "end_line": 20,
+      "signature": "export type GitRunner = (cwd: string, args: string[]) => { ok: boolean; out: string };",
+      "contentHash": "aaeccc80e8bfd482dc23e3a35a6e9f6e3d121ddf81bfc58e49e2e6f5e9d680e3",
       "status": "live",
       "ast": {},
       "agent": {
@@ -872,8 +944,8 @@
       "type": "function",
       "name": "formatTokenWindow",
       "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
-      "start_line": 391,
-      "end_line": 393,
+      "start_line": 457,
+      "end_line": 459,
       "signature": "function formatTokenWindow(tokens: number): string",
       "contentHash": "9832d6ddac86a15bead304dfd49bea2b8d4fb13323384715d926989a06d2f68c",
       "status": "live",
@@ -1100,6 +1172,24 @@
       }
     },
     {
+      "_key": "85037930858cb4c6a37a2f4966c9fc7c",
+      "displayKey": "log-view::function::provisionExcludedDirs",
+      "concept": "log-view",
+      "type": "function",
+      "name": "provisionExcludedDirs",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 79,
+      "end_line": 128,
+      "signature": "function provisionExcludedDirs(git: GitRunner, mainRoot: string, wtPath: string): { copied: string[]; warned: string[]; }",
+      "contentHash": "806f452dc13f7c2d7801cdb8ef014c5f6c35b8dcc163013f8f4f73d1302eae0b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "865c948b67a5e061b8ee9dbc2ac18e7f",
       "displayKey": "log-view::function::dedupeProjectRoots",
       "concept": "log-view",
@@ -1118,6 +1208,24 @@
       }
     },
     {
+      "_key": "8bbe09bdcc11c85b66128523b02c8baa",
+      "displayKey": "log-view::function::formatExcludedProvision",
+      "concept": "log-view",
+      "type": "function",
+      "name": "formatExcludedProvision",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 131,
+      "end_line": 145,
+      "signature": "function formatExcludedProvision(r: { copied: string[]; warned: string[] }): string",
+      "contentHash": "be8e6baf35e5af52b084c1b62541df75fc4b94889541194bd697d74703194f1a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "8ddeb9e44e21d6ed01c086dae38806ae",
       "displayKey": "log-view::function::reduceWorktreeTabs",
       "concept": "log-view",
@@ -1128,6 +1236,24 @@
       "end_line": 95,
       "signature": "function reduceWorktreeTabs(prev: WorktreeTabsState, event: WorktreeTabsEvent): WorktreeTabsState",
       "contentHash": "1141978d3bddc7e238d9673a2a46a859d73d21934db343be5d71b01665fe4710",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8fd19cd4ea47eaccb18416b2ed11a57b",
+      "displayKey": "log-view::function::ignoredOnlyInWorktree",
+      "concept": "log-view",
+      "type": "function",
+      "name": "ignoredOnlyInWorktree",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 40,
+      "end_line": 48,
+      "signature": "function ignoredOnlyInWorktree(git: GitRunner, mainRoot: string, wtPath: string): string[]",
+      "contentHash": "8f4615c39a650fe1ee81490bc949a8b346f533fdfb053b165fead94ed9cfab8a",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1164,6 +1290,24 @@
       "end_line": 52,
       "signature": "function worktreePathFor(mainRoot: string, filename: string): string | null",
       "contentHash": "d1f12f6d31c896304c30338d495868f7aeff93eaa6974c37a8d4fef0fe3c3257",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "96c77398f0775d8e2f7364103ad5d271",
+      "displayKey": "log-view::function::nestedClaudeEntry",
+      "concept": "log-view",
+      "type": "function",
+      "name": "nestedClaudeEntry",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 67,
+      "end_line": 70,
+      "signature": "function nestedClaudeEntry(rel: string): boolean",
+      "contentHash": "ecdf8ce932a2314936b41f6d3b85093d5ae1a4434fdf64baad4bd660c3ea86ae",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1214,8 +1358,8 @@
       "type": "type-def",
       "name": "ContextUsage",
       "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
-      "start_line": 366,
-      "end_line": 372,
+      "start_line": 432,
+      "end_line": 438,
       "signature": "export interface ContextUsage {",
       "contentHash": "12a249bed1dc6ec81335ff09a9eaf1be84b75dfc2b36bfbe99267f7bdeb9354a",
       "status": "live",
@@ -1233,9 +1377,9 @@
       "name": "humanizeLog",
       "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
       "start_line": 311,
-      "end_line": 363,
+      "end_line": 371,
       "signature": "function humanizeLog(entry: SessionLogEntry, cwd = \"\"): string | null",
-      "contentHash": "4a39c7950dd3e64d5609c982aa81d344d392cf7300ca161430a86a90d3b20e1c",
+      "contentHash": "9ddb18627ff862f09b04f5a9cad02c34479db9480a869655549bb5c7f50c33b1",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1304,8 +1448,8 @@
       "type": "function",
       "name": "borderColor",
       "filepath": "apps/maestro/src/renderer/src/components/session-log-view.tsx",
-      "start_line": 13,
-      "end_line": 19,
+      "start_line": 14,
+      "end_line": 20,
       "signature": "function borderColor(status: Instance[\"status\"]): string",
       "contentHash": "9c7a5e2338e203e9c79d3451de0d98b400c0f21429f031402024e8e64d6e498d",
       "status": "live",
@@ -1398,6 +1542,24 @@
       "end_line": 75,
       "signature": "function isFreeformBranch(name: string): boolean",
       "contentHash": "2d325abf3269d41b81c18e41fe983ef2b8e094d714c6cbf6526b687a881a95db",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a979de64cadf26cbc36ec52aaacde22c",
+      "displayKey": "log-view::function::logRows",
+      "concept": "log-view",
+      "type": "function",
+      "name": "logRows",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 417,
+      "end_line": 429,
+      "signature": "function logRows(entries: SessionLogEntry[], cwd = \"\"): (string | InterimSettledRow)[]",
+      "contentHash": "86967470873bf263840e608825ed87df21bf2c8344ea67eb3942cbcdfe9f04c1",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1574,8 +1736,8 @@
       "type": "function",
       "name": "latestContextUsage",
       "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
-      "start_line": 379,
-      "end_line": 388,
+      "start_line": 445,
+      "end_line": 454,
       "signature": "function latestContextUsage(entries: SessionLogEntry[], origin?: string): ContextUsage | null",
       "contentHash": "e12a3cffc9bcb6c09397faff888dac6bfff6f72eb2e1167c8bbbf957361c7ce8",
       "status": "live",
@@ -1628,10 +1790,10 @@
       "type": "component",
       "name": "SessionLogView",
       "filepath": "apps/maestro/src/renderer/src/components/session-log-view.tsx",
-      "start_line": 21,
-      "end_line": 106,
+      "start_line": 22,
+      "end_line": 111,
       "signature": "function SessionLogView({\n  instances,\n  activeId,\n  onSelect,\n  sectionRefs,\n  connected,\n  cwd,\n}: SessionLogViewProps): import(\"react/jsx-runtime\").JSX.Element",
-      "contentHash": "faf506912f7c2475e7ed20643fe7645d631ac107fbcccc423ee6194c59778850",
+      "contentHash": "42e1d3f907495d34bd434f4e9b2d9cde3884a53e6fd5fc3b28a5e3437ce51200",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1758,6 +1920,24 @@
       "end_line": 63,
       "signature": "export type SessionLogTailEvent =",
       "contentHash": "0ef9b1bb21bb9b4936c9a3ab46806b7cc326f7c1ca883c2d2f9e739d65de5c51",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e1c8637c8117a808ddd563df9c4facad",
+      "displayKey": "log-view::function::formatIgnoredNotice",
+      "concept": "log-view",
+      "type": "function",
+      "name": "formatIgnoredNotice",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 51,
+      "end_line": 64,
+      "signature": "function formatIgnoredNotice(list: string[], wtPath: string): string",
+      "contentHash": "50c74036441d0c96702a9447f294bf0b692d05754dad0902b91cf49815c22bfb",
       "status": "live",
       "ast": {},
       "agent": {
@@ -2034,9 +2214,40 @@
         "authored_by": null,
         "stale": false
       }
+    },
+    {
+      "_key": "faf7fc0db40c3e58edc4944e40330992",
+      "displayKey": "log-view::function::ignoredPaths",
+      "concept": "log-view",
+      "type": "function",
+      "name": "ignoredPaths",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 29,
+      "end_line": 33,
+      "signature": "function ignoredPaths(git: GitRunner, cwd: string): string[]",
+      "contentHash": "f6d8c6f9ba504b38283fd18d1c52471e4a05d543d2dc740e17fc08c6a565c1f3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
     }
   ],
   "edges": [
+    {
+      "_key": "0085f5713c56d3016cc0cbbc77ee0b40",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/2f023a186a33f80fcda2c95318913693",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
     {
       "_key": "02734276401b3f472c648cb5da468820",
       "_from": "vertices/350498509edc630746dc847aef4feaf3",
@@ -2051,19 +2262,6 @@
       }
     },
     {
-      "_key": "02ba9dbe972454c3e5625e45e0dfd18f",
-      "_from": "vertices/3831525914210b19611342601168d370",
-      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
-      "type": "calls",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 31,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "030b63497e1ddcbdddaa321dc0767f2b",
       "_from": "vertices/97af785cf9ccbd697aa41b19cc6ae995",
       "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
@@ -2071,19 +2269,6 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 225,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "04dc8c2e8bd6d13eb460be58b87ba0b1",
-      "_from": "vertices/3831525914210b19611342601168d370",
-      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
-      "type": "mounts",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 87,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2136,19 +2321,6 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 49,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "0ad1db0fafda70e76c41c6fb44465b6f",
-      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
-      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
-      "type": "calls",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 74,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2415,6 +2587,19 @@
       }
     },
     {
+      "_key": "2913792c753fcbd1d840cd0a81d234d5",
+      "_from": "vertices/8fd19cd4ea47eaccb18416b2ed11a57b",
+      "_to": "vertices/27ea9999e03b08f48300d4b479f0d755",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "2be48ab4ad279bfa32581b50f2029fa5",
       "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
       "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
@@ -2441,13 +2626,13 @@
       }
     },
     {
-      "_key": "2df022ae2b733fedd9ce37df168d3a6e",
-      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
-      "_to": "vertices/3fa84ae24177498e34f3cffce28ac67d",
-      "type": "has-type",
+      "_key": "2c7d31c33ce62619898dfd4d41835ee7",
+      "_from": "vertices/8fd19cd4ea47eaccb18416b2ed11a57b",
+      "_to": "vertices/faf7fc0db40c3e58edc4944e40330992",
+      "type": "calls",
       "concept": "log-view",
       "crosses_concept": false,
-      "line": 28,
+      "line": 42,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2558,6 +2743,19 @@
       }
     },
     {
+      "_key": "3684170bae8c79cae03254f92b15d6a2",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/488895323d206af0fdf33f5da14200a3",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 312,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "36f60192074cbfbaba651562e3ab5e6b",
       "_from": "vertices/5253d68343f6883c42ef4a12a241f982",
       "_to": "vertices/f848dbab1daad039caab5505bf97a82f",
@@ -2578,6 +2776,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 33,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3a59461e9033d2d2b2abc4512dbaa1ea",
+      "_from": "vertices/a07e1cea6591aea66172fa75fb241643",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 14,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2610,19 +2821,6 @@
       }
     },
     {
-      "_key": "3e913030d3b920e42ee609582bbfd21c",
-      "_from": "vertices/bf04a91fdc3e270fcece86d71b31f0c9",
-      "_to": "vertices/9cb900696baea4357f7a17f09479affd",
-      "type": "has-type",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 379,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "404945d7e9973a1c796fcd8d49242862",
       "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
       "_to": "vertices/7f463d2388b5cb924f83996e60012811",
@@ -2649,19 +2847,6 @@
       }
     },
     {
-      "_key": "40ba2735a9823589469d8a60babd09cd",
-      "_from": "vertices/a07e1cea6591aea66172fa75fb241643",
-      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
-      "type": "has-type",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 13,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "41cdfe1bfc90940f4d03abd141a2176e",
       "_from": "vertices/a73b70f46fe20d01e398b599c2e5d4e4",
       "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
@@ -2675,13 +2860,26 @@
       }
     },
     {
-      "_key": "463e4b40b87bceb3ac20100fb6770d3a",
+      "_key": "41ea8ac823de4b152cde5a3ed7ba045b",
       "_from": "vertices/d12389eace3f41b805aa13680669abcc",
-      "_to": "vertices/97af785cf9ccbd697aa41b19cc6ae995",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
       "type": "calls",
       "concept": "log-view",
       "crosses_concept": false,
-      "line": 82,
+      "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "42a665d18ba8f0c7fa5c020ab82ad476",
+      "_from": "vertices/a979de64cadf26cbc36ec52aaacde22c",
+      "_to": "vertices/488895323d206af0fdf33f5da14200a3",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 420,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2714,19 +2912,6 @@
       }
     },
     {
-      "_key": "4797683b1cab2a7346431b4c5d12ccaa",
-      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
-      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
-      "type": "calls",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 346,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "47a70743cc855a029e6da08c96ee9b2e",
       "_from": "vertices/5eb40624f0958dcfd66162c9090473ad",
       "_to": "vertices/e938a877d84b72b68fff7d86abd8e540",
@@ -2734,6 +2919,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4805e6b73e516deecc8f8ff7037cf640",
+      "_from": "vertices/488895323d206af0fdf33f5da14200a3",
+      "_to": "vertices/447c1a5ff811b445bc5c310eeef73e0b",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 397,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2760,6 +2958,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 48,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4ba750fb1e92ffe25a2f69bddaa3c1fa",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 354,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2935,13 +3146,13 @@
       }
     },
     {
-      "_key": "62fbefbbe39af9cbcc5e52e6556fed99",
+      "_key": "62c8305175aee7b3e50122ac82648b1d",
       "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
       "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
       "type": "calls",
       "concept": "log-view",
       "crosses_concept": false,
-      "line": 343,
+      "line": 349,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2955,6 +3166,32 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 111,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "66ec2b2d19f23cd46dda37546d89569e",
+      "_from": "vertices/85037930858cb4c6a37a2f4966c9fc7c",
+      "_to": "vertices/96c77398f0775d8e2f7364103ad5d271",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 86,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "68aed659869f0fdeee954c4cf897e925",
+      "_from": "vertices/85037930858cb4c6a37a2f4966c9fc7c",
+      "_to": "vertices/faf7fc0db40c3e58edc4944e40330992",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 86,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3039,13 +3276,13 @@
       }
     },
     {
-      "_key": "6e5b5d450b704168acfd4c9e8dcbe4ce",
-      "_from": "vertices/3831525914210b19611342601168d370",
-      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
-      "type": "mounts",
+      "_key": "6ed7da68bd2cf1ef9e519e17b7223cb0",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
+      "type": "calls",
       "concept": "log-view",
       "crosses_concept": false,
-      "line": 43,
+      "line": 351,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3117,19 +3354,6 @@
       }
     },
     {
-      "_key": "753c07fff48b45e36d256889ac9bc89d",
-      "_from": "vertices/3831525914210b19611342601168d370",
-      "_to": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
-      "type": "calls",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 29,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "7801b8203a0e4b997f4a47a335481ac5",
       "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
       "_to": "vertices/80b1ea37aa8deacb564efce71f05ac08",
@@ -3137,6 +3361,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 116,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "79cde3363cca98f4ef2bb9db1c4dcb2f",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 32,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3163,19 +3400,6 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 96,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "7c57b3c809385c5b3c43ec86b7fb8061",
-      "_from": "vertices/3831525914210b19611342601168d370",
-      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
-      "type": "mounts",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 141,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3215,6 +3439,19 @@
       "concept": "log-view",
       "crosses_concept": true,
       "line": 22,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7ef1b8f0048f48832ba4cd75b46b1110",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 94,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3293,6 +3530,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "851aa808b721567441706120e24fd751",
+      "_from": "vertices/85037930858cb4c6a37a2f4966c9fc7c",
+      "_to": "vertices/5254c7b4159633d6a7f2fe24f33219c2",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 80,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3507,6 +3757,19 @@
       }
     },
     {
+      "_key": "95b403eb8cac4da28704a4d39a68d8e5",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 72,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "96bdc81fbf50211d579d5880d0cc83ad",
       "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
       "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
@@ -3572,19 +3835,6 @@
       }
     },
     {
-      "_key": "9f6aba6eda74de40e0ba6366b3d09600",
-      "_from": "vertices/3831525914210b19611342601168d370",
-      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
-      "type": "mounts",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 71,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "a1beda762e3da6e918ebb07fce3b1618",
       "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
       "_to": "vertices/45f609817d57c7220490f505c2f348da",
@@ -3637,13 +3887,13 @@
       }
     },
     {
-      "_key": "a3f44f9ea3252333f205bfbb861dc6d2",
-      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
-      "_to": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
-      "type": "calls",
+      "_key": "a2d6e3367f6c6c2eb5de7faef5e30a75",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
       "concept": "log-view",
       "crosses_concept": false,
-      "line": 46,
+      "line": 148,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3663,6 +3913,19 @@
       }
     },
     {
+      "_key": "a6b7f05c0c4d75d21d0aac8acb6115de",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/a979de64cadf26cbc36ec52aaacde22c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 30,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "a6dab0a2faf8027a894c00a5d83a7a1c",
       "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
       "_to": "vertices/31dbb0b674dddabcc51dc3fb325fa2bc",
@@ -3670,6 +3933,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a7155f1257b0d27375bde31fb9ee5cb2",
+      "_from": "vertices/8fd19cd4ea47eaccb18416b2ed11a57b",
+      "_to": "vertices/5254c7b4159633d6a7f2fe24f33219c2",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 40,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3715,13 +3991,13 @@
       }
     },
     {
-      "_key": "afeb09abbb36252760abfc80a1c0dfc6",
-      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
-      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "_key": "ae93f2fc9ec92f07b7bcc167dfc076bb",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
       "type": "calls",
       "concept": "log-view",
       "crosses_concept": false,
-      "line": 77,
+      "line": 356,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3735,19 +4011,6 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 50,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "b2219635b8ea28460c8e62eb48864444",
-      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
-      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
-      "type": "calls",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 341,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3793,6 +4056,19 @@
       }
     },
     {
+      "_key": "b618371685cce20086e649fd638d9d2a",
+      "_from": "vertices/bf04a91fdc3e270fcece86d71b31f0c9",
+      "_to": "vertices/9cb900696baea4357f7a17f09479affd",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 445,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "b63e3f8df1b15e297df8a334d5db08ce",
       "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
       "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
@@ -3813,6 +4089,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 248,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b9b16357bf1ac57a415061ea82dd729b",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/97af785cf9ccbd697aa41b19cc6ae995",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 84,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3858,19 +4147,6 @@
       }
     },
     {
-      "_key": "bf6eac5386466e96f0b72689f6f1e793",
-      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
-      "_to": "vertices/a07e1cea6591aea66172fa75fb241643",
-      "type": "calls",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 56,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "c06fd55b8c84d7cb28c535886f93796b",
       "_from": "vertices/3ead4ea3bc31f5646fa0a84379fa5882",
       "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
@@ -3878,6 +4154,32 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 40,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c2763e7c5372449b411ab32998a8fc86",
+      "_from": "vertices/a979de64cadf26cbc36ec52aaacde22c",
+      "_to": "vertices/447c1a5ff811b445bc5c310eeef73e0b",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 417,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c31b47eb4455ca7b4026ae5a29ff194a",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/a979de64cadf26cbc36ec52aaacde22c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 47,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3936,6 +4238,19 @@
       }
     },
     {
+      "_key": "c50867df784845e4f6c36382ceb152de",
+      "_from": "vertices/a979de64cadf26cbc36ec52aaacde22c",
+      "_to": "vertices/447c1a5ff811b445bc5c310eeef73e0b",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 418,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c57f4af7bc404f9470b5c0723936e06e",
       "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
       "_to": "vertices/4ac99e86eda7e8ff2f9241df1143853c",
@@ -3982,19 +4297,6 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 66,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "cd6a9bdf8d8eb687c685a8c9231af495",
-      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
-      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
-      "type": "calls",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 348,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4209,6 +4511,19 @@
       }
     },
     {
+      "_key": "e2affec97f7ebfef7d3a4279a7963d83",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/a07e1cea6591aea66172fa75fb241643",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "e3fc2da7b6fd86c3a52a2af2fb6aec3c",
       "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
       "_to": "vertices/5efcef757a55a63c951e342fa5abd54a",
@@ -4222,6 +4537,19 @@
       }
     },
     {
+      "_key": "e3ff20853c0f9d740dd5b9a7bab3358c",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 75,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "e4306bb13cf835e9c83bdd08fa56090e",
       "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
       "_to": "vertices/275d0934f260c1dadacd22d675e39450",
@@ -4229,19 +4557,6 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 87,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e61441a1790bb64783f7ef12f7a6e31d",
-      "_from": "vertices/3831525914210b19611342601168d370",
-      "_to": "vertices/2f023a186a33f80fcda2c95318913693",
-      "type": "has-type",
-      "concept": "log-view",
-      "crosses_concept": false,
-      "line": 20,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4326,6 +4641,19 @@
       }
     },
     {
+      "_key": "f05ed645d336f017ab31075c04e05c76",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 44,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "f139fa20b5ddd3bbef422fc951b4a9f2",
       "_from": "vertices/3d5b7001eb0ff315c2de60a370c630c8",
       "_to": "vertices/6d53d2d1c15da468220c5588eaa22dfa",
@@ -4346,6 +4674,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f53d1aff99184a215899eea90cf2cef9",
+      "_from": "vertices/faf7fc0db40c3e58edc4944e40330992",
+      "_to": "vertices/5254c7b4159633d6a7f2fe24f33219c2",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 29,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4404,6 +4745,19 @@
       }
     },
     {
+      "_key": "fa9ed7e34d712572a717321ffa304b5f",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/3fa84ae24177498e34f3cffce28ac67d",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 29,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "fdcbc8ffba36ba17f70c2c4ef31720ec",
       "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
       "_to": "vertices/7f463d2388b5cb924f83996e60012811",
@@ -4411,6 +4765,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ff8c67512ff692cf946e6247ee4bb106",
+      "_from": "vertices/a979de64cadf26cbc36ec52aaacde22c",
+      "_to": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 425,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4424,25 +4791,26 @@
   },
   "meta": {
     "extractor_version": "code-graph@0.3.44",
-    "extracted_at": "2026-11-07T23:43:42.996Z",
+    "extracted_at": "2026-11-10T15:45:07.582Z",
     "files": {
       "apps/maestro/src/core/agent-runs.ts": "sha256:3d88951ed3d496e0224e3426f717f00fc3b0ccfb894ec37a1ee4faa3ad4712c5",
       "apps/maestro/src/core/session-log.ts": "sha256:a01fe0fae2f0f9507a7235f5187e9a61779d51bb40e078c8c3e2f2968001a0cc",
       "apps/maestro/src/core/worktree-deps.ts": "sha256:187409556070103af7decf37c0cf1f2f6785543b7600c71af7d596286310aae6",
+      "apps/maestro/src/core/worktree-footprint.ts": "sha256:ed0dcc612460d89fbdab6f7ebd9874a232e912527ebb34cc897b1a7f5130e2a3",
       "apps/maestro/src/core/worktree-list.ts": "sha256:1be195b697a83b31209cc12dc69d30919ce2c1833af125bd4ec3ca84b54254e5",
       "apps/maestro/src/core/worktree-tabs.ts": "sha256:e33af3101a134931a598533da6ec9b18435649a02990061dd3da51936d4d6796",
       "apps/maestro/src/core/worktree-write-guard.ts": "sha256:6fedf08eeae3df2b271676f756a43a0099f415ba9ddfabaff22d2e61f02d87a5",
       "apps/maestro/src/core/worktree.ts": "sha256:9116b436bc031c92c885fe300a9c6f3e4ec7836c4ff40ef653a173bfc4b5b042",
       "apps/maestro/src/renderer/src/components/session-log-cards.tsx": "sha256:ae2947e55434b27ecc25d886f83c25e03a9e9c5fc0415d5ecafcbaec29955051",
-      "apps/maestro/src/renderer/src/components/session-log-detail.tsx": "sha256:22e53f20d20825063cecb8437cc3aa4a5dcf19f67d5b4cca1236563103f72539",
+      "apps/maestro/src/renderer/src/components/session-log-detail.tsx": "sha256:50b3599d147f69590abde1fa626904c31527e69c1f600aa9bc165de54494e0e9",
       "apps/maestro/src/renderer/src/components/session-log-panes.tsx": "sha256:9b7f5cb40cb203e3ae1de7baffcd6e2929d79914cb44682e0f469810e1b47e9b",
       "apps/maestro/src/renderer/src/components/session-log-tabs.tsx": "sha256:a8ea740e2e30cc4e90214ea45965630eb9a1fe79a4d07bc0ac76d391cca5804e",
-      "apps/maestro/src/renderer/src/components/session-log-view.tsx": "sha256:59050a84717d3b2f2d84fd0826d0258c83e7fd438bc64ede11f76db3863be774",
+      "apps/maestro/src/renderer/src/components/session-log-view.tsx": "sha256:b7294079dcd9c88be639aaa55d36e3b76cc69f4ca59b6d28ee98be2a19c3b0fe",
       "apps/maestro/src/renderer/src/components/worktree-tab-bar.tsx": "sha256:24acec3e899f9f7882c3e6e37bb7b7bd2c743197d4f8b8fda35fc6f6b1667e9d",
       "apps/maestro/src/renderer/src/routes/session-log.tsx": "sha256:8a15f7a80fbea5715db36f516fc759d75b61d62d1f113d032d677c0703a7a1ed",
-      "apps/maestro/src/renderer/src/utils/maestro-session-log.ts": "sha256:c94bc20cd939d1c93ccdcbf69af4101217cdff0f71b3b568ac0540eb14e32424",
+      "apps/maestro/src/renderer/src/utils/maestro-session-log.ts": "sha256:172f2e4ddf86fb44eac6bc1e0ccb1bc332d1c71585eef228712e52a17795394a",
       "apps/maestro/src/renderer/src/utils/session-log-context.tsx": "sha256:6e15d60802fac9f17a0d167208d7455fcc91e17c0a13f6753cf0bf14748642dc",
-      "apps/maestro/src/renderer/src/utils/session-log.ts": "sha256:a6775edf7089e1db15fe693f0d43ff2ee783224bdb427cf1b24c53bcf078ec95",
+      "apps/maestro/src/renderer/src/utils/session-log.ts": "sha256:019a27e9e20043eee7a85fe39eb7c5bcfdabed7bb90706be354c732555b4fbca",
       "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx": "sha256:148daba7da601ba20152e36256af8fd7fc1baaef406a6751847533a1da9eac4b"
     }
   }

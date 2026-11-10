@@ -1,6 +1,6 @@
-import type { SessionLogEntry, ChannelDelivery } from "../../../shared/ipc";
+import type { SessionLogEntry, SessionLogHandoffIssue, ChannelDelivery } from "../../../shared/ipc";
 
-export type { SessionLogEntry, ChannelDelivery };
+export type { SessionLogEntry, SessionLogHandoffIssue, ChannelDelivery };
 
 /** The open project's absolute path — used to display log file paths relative to it. */
 export async function getProjectCwd(): Promise<string> {
