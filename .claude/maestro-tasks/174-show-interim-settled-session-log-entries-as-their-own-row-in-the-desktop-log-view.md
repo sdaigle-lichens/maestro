@@ -30,5 +30,5 @@ Task 169 added a new session-log entry kind, interim_settled, written by the han
   **Fix:** none
 - **Problem:** @test's re-run hit a pre-existing flake in `test/core/landing-guards-170.test.ts` (the `mixedCase` precondition depends on the temp repo's time-dependent SHA) and stopped as `blocked`; the user chose to fix it in-task, and @reviewer then found the fix incomplete (12-char prefix could still be all digits), needing a second @test pass.
   **Fix:** none
-- **Problem:** @frontend's hint payload to @test (`.claude/channels/task-174/test/frontend.1.md`) was reported missing by @test, and @test's first FAIL hand-back wrote no payload until resumed.
+- **Problem:** @test's first FAIL hand-back wrote no payload for @frontend until resumed (the `SubagentStop` check caught it). Not a problem: @test also reported @frontend's hint payload as missing, but it had been delivered into @test's context and moved to `.consumed/` by `SubagentStart`; the orchestrator's dispatch prompt named the original path, so @test looked there and found nothing.
   **Fix:** none
