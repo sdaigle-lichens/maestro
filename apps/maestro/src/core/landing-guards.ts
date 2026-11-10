@@ -12,6 +12,23 @@
 //     clean tracked tree; Maestro's own tracker and epic state files do not count as dirt.
 //   * `unwritablePaths` — the paths a `git switch` would rewrite that this process cannot write (the
 //     sandbox's read-only mounts), checked BEFORE switching so a switch never stops halfway.
+//   * `overwrittenByMerge` (`173`) — locally modified files the merge would overwrite, each compared
+//     with the branch's copy, so `merge` refuses with their names and the resolving commands instead
+//     of git's bare error; it never discards or stashes anything itself.
+//   * `mergeTaskTrackers` (`173`) — a three-way merge of the task tracker, so the tracker change a
+//     task committed on its branch lands even while the main checkout's tracker has moved on.
+//
+// Path bases (`173`). The Maestro project may sit BELOW the git top level (`<top>/sub`), so two bases
+// exist and every path here is in exactly one of them:
+//   * a repo path (`rel`) is relative to the git top level, forward slashes: the form
+//     `git diff --name-only`, `ls-files --full-name`, `ls-tree --full-tree` and `<rev>:<path>` use, and
+//     the form every refusal names. A repo path touches the filesystem only joined onto `top`
+//     (`gitTopLevel`), never onto the project directory.
+//   * a project path is relative to the project directory (Maestro's own `.claude/...` layout). It
+//     becomes a repo path only through an explicit conversion: `projectPrefixFor` (the project's
+//     `git rev-parse --show-prefix`) or `trackerRelPath`.
+// Git commands may run from either directory; only their output's base matters, and each call below
+// asks for the top-level form.
 //
 // Project-agnostic: names no language, package manager or test runner. The git runner is INJECTED
 // (`(cwd, args) => { ok, out }`), as in `worktree-footprint.ts`: a core module may not import
@@ -58,20 +75,47 @@ export function currentBranch(git: GitRunner, root: string): string | null {
  */
 export const MAESTRO_STATE_DIRS: readonly string[] = [".claude/maestro-tasks/", ".claude/epics/"];
 
-/** True iff the repo-relative `rel` (forward slashes) is under one of `MAESTRO_STATE_DIRS`. */
-export function isMaestroStatePath(rel: string): boolean {
+/**
+ * True iff `rel` (forward slashes, relative to the git top level) is under one of
+ * `MAESTRO_STATE_DIRS` of the project at `projectPrefix` below the top level (`""` when the project
+ * is the top level; `"sub/"` for a project in `sub/`, see `projectPrefixFor`). `173`: git names
+ * paths from the top level, so a project below it must be matched with its prefix.
+ */
+export function isMaestroStatePath(rel: string, projectPrefix = ""): boolean {
   const p = rel.replace(/\\/g, "/").replace(/^\.\//, "");
-  return MAESTRO_STATE_DIRS.some((d) => p.startsWith(d) || `${p}/` === d);
+  const prefix = projectPrefix.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/*$/, "");
+  const scoped = prefix ? `${prefix}/` : "";
+  return MAESTRO_STATE_DIRS.some((d) => p.startsWith(`${scoped}${d}`) || `${p}/` === `${scoped}${d}`);
 }
 
 /**
- * Tracked paths with staged or unstaged changes in `root` (against HEAD), Maestro's state files
- * excepted. `git diff --name-only` rather than `status --porcelain`: an injected runner may trim its
- * output, which would eat porcelain's leading status column; a NUL-separated name list survives it.
+ * `173`: the project's path below the git top level, as git reports it for `root`
+ * (`git rev-parse --show-prefix`): `""` at the top level, `"sub/proj/"` for a nested project. Git
+ * resolves symlinks itself, so a symlinked temp dir or checkout path never skews it. `""` when git
+ * cannot answer.
+ */
+export function projectPrefixFor(git: GitRunner, root: string): string {
+  const r = git(root, ["rev-parse", "--show-prefix"]);
+  return r.ok ? r.out.trim() : "";
+}
+
+/**
+ * `git diff --name-only` with its output pinned to repo paths (relative to the git top level) from
+ * any cwd: a user's `diff.relative=true` would otherwise make it cwd-relative, and restrict it to the
+ * cwd. `-c` rather than `--no-relative` so an older git accepts it too.
+ */
+const REPO_DIFF_NAMES: readonly string[] = ["-c", "diff.relative=false", "diff", "--name-only", "--no-renames", "-z"];
+
+/**
+ * Tracked paths with staged or unstaged changes in `root` (against HEAD), relative to the git top
+ * level, Maestro's state files excepted. `git diff --name-only` rather than `status --porcelain`: an
+ * injected runner may trim its output, which would eat porcelain's leading status column; a
+ * NUL-separated name list survives it.
  */
 export function dirtyTrackedPaths(git: GitRunner, root: string): string[] | null {
-  const r = git(root, ["diff", "--name-only", "--no-renames", "-z", "HEAD"]);
+  const r = git(root, [...REPO_DIFF_NAMES, "HEAD"]);
   if (!r.ok) return null;
+  const prefix = projectPrefixFor(git, root);
   return [
     ...new Set(
       r.out
@@ -79,14 +123,18 @@ export function dirtyTrackedPaths(git: GitRunner, root: string): string[] | null
         .map((rel) => rel.trim())
         .filter((rel) => rel !== "")
     ),
-  ].filter((rel) => !isMaestroStatePath(rel));
+  ].filter((rel) => !isMaestroStatePath(rel, prefix));
 }
 
-/** Untracked, not ignored paths in `root`, Maestro's state files excepted. */
+/**
+ * Untracked, not ignored paths in `root`, relative to the git top level (`--full-name`, the form
+ * `dirtyTrackedPaths` uses), Maestro's state files excepted.
+ */
 export function untrackedPaths(git: GitRunner, root: string): string[] {
-  const r = git(root, ["ls-files", "--others", "--exclude-standard", "-z"]);
+  const r = git(root, ["ls-files", "--others", "--exclude-standard", "--full-name", "-z"]);
   if (!r.ok) return [];
-  return r.out.split("\0").filter((rel) => rel !== "" && !isMaestroStatePath(rel));
+  const prefix = projectPrefixFor(git, root);
+  return r.out.split("\0").filter((rel) => rel !== "" && !isMaestroStatePath(rel, prefix));
 }
 
 // ── the merge target ────────────────────────────────────────────────────────
@@ -160,14 +208,18 @@ function writable(abs: string): boolean {
 }
 
 /**
- * Of the repo-relative `rels` that a checkout would rewrite in `root`, those this process cannot
- * write: the file itself or the directory git must unlink it from or create it in. The sandbox's
- * read-only mounts answer `EROFS` here, so a switch that would stop halfway is caught before it runs.
+ * Of the repo paths `rels` (relative to the git top level `top`, as `pathsChangedBetween` returns
+ * them) that a checkout would rewrite, those this process cannot write: the file itself or the
+ * directory git must unlink it from or create it in. The sandbox's read-only mounts answer `EROFS`
+ * here, so a switch that would stop halfway is caught before it runs. `173`: `top` is the git top
+ * level, NOT the project directory: joining a repo path onto a project below the top level checks a
+ * path that does not exist (`sub/sub/...`) and passes, and `git switch` then only warns and leaves
+ * the file behind.
  */
-export function unwritablePaths(root: string, rels: string[]): string[] {
+export function unwritablePaths(top: string, rels: string[]): string[] {
   const out: string[] = [];
   for (const rel of rels) {
-    const abs = path.join(root, rel);
+    const abs = path.join(top, rel);
     const exists = fs.existsSync(abs);
     const dir = exists ? path.dirname(abs) : nearestExistingDir(abs);
     if ((exists && !writable(abs)) || !writable(dir)) out.push(rel);
@@ -175,9 +227,12 @@ export function unwritablePaths(root: string, rels: string[]): string[] {
   return out;
 }
 
-/** The paths a checkout from `from` to `to` rewrites (`git diff --name-only -z from to`), or `null`. */
+/**
+ * The repo paths (relative to the git top level, whatever `root` is) a checkout from `from` to `to`
+ * rewrites (`git diff --name-only -z from to`), or `null`.
+ */
 export function pathsChangedBetween(git: GitRunner, root: string, from: string, to: string): string[] | null {
-  const r = git(root, ["diff", "--name-only", "--no-renames", "-z", from, to]);
+  const r = git(root, [...REPO_DIFF_NAMES, from, to]);
   if (!r.ok) return null;
   return r.out.split("\0").filter((rel) => rel !== "");
 }
@@ -189,6 +244,186 @@ export function switchCommandFor(root: string, branch: string): string {
 
 function shellQuote(s: string): string {
   return /^[A-Za-z0-9_./@:=+-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
+// ── local changes the merge would overwrite (`173`) ─────────────────────────
+
+/** The repository's top level for `root` (`git rev-parse --show-toplevel`), else `root` itself. */
+export function gitTopLevel(git: GitRunner, root: string): string {
+  const r = git(root, ["rev-parse", "--show-toplevel"]);
+  return r.ok && r.out.trim() ? r.out.trim() : root;
+}
+
+/**
+ * The task tracker (`<project>/.claude/maestro-tasks/status.json`) as a path relative to the git top
+ * level `top`, forward slashes: the form `git diff --name-only` prints and `git show <rev>:<path>`
+ * takes. The project may sit below the top level, so it is never assumed to be the top level itself.
+ */
+export function trackerRelPath(top: string, projectRoot: string): string {
+  // Both resolved: git prints the top level with symlinks resolved (a temp dir on macOS), and the
+  // project root may still carry them.
+  const real = (p: string) => {
+    try {
+      return fs.realpathSync(p);
+    } catch {
+      return path.resolve(p);
+    }
+  };
+  return path
+    .relative(real(top), path.join(real(projectRoot), ".claude", "maestro-tasks", "status.json"))
+    .split(path.sep)
+    .join("/");
+}
+
+/** Tracked paths with staged or unstaged changes against HEAD in `top`, Maestro's state included. */
+export function locallyModifiedPaths(git: GitRunner, top: string): string[] | null {
+  const r = git(top, [...REPO_DIFF_NAMES, "HEAD"]);
+  if (!r.ok) return null;
+  return [...new Set(r.out.split("\0").filter((rel) => rel !== ""))];
+}
+
+export interface OverwrittenPath {
+  /** Relative to the git top level, forward slashes. */
+  rel: string;
+  /** True iff the working copy is byte-for-byte the branch's copy (both absent counts as a match). */
+  matchesBranch: boolean;
+}
+
+/**
+ * The working copy's blob id for `rel` (`git hash-object`, which applies the same clean filters a
+ * commit would), or null when the file is absent. Compared with the branch's blob id, never with
+ * text an injected runner may have trimmed.
+ */
+function workingBlob(git: GitRunner, top: string, rel: string): string | null {
+  if (!fs.existsSync(path.join(top, rel))) return null;
+  const r = git(top, ["hash-object", "--", rel]);
+  return r.ok ? r.out.trim() : null;
+}
+
+function branchBlob(git: GitRunner, top: string, branch: string, rel: string): string | null {
+  const r = git(top, ["rev-parse", "--verify", "--quiet", `${branch}:${rel}`]);
+  return r.ok && r.out.trim() ? r.out.trim() : null;
+}
+
+/** Whether each repo-relative path's working copy in `top` is the branch's copy. */
+export function compareWithBranch(git: GitRunner, top: string, branch: string, rels: string[]): OverwrittenPath[] {
+  return rels.map((rel) => {
+    const mine = workingBlob(git, top, rel);
+    const theirs = branchBlob(git, top, branch, rel);
+    return { rel, matchesBranch: mine === theirs };
+  });
+}
+
+/**
+ * The locally modified tracked files in `top` that merging `branch` would write: changed on the
+ * branch since its merge base with HEAD (`git diff HEAD...branch`) and changed in the working tree
+ * or index. Git refuses such a merge with "Your local changes ... would be overwritten"; this names
+ * them first. Paths in `except` (the task tracker, which `merge` merges itself) are left out.
+ * `null` when git cannot answer.
+ */
+export function overwrittenByMerge(
+  git: GitRunner,
+  top: string,
+  branch: string,
+  except: readonly string[] = []
+): OverwrittenPath[] | null {
+  const local = locallyModifiedPaths(git, top);
+  const theirs = git(top, [...REPO_DIFF_NAMES, `HEAD...${branch}`]);
+  if (local === null || !theirs.ok) return null;
+  const onBranch = new Set(theirs.out.split("\0").filter((rel) => rel !== ""));
+  const hits = local.filter((rel) => onBranch.has(rel) && !except.includes(rel)).sort();
+  return compareWithBranch(git, top, branch, hits);
+}
+
+/**
+ * The file names in git's own "Your local changes to the following files would be overwritten by
+ * merge:" error (one tab-indented path per line, until the "Please commit" line), or `[]`. The
+ * fallback for a file rewritten after `overwrittenByMerge` looked (a background tool racing the merge).
+ */
+export function parseOverwriteError(text: string): string[] {
+  const m = /local changes to the following files would be overwritten[^\n]*\n((?:[ \t]+\S[^\n]*\n?)+)/i.exec(text);
+  if (!m) return [];
+  return (m[1] as string)
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+}
+
+/**
+ * The body of `merge`'s refusal over locally modified files: each file, whether it matches the
+ * branch's copy, and the commands that resolve it. Nothing is run: a file that matches loses nothing
+ * by being restored (the merge brings the same content back); one that differs is stashed, so the
+ * user's change survives and is re-applied after the merge. The user decides and runs them.
+ */
+export function formatOverwriteRefusal(top: string, branch: string, files: OverwrittenPath[]): string {
+  const lines = files.map(
+    (f) =>
+      `  ${f.rel} — ${f.matchesBranch ? `identical to ${branch}'s copy (restoring it loses nothing)` : `DIFFERENT from ${branch}'s copy (a change of its own)`}`
+  );
+  const matching = files.filter((f) => f.matchesBranch).map((f) => shellQuote(f.rel));
+  const differ = files.filter((f) => !f.matchesBranch).map((f) => shellQuote(f.rel));
+  const at = `git -C ${shellQuote(top)}`;
+  const steps: string[] = [];
+  if (matching.length) steps.push(`  ${at} restore --source=HEAD --staged --worktree -- ${matching.join(" ")}`);
+  if (differ.length)
+    steps.push(`  ${at} stash push -m ${shellQuote(`before merging ${branch}`)} -- ${differ.join(" ")}`);
+  const after = differ.length
+    ? `\nThen ask for the merge again, and after it lands re-apply the stashed change with \`${at} stash pop\` (it may need resolving against the merged copy).`
+    : "\nThen ask for the merge again.";
+  return (
+    `${lines.join("\n")}\n` +
+    `To resolve (the user approves; nothing was discarded or stashed by this command):\n${steps.join("\n")}` +
+    after
+  );
+}
+
+// ── the task tracker's own merge (`173`) ────────────────────────────────────
+
+export type TrackerMap = Record<string, Record<string, unknown>>;
+
+/** `text` parsed as a tracker map, `{}` for anything that is not a JSON object. */
+export function parseTracker(text: string | null | undefined): TrackerMap {
+  if (!text) return {};
+  try {
+    const data: unknown = JSON.parse(text);
+    return data && typeof data === "object" && !Array.isArray(data) ? (data as TrackerMap) : {};
+  } catch {
+    return {};
+  }
+}
+
+const sameEntry = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Three-way merge of two task trackers that both moved on from `base`, task by task. A task only one
+ * side changed takes that side's entry (a removal included). A task both sides changed keeps both
+ * sides' fields (`ours` winning a disagreement), and is `done` when either side says so: a task is
+ * never un-done by a merge. `ready`/`blocked` and `blockedBy` come out stale-but-harmless; the
+ * caller recomputes the cascade from the task files (`sync`/`markMerged`) right after.
+ */
+export function mergeTaskTrackers(base: TrackerMap, ours: TrackerMap, theirs: TrackerMap): TrackerMap {
+  const out: TrackerMap = {};
+  for (const key of new Set([...Object.keys(ours), ...Object.keys(theirs)])) {
+    const o = ours[key];
+    const t = theirs[key];
+    const b = base[key];
+    let entry: Record<string, unknown> | undefined;
+    if (sameEntry(o, t) || sameEntry(t, b)) entry = o;
+    else if (sameEntry(o, b)) entry = t;
+    else if (!o || !t) entry = o ?? t;
+    else {
+      entry = { ...t, ...o };
+      if (o.status === "done" || t.status === "done") entry.status = "done";
+    }
+    if (entry) out[key] = entry;
+  }
+  return out;
+}
+
+/** Whether `rev`'s committed tracker at `rel` marks `task` done. */
+export function trackerMarksDone(git: GitRunner, top: string, rev: string, rel: string, task: string): boolean {
+  const r = git(top, ["show", `${rev}:${rel}`]);
+  return r.ok && parseTracker(r.out)[task]?.status === "done";
 }
 
 // ── the epic report ─────────────────────────────────────────────────────────

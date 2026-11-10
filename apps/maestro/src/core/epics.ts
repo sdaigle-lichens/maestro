@@ -694,6 +694,18 @@ export function unacknowledgedReports(state: EpicState, epicDir?: string | null)
   });
 }
 
+/**
+ * `173`: the handles (see `inboxHandle`) of the reports and notes still waiting for an
+ * acknowledgement, oldest first, inbox files the log no longer lists included. What the epic-end
+ * guard refuses on; review requests are not in it (they wait for a verdict, not an ack).
+ */
+export function unacknowledgedHandles(state: EpicState, epicDir: string): string[] {
+  const inbox = inboxLog(state, epicDir).filter(isInboxEntry);
+  return unacknowledgedReports(state, epicDir)
+    .filter((e) => e.kind !== "review")
+    .map((e) => inboxHandle(e, inbox));
+}
+
 /** One ticket's manager review history in an epic (`132`). */
 export interface ReviewHistory {
   requests: EpicReviewEntry[];
@@ -767,15 +779,27 @@ export function writeReviewRequest(
   const rel = path.relative(root, abs);
   const stored = rel.startsWith("..") || path.isAbsolute(rel) ? abs : rel.split(path.sep).join("/");
   const from = sender?.trim() || claimSessionName(tasksDirFor(root), base) || undefined;
+  const inbox = path.join(epicDirFor(projectRoot, slug) as string, INBOX_DIR);
   return updateState(projectRoot, slug, (s) => {
     const history = reviewHistory(s, base);
     const manager = s.manager?.name ?? null;
     const common = { epic: slug, task: base, manager, redirects: history.redirects, cap: MANAGER_REDIRECT_CAP };
     if (history.open && history.open.file === stored)
       return { ...common, id: history.open.id, round: history.open.round, file: abs, already: true };
-    const id = nextInboxId(s, "review");
+    // `173`: allocated like a report id (log plus inbox files), and claimed by creating its inbox
+    // file exclusively, so a log that lost the entry (an older state.json put back by git) never
+    // hands the id out again. The file is only a pointer: the brief stays next to the task file.
+    const id = nextInboxId(s, "review", inbox);
     const round = history.requests.length + 1;
-    s.log.push({ kind: "review", id, task: base, round, file: stored, at: now(), ...(from ? { from } : {}) });
+    const at = now();
+    fs.mkdirSync(inbox, { recursive: true });
+    fs.writeFileSync(
+      path.join(inbox, `${id}-${base.replace(/\.md$/, "")}.md`),
+      `# Manager review request ${id}: ${base}\n\n- Task: ${base}\n- Round: ${round}\n- Review file: ${stored}\n` +
+        `- Written: ${at}\n${from ? `- From session: ${from}\n` : ""}`,
+      { flag: "wx" }
+    );
+    s.log.push({ kind: "review", id, task: base, round, file: stored, at, ...(from ? { from } : {}) });
     return { ...common, id, round, file: abs, already: false };
   });
 }

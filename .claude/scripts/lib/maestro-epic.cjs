@@ -814,6 +814,10 @@ function unacknowledgedReports(state, epicDir) {
     return !acked.has(e);
   });
 }
+function unacknowledgedHandles(state, epicDir) {
+  const inbox = inboxLog(state, epicDir).filter(isInboxEntry);
+  return unacknowledgedReports(state, epicDir).filter((e) => e.kind !== "review").map((e) => inboxHandle(e, inbox));
+}
 function reviewHistory(state, task) {
   const base = import_node_path8.default.basename(task);
   const requests = state.log.filter((e) => e.kind === "review" && e.task === base);
@@ -845,15 +849,30 @@ function writeReviewRequest(projectRoot, task, file, sender) {
   const rel = import_node_path8.default.relative(root, abs);
   const stored = rel.startsWith("..") || import_node_path8.default.isAbsolute(rel) ? abs : rel.split(import_node_path8.default.sep).join("/");
   const from = sender?.trim() || claimSessionName(tasksDirFor(root), base) || void 0;
+  const inbox = import_node_path8.default.join(epicDirFor(projectRoot, slug), INBOX_DIR);
   return updateState(projectRoot, slug, (s) => {
     const history = reviewHistory(s, base);
     const manager = s.manager?.name ?? null;
     const common = { epic: slug, task: base, manager, redirects: history.redirects, cap: MANAGER_REDIRECT_CAP };
     if (history.open && history.open.file === stored)
       return { ...common, id: history.open.id, round: history.open.round, file: abs, already: true };
-    const id = nextInboxId(s, "review");
+    const id = nextInboxId(s, "review", inbox);
     const round = history.requests.length + 1;
-    s.log.push({ kind: "review", id, task: base, round, file: stored, at: now(), ...from ? { from } : {} });
+    const at = now();
+    import_node_fs10.default.mkdirSync(inbox, { recursive: true });
+    import_node_fs10.default.writeFileSync(
+      import_node_path8.default.join(inbox, `${id}-${base.replace(/\.md$/, "")}.md`),
+      `# Manager review request ${id}: ${base}
+
+- Task: ${base}
+- Round: ${round}
+- Review file: ${stored}
+- Written: ${at}
+${from ? `- From session: ${from}
+` : ""}`,
+      { flag: "wx" }
+    );
+    s.log.push({ kind: "review", id, task: base, round, file: stored, at, ...from ? { from } : {} });
     return { ...common, id, round, file: abs, already: false };
   });
 }
@@ -1162,14 +1181,14 @@ function startBlocker(root, state, tasks, tracker) {
   const done = tasks.filter((t) => tracker[t].status === "done");
   return done.length ? `already done: ${done.join(", ")}` : null;
 }
-function endBlocker(state, tasks, tracker) {
+function endBlocker(state, epicDir, tasks, tracker) {
   if (!tasks.length) return "the epic has no tasks";
   const open = tasks.filter((t) => tracker[t].status !== "done");
   if (open.length) return `not done: ${open.join(", ")}`;
   const unmerged = tasks.filter((t) => tracker[t].unmerged);
   if (unmerged.length) return `not merged: ${unmerged.join(", ")}`;
-  const waiting = unacknowledgedReports(state).filter((e) => e.kind !== "review");
-  return waiting.length ? `not acknowledged: ${waiting.map((e) => e.id).join(", ")}` : null;
+  const waiting = unacknowledgedHandles(state, epicDir);
+  return waiting.length ? `not acknowledged: ${waiting.join(", ")}` : null;
 }
 function nextRunDir(epicDir, phase) {
   const parent = import_node_path9.default.join(epicDir, BOUNDARY_DIR);
@@ -1203,7 +1222,7 @@ function runEpicBoundary(projectRoot, slug, phase, options = {}) {
     const tasks = Object.keys(tracker).filter((t) => tracker[t].epic === slug).sort();
     const boundaries = state.boundaries ??= {};
     if (!claimed) {
-      const reason = phase === "start" ? startBlocker(root, state, tasks, tracker) : endBlocker(state, tasks, tracker);
+      const reason = phase === "start" ? startBlocker(root, state, tasks, tracker) : endBlocker(state, dir, tasks, tracker);
       if (reason) return skills.length ? { outcome: "not-due", reason } : { outcome: "none" };
       if (phase === "start" && !boundaries.base) {
         const head = git(root, ["rev-parse", "HEAD"])?.trim();

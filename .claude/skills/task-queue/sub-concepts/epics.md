@@ -211,6 +211,16 @@ not held by a review request; `--force` on an unclaimed and a claimed start; the
 nested and symlinked projects, a linked worktree and a non-git project; the empty-start base; concurrent
 claims; one line per outcome; and that the command, manager skill and core module name no skill.
 
+## Review ids and the end check (`173`)
+
+- **Review ids are allocated like report ids.** `writeReviewRequest` takes the next `mNNN` from the log
+  **and** the inbox files, then claims it by creating `inbox/mNNN-<task>.md` exclusively. A log that lost
+  an entry (an older `state.json` put back by git) never reissues an id. The inbox file is a pointer
+  only; the brief stays next to the task file.
+- **The end check counts orphaned inbox files.** `unacknowledgedHandles` lists unacknowledged reports and
+  notes by handle (`r009-167`, the form `ack` takes), including inbox files the log no longer lists. Two
+  entries that share an id are both named. Review requests still do not hold the epic back.
+
 ## Tests
 
 `apps/maestro/test/core/epics-cli.test.ts` spawns the installed commands against temp projects:

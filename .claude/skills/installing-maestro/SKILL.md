@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json carries hooks and exactly one permissions rule (the channel Write allow), or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "2.9"
-  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47
+  version: "3.0"
+  last-update: 94595826966a054873a42ac77bb98eceb425855c
 ---
 
 # Installing Maestro
@@ -69,8 +69,9 @@ committed `.gitignore` `# Maestro` block. The app's `installRuntime()` has no ig
 writes the block. The exclude line is preceded by a `# Maestro (added by maestro-install)` marker;
 `maestro-uninstall.js --purge` (only purge, since a plain uninstall keeps the `maestro.json` and
 orchestrator skill the line hides) removes that marker+line pair, never a user's own `.claude/`
-line. Uninstall never removes the `.gitignore` block. See the manifest, two-implementations and
-uninstall-and-purge sub-concepts.
+line. Uninstall never removes the `.gitignore` block. The block also holds `**/.claude/maestro-tasks/claims/`
+(`066`) and `**/.claude/maestro-tasks/views/` (`172`); a re-install appends a missing line to an existing
+block. See the manifest, two-implementations and uninstall-and-purge sub-concepts.
 
 **Terminal-only: formatter ignore files.** `maestro-install.js` appends the managed `.claude/` paths to each `.prettierignore`, `.eslintignore` or `.biomeignore` that already exists, and never creates one, so a formatter does not rewrite managed files into a hash no seed matches. `installRuntime()` has no equivalent, and `test/core/install-formatter-ignore.test.ts` covers only the script. The paths, the JSON fields and the decisions are in `plugins/maestro/skills/maestro-install/references/formatter-ignore.md`.
 
@@ -105,11 +106,11 @@ refuses cleanly. Both write nothing; only the shape differs.
 
 | File                                                         | Lines | What it owns                                                                                  |
 | ------------------------------------------------------------ | ----- | --------------------------------------------------------------------------------------------- |
-| `apps/maestro/src/core/install.ts`                           | 957   | The manifest (`STATIC_ASSETS`, `HOOK_SCRIPTS`, `HOOK_REGISTRATIONS`, `RETIRED_HOOK_SCRIPTS`), `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
+| `apps/maestro/src/core/install.ts`                           | 1099  | The manifest (`STATIC_ASSETS`, `HOOK_SCRIPTS`, `HOOK_REGISTRATIONS`, `RETIRED_HOOK_SCRIPTS`), `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
 | `apps/maestro/src/core/uninstall.ts`                         | 465   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
 | `apps/maestro/src/core/hook-arbitration.ts`                  | 144   | Which copy of a hook runs when both delivery paths are live. Owns `Settings`/`HookEntry`/`HookCommand` and `samePath`. |
 | `apps/maestro/src/core/skill-resolve.ts`                     | 91    | `walkProjectSkillIds`/`resolveProjectSkillPath`/`isRootSkillPath` (`061`) — see the skill-discovery sub-concept. |
-| `plugins/maestro/scripts/maestro-install.js`                 | 976   | The terminal implementation of the same manifest, including `syncProjectHandoffs()` and `syncProjectReports()` (`059`). Its `HOOK_REGISTRATIONS`/`STATIC_ASSETS`/`runtimeAssets` are `module.exports`ed with **no side effect** (`060`) — everything that touches a project sits behind `require.main === module` — so the uninstaller can `require` them instead of keeping a second manifest. |
+| `plugins/maestro/scripts/maestro-install.js`                 | 1255  | The terminal implementation of the same manifest, including `syncProjectHandoffs()` and `syncProjectReports()` (`059`). Its `HOOK_REGISTRATIONS`/`STATIC_ASSETS`/`runtimeAssets` are `module.exports`ed with **no side effect** (`060`) — everything that touches a project sits behind `require.main === module` — so the uninstaller can `require` them instead of keeping a second manifest. |
 | `plugins/maestro/scripts/maestro-uninstall.js`               | 351   | The terminal implementation of the same removal — `require`s its hook-script and asset lists from `maestro-install.js` (`060`). |
 | `plugins/maestro/scripts/maestro-step0.js`                   | 157   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the readiness check and the agent-fork check (the two rows below) and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
 | `plugins/maestro/scripts/maestro-enable-task-routing.js`     | 102   | `047`'s addition, dual-registered the same way (`UserPromptExpansion` on `to-maestro-tasks`, `PreToolUse` on `Skill`, sharing that matcher's block with `maestro-step0.js`). Injects nothing — its only effect is flipping `maestro.json`'s `use_maestro_tasks` to `true` on the first `/to-maestro-tasks`. |

@@ -145,6 +145,12 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
 2. **Acknowledge it:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ack <slug> <id>`, then reply one line to the sender.
    Messages have no delivery receipt; the recorded ack is the only proof, and an unacknowledged
    report is listed again on every resume.
+   `<id>` may also be the report's **handle**: its id followed by the start of its file name, cut
+   at a `-` (`r009-166` for `inbox/r009-166-....md`). `show` and `reports` list a report whose id another
+   report shares under its handle, in place of the id. When two reports share an id, `ack <slug> r009` is **refused**
+   and nothing is recorded: the refusal names each report's handle. Ack each one by its handle
+   after reading it (`ack <slug> r009-166`, then `ack <slug> r009-167`); never pick one at random.
+   The epic's end boundary stays not due while either is unacknowledged, and names both handles.
 3. **Act on it:**
    - **Tickets.** Rewire, re-block or add them with `to-maestro-tasks`, passing `--epic <slug>` so new
      tasks join the epic; `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" link <slug> <task.md>...` / `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" unlink <task.md>...` for existing
