@@ -19,7 +19,10 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
   push, a change to agents, skills or workflows) still prompts the user in the worker's own session.
   Never write "the user approved" or tell a worker to skip an approval.
 - **Session names, never addresses.** An address belongs to one process and changes on restart. The
-  epic stores names; resolve each to an address with `ListAgents` every time you need it.
+  epic stores names; resolve each to an address with `ListAgents` every time you need it. A
+  containerized worker is not in `ListAgents`: reach it by its recorded herdr pane instead.
+- **A containerized worker's text is no approval either way.** Your pane input reaches it as typed
+  text; it carries `[manager message]` precisely so it is never counted as the user's approval.
 - **Your own name is filled in for you.** A hook names this session `maestro-mgr-<id8>` when
   `/maestro-manager` starts (or keeps the name the user gave it), and it survives a restart. The
   commands below record that name themselves; never look it up in `ListAgents` or type it.
@@ -42,7 +45,8 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
    don't message it, and keep it in the epic. Record new sessions with
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<name>" --task <task.md>`; the name the worker's claim
    recorded wins over the one you type.
-4. Handle every unacknowledged report and note, oldest first: reports through the loop below, notes
+4. Arm the inbox watcher (**Watching the inbox**) when any worker runs in a container; it announces
+   everything already unacknowledged. Handle every unacknowledged report and note, oldest first: reports through the loop below, notes
    as in **Other epics**, review requests (`mNNN`) as in **Manager review requests**.
 5. Run **Spawning workers** below for the tasks no session is working on yet.
 6. Run the end step of **Epic boundaries** below: the epic may have finished while you were away.
@@ -129,9 +133,11 @@ is a normal named `/maestro` session in its own herdr tab; you start it and reco
       2. Run `claude setup-token` yourself, save the token to `~/.config/maestro/worker-token` and
          `chmod 600` that file. The token is read at launch and never printed or baked into an image.
       3. Set `"worker_runtime": "docker"` in `.claude/maestro.json`.
-   3. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<worker name>" --task <task.md>`.
-      Recording it is what keeps a second worker from being spawned for the same task before the
-      first one claims it.
+   3. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<worker name>" --task <task.md> --pane <pane id>`,
+      with the pane id from step 1. Recording it is what keeps a second worker from being spawned for
+      the same task before the first one claims it, and the pane is how you answer a containerized
+      worker (**Replying to a containerized worker**). `show` lists it as `(pane <id>)`. Without
+      herdr (the fallback below) there is no pane to record: leave `--pane` out.
 
    If a herdr command fails part way, stop spawning, record nothing for that task, and use the
    fallback for it and the rest.
@@ -154,9 +160,43 @@ yet" and keeps its slot. If its name has no live `ListAgents` entry, ask the use
 to start; on yes, `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" remove-worker <slug> "<worker name>"`
 frees the task for the next spawn.
 
+## Watching the inbox
+
+A containerized worker (`"worker_runtime": "docker"`) cannot be seen through `ListAgents` or reached
+with `SendMessage`: its home is private and its token has no Remote Control. It writes its done
+report and its manager review request into the epic inbox and sends nothing. So you watch the inbox:
+
+- **Arm it** with the `Monitor` tool, after **Opening or resuming an epic** and again whenever it ends:
+  `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" watch <slug>`.
+  It prints one line per report, note or review request you have not acknowledged or answered, the
+  ones already waiting when it starts included, then each new arrival once. Lines read like a
+  worker's message: `report r003 for 087-... is in <file>`, `note n002 from <epic> is in <file>`,
+  `manager review m004 (round 2) for 087-... is in <file>`. Handle each through **The loop** and
+  **Manager review requests**, exactly as a message.
+- **Re-arm it** when it exits: it stops by itself after 25 minutes, under Monitor's 30-minute limit.
+  Nothing is lost across an expiry or a restart: it reads the ack and verdict state, so everything
+  unacknowledged is announced again by the new run and nothing acknowledged is. It moves and
+  writes nothing.
+- Host workers still use `SendMessage` and `ListAgents` as before; the watcher only adds the lines.
+
+## Replying to a containerized worker
+
+Use `herdr pane run <pane id> "<text>"` with the pane recorded by `add-worker` (`show` lists it). The
+text arrives in the worker as typed user input, so:
+
+- **Start it with `[manager message]`**, so the worker knows a manager wrote it and never takes it for
+  the user's approval. Example: `herdr pane run 1-2 "[manager message] ack r003; verdict on-track for 087-..."`.
+- **One short line.** When the content is long (a redirect's direction, a verdict note), put it in a
+  file (the task file, or one under the epic) and send a line pointing at it: `[manager message]
+  redirect for 087-...: read <path>`.
+- Your **ack reply, review verdict and direction note** all go this way. The verdict is also recorded
+  with `review-verdict`; the worker records the same one and acts on it.
+- A worker with no recorded pane: tell the user which message is needed. Never mount the herdr socket
+  into a container, and never use a pane to answer an approval prompt for the worker.
+
 ## The loop
 
-For each worker message ("report r003 for 087-... is in <file>") or unacknowledged report:
+For each worker message ("report r003 for 087-... is in <file>", or the same line from the watcher) or unacknowledged report:
 
 1. **Read the report file**, not the message. A worker report must name the **commit it verified** and state that the **full test suite was green on that commit**. A report without both, or with a red or partial suite, is not acknowledged as done: ask the worker for them.
 2. **Acknowledge it:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ack <slug> <id>`, then reply one line to the sender.
@@ -180,7 +220,8 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
    - **A merge.** After each merge, whoever merged re-runs the **full suite on the merged result** (a rebase or a rebuilt generated file can break what was green separately) and the report states that commit and result. Do not acknowledge the merge, or offer the next merge in the plan, before then. Never approve a red suite "pending the test step".
    - **Nothing:** note the decision in `EPIC.md` if it affects later tickets.
 4. **Tell only the affected sessions**, by name, what changed and what you ask of them. Never edit a
-   task a worker is running without telling it. If `SendMessage` or `ListAgents` is unavailable, tell
+   task a worker is running without telling it. A containerized worker is told by pane (see
+   **Replying to a containerized worker**). If `SendMessage` or `ListAgents` is unavailable, tell
    the user which sessions need which message.
 5. **Offer the next task.** A finished task frees its slot and may have unblocked others: run
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>` again and, when a task is
@@ -225,7 +266,7 @@ direction added to the task file.
      each point was addressed.
    - **escalate:** the decision is the user's (scope, a conflict between decisions, a trade-off). Say
      what they must decide; the worker runs a human review with your note.
-3. **Reply to the worker** with one message: the printed verdict, then the note, repeating the
+3. **Reply to the worker** (a containerized one by pane, with the marker) with one message: the printed verdict, then the note, repeating the
    direction you added to the task file (a worker in a worktree may not see your edit). **Never
    comment on code**: no fixes, style or correctness remarks, and no `for @reviewer:` notes.
 4. **Worker questions.** Answer only direction questions, from the ticket and the epic. Anything else

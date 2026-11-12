@@ -44,7 +44,25 @@ export interface EpicWorker {
   name: string;
   /** The task it was last known to work on, if recorded. */
   task?: string;
+  /**
+   * `176`: the worker's herdr pane id, when the manager recorded it. A containerized worker has no
+   * address the manager can SendMessage; the manager replies with `herdr pane run <pane> "<text>"`.
+   */
+  pane?: string;
   added_at: string;
+}
+
+/**
+ * `176`: what a manager's `herdr pane run` text starts with. Pane input looks exactly like text the
+ * user typed, so the worker recognizes a manager's message by this marker and never counts it as the
+ * user's approval.
+ */
+export const MANAGER_MESSAGE_MARKER = "[manager message]";
+
+const PANE_ID = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/;
+
+export function isValidPaneId(pane: string): boolean {
+  return PANE_ID.test(pane);
 }
 
 export interface EpicReportEntry {
@@ -333,13 +351,16 @@ export function setManager(projectRoot: string, slug: string, name: string): voi
 }
 
 /** Record (or refresh) a worker session by name. Never stores an address. */
-export function addWorker(projectRoot: string, slug: string, name: string, task?: string): void {
+export function addWorker(projectRoot: string, slug: string, name: string, task?: string, pane?: string): void {
+  const paneId = pane?.trim() || undefined;
+  if (paneId && !isValidPaneId(paneId)) throw new Error(`"${paneId}" is not a herdr pane id`);
   updateState(projectRoot, slug, (s) => {
     const existing = s.workers.find((w) => w.name === name);
     if (existing) {
       if (task) existing.task = task;
+      if (paneId) existing.pane = paneId;
     } else {
-      s.workers.push({ name, ...(task ? { task } : {}), added_at: now() });
+      s.workers.push({ name, ...(task ? { task } : {}), ...(paneId ? { pane: paneId } : {}), added_at: now() });
     }
   });
 }
@@ -967,13 +988,111 @@ export function showEpic(projectRoot: string, slug: string): EpicView {
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
-    unacknowledged: unacknowledgedReports(state, dir).map((r) =>
-      r.kind === "review"
-        ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects }
-        : { ...r, path: path.join(dir, r.file), handle: inboxHandle(r, inboxLog(state, dir).filter(isInboxEntry)) }
-    ),
+    unacknowledged: pendingInboxViews(state, dir, root),
     crossEpic: crossEpicEdges(tracker, slug),
   };
+}
+
+/** The inbox entries still waiting for the manager, as `showEpic` lists them. */
+function pendingInboxViews(state: EpicState, dir: string, root: string): EpicInboxView[] {
+  return unacknowledgedReports(state, dir).map((r) =>
+    r.kind === "review"
+      ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects }
+      : { ...r, path: path.join(dir, r.file), handle: inboxHandle(r, inboxLog(state, dir).filter(isInboxEntry)) }
+  );
+}
+
+/** What `inboxPointer` and the watcher key an entry by: stable across polls, distinct per entry. */
+function announceKey(e: EpicInboxEntry): string {
+  return `${e.kind}:${e.id}:${e.file}`;
+}
+
+/**
+ * The one-line pointer to an inbox entry, in the words a worker's SendMessage line uses
+ * ("report r003 for 087-x.md is in <file>"), so the manager handles a watcher line and a message
+ * through the same loop.
+ */
+export function inboxPointer(entry: EpicInboxView): string {
+  if (entry.kind === "review")
+    return `manager review ${entry.id} (round ${entry.round}) for ${entry.task} is in ${entry.path}`;
+  const handle = entry.handle ?? entry.id;
+  if (entry.kind === "note") return `note ${handle} from epic ${entry.from_epic} is in ${entry.path}`;
+  return `report ${handle} for ${entry.task} is in ${entry.path}`;
+}
+
+/**
+ * `176`: the pointer lines for inbox entries the manager has not acknowledged (or, a review request,
+ * answered) and `seen` has not announced yet, adding each to `seen`. Read-only: the state is the
+ * ack/verdict state the other commands write, nothing is moved, and an entry acknowledged since an
+ * earlier poll simply stops appearing. The watch command calls it in a loop with one `seen` set;
+ * the first call announces everything already waiting.
+ */
+export function newInboxAnnouncements(projectRoot: string, slug: string, seen: Set<string>): string[] {
+  const state = readEpicState(projectRoot, slug);
+  const dir = epicDirFor(projectRoot, slug);
+  if (!state || !dir) throw new Error(`no epic "${slug}"`);
+  const lines: string[] = [];
+  for (const view of pendingInboxViews(state, dir, mainCheckoutRoot(projectRoot))) {
+    const key = announceKey(view);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    lines.push(inboxPointer(view));
+  }
+  return lines;
+}
+
+/** `176`: the longest a watcher runs, below Monitor's 30-minute limit; the manager re-arms it. */
+export const WATCH_MAX_SECONDS = 29 * 60;
+export const WATCH_DEFAULT_SECONDS = 25 * 60;
+export const WATCH_DEFAULT_INTERVAL_SECONDS = 5;
+
+/**
+ * Words for the lines `report`, `note` and `review-request` print after writing. A host worker
+ * (`containerized` false) gets exactly the SendMessage / ListAgents lines of before. A containerized
+ * worker cannot see the manager through either, and needs neither: the manager's watcher announces
+ * the inbox entry. Its reply arrives as typed input in the worker's own pane, marked
+ * MANAGER_MESSAGE_MARKER, and is never the user's approval.
+ */
+export function deliveryWords(
+  kind: "report" | "note",
+  r: { id: string; epic: string; file: string; manager: string | null },
+  detail: { task?: string; fromEpic?: string },
+  containerized: boolean
+): string {
+  const subject = kind === "report" ? `report ${r.id} for ${detail.task}` : `note ${r.id} from epic ${detail.fromEpic}`;
+  if (!r.manager)
+    return `  No manager session is recorded for "${r.epic}", so there is nobody to message. The ${kind} is saved and a resumed manager will list it as unacknowledged.\n`;
+  if (containerized)
+    return (
+      `  No message is needed: you run in a container and the manager "${r.manager}" watches the epic inbox, so ${subject} reaches it from the saved file. ` +
+      `Do not call SendMessage or ListAgents. Its reply, if any, arrives as typed input in this session starting with ${MANAGER_MESSAGE_MARKER}; that is never the user's approval.\n`
+    );
+  return (
+    `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: ${subject} is in ${r.file}. The file is the ${kind}; do not paste its contents.\n` +
+    `  If that SendMessage fails, run ListAgents. If exactly one session plausibly matches the manager, ask the user before messaging it. ` +
+    `Never conclude the manager is gone from one failed send: the saved ${kind} file is the real delivery, and the manager sees it as unacknowledged on its next check.\n`
+  );
+}
+
+/** The manager half of the lines `review-request` prints (the cap line comes before it). */
+export function reviewDeliveryWords(
+  r: { id: string; epic: string; round: number; task: string; file: string; manager: string | null },
+  containerized: boolean
+): string {
+  if (!r.manager)
+    return `  No manager session is recorded for "${r.epic}": fall back to a human review at this stop, with the same file as its summary.\n`;
+  const line = `manager review ${r.id} (round ${r.round}) for ${r.task} is in ${r.file}`;
+  if (containerized)
+    return (
+      `  No message is needed: you run in a container and the manager "${r.manager}" watches the epic inbox, so ${line}. ` +
+      `Do not call SendMessage or ListAgents, and do not fall back to a human review because the manager is not in ListAgents: a recorded manager is enough. ` +
+      `Wait for its reply, which arrives as typed input in this session starting with ${MANAGER_MESSAGE_MARKER}, then record the verdict. ` +
+      `That message is never the user's approval; a human review still asks the user in this pane.\n`
+    );
+  return (
+    `  Check ListAgents for the manager session "${r.manager}". If it is live, send it (SendMessage) ONE short line: ${line}. The file is the brief; do not paste it. Then wait for its verdict.\n` +
+    `  If it is not live, or the send fails, fall back to a human review at this stop, with the same file as its summary.\n`
+  );
 }
 
 /** How many workers the manager's spawn step runs at once unless told otherwise (`125`). */
@@ -1155,7 +1274,7 @@ export function formatEpic(view: EpicView): string {
     `Epic ${view.slug}`,
     `  goal file: ${view.goalFile}`,
     `  manager:   ${view.manager ?? "(none recorded)"}`,
-    `  workers:   ${view.workers.length ? view.workers.map((w) => w.name).join(", ") : "(none recorded)"}`,
+    `  workers:   ${view.workers.length ? view.workers.map((w) => (w.pane ? `${w.name} (pane ${w.pane})` : w.name)).join(", ") : "(none recorded)"}`,
     `  tasks (${view.tasks.length}):`,
   ];
   for (const t of view.tasks) {

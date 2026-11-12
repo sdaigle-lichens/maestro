@@ -10,8 +10,8 @@ resumable `maestro-manager` session. A task in no epic behaves exactly as before
 CLI `plugins/maestro/scripts/maestro-epic.cjs`. One job: epic state, membership and the report inbox.
 
 **Interface:** `create | list [--json] | link | unlink | show [--json] | set-manager | add-worker |
-remove-worker | of | ready | report --task | note | review-request | review-verdict | reports | ack` (`085` added `note` and `list`'s manager and
-backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`; `158` added `boundary`). Callers never see the lock, the file layout or the id
+remove-worker | of | ready | report --task | note | review-request | review-verdict | reports | watch | ack` (`085` added `note` and `list`'s manager and
+backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`; `158` added `boundary`; `176` added `watch` and `add-worker --pane`). Callers never see the lock, the file layout or the id
 scheme.
 
 **Decisions**
@@ -182,8 +182,33 @@ the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an inte
   The herdr socket is never mounted: pane input from the manager stays the only control channel.
   `image` builds the per-project image, tagged by a hash of the enabled plugins pinned to their host
   versions, the npm packages the hooks need, the Claude Code version, the uid/gid and the project path.
-  **Not yet proven in a real container:** the inbox-write prompt, plugin loading, worktree trust and the
-  disabled sandbox. Each stays unverified until a real worker run records it in the task's report.
+  **Not yet proven in a real container:** the in-container inbox-write prompt (unverified; left for task
+  177's Docker run), plugin loading, worktree trust and the disabled sandbox. Each stays unverified until
+  a real worker run records it in the task's report.
+
+## Containerized workers: inbox, `watch` and pane replies (`176`)
+
+A containerized worker is not in `ListAgents` and has no `SendMessage` route to its manager. Its
+`report`, `note` and `review-request` print "no message is needed" instead of the SendMessage and
+ListAgents lines (`deliveryWords`, `reviewDeliveryWords`), chosen by `isContainerWorker` from
+`MAESTRO_WORKER_RUNTIME=docker`, which the launcher sets. Host output is unchanged.
+
+| Piece | What it does |
+| --- | --- |
+| `watch <slug> [--for s] [--interval s]` | Read-only. Prints an `inboxPointer` line for each unacknowledged report or note and each unanswered review request, already-waiting ones first, each once per run (`newInboxAnnouncements`). Default 25 min, capped at 29 min (under Monitor's 30); the manager re-arms it. An acked entry is never announced. |
+| `add-worker ... --pane <id>` | Records `EpicWorker.pane` (`state.json`, optional; `isValidPaneId`). `show` prints `(pane <id>)`. |
+| Manager reply | `herdr pane run <pane> "[manager message] ..."`. The worker receives it as typed input. |
+| `MANAGER_MESSAGE_MARKER` (`[manager message]`) | Pane input looks like user typing, so the marker says a manager wrote it. A worker never counts marked text as approval; a human review still prompts in the worker's own pane. |
+| Review fallback | A containerized worker with a recorded manager does not fall back to a human review because the manager is missing from `ListAgents`. Host workers keep the old fallback. |
+
+**Image plugin coverage (`176`).** `gatherImageSpec` now includes the user-scope enabled plugins from
+`~/.claude/settings.json`, baked into the image as its own `user-settings.json` (`userSettingsJsonFor`;
+image layout 4 in `imageTagInputs`). A local-directory marketplace is repointed to its baked copy, and a
+pin whose install directory is gone is refused like an absent plugin. Before a worker starts, `run`
+executes `imagePluginProbe` in the image; `parseProbeOutput` lists what is missing, and
+`missingPluginMessage` refuses and names the plugin and the fix (rebuild; `docker image rm <tag>` when
+`image` reuses it). The probe checks presence only: that the directory exists and the baked settings
+enable the id. It does not show that Claude loads the plugin.
 
 ## Epic boundaries: `boundary` (`158`)
 

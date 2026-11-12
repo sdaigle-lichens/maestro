@@ -26,7 +26,12 @@
 //       worker is recorded for the task with add-worker but has not claimed it yet), which are never
 //       listed as ready, and how many slots the cap (default 5) leaves free.
 //   node maestro-epic.cjs set-manager <slug> [<session name>]
-//   node maestro-epic.cjs add-worker <slug> <session name> [--task <NNN-task.md>]
+//   node maestro-epic.cjs add-worker <slug> <session name> [--task <NNN-task.md>] [--pane <herdr pane id>]
+//       `176`: --pane records the worker's herdr pane id; `show` lists it. A containerized worker
+//       cannot be reached with SendMessage: the manager replies with `herdr pane run <pane> "<text>"`.
+//       Output wording: with MAESTRO_WORKER_RUNTIME=docker set (a containerized worker), `report`, `note`
+//       and `review-request` say no SendMessage or ListAgents is needed (the manager watches the inbox)
+//       and a recorded manager is enough for a manager review.
 //       `113`: every name the caller records about ITSELF (create --manager, set-manager,
 //       report --from, note --from, ack --by) is filled in from the name the session-name hook
 //       stored for this session (`maestro-<id8>`, `maestro-mgr-<id8>`, or the user's custom title),
@@ -68,6 +73,13 @@
 //       recorded (`150`), a second redirect is recorded and printed as escalate.
 //   node maestro-epic.cjs reports <slug>
 //       the unacknowledged reports and notes, and the review requests waiting for a verdict, oldest first
+//   node maestro-epic.cjs watch <slug> [--for <seconds>] [--interval <seconds>]
+//       `176`: the manager's inbox watcher, meant to run under Monitor. Prints one line per unacknowledged
+//       report, note and unanswered review request, in the words of a worker's SendMessage line
+//       ("report r003 for 087-x.md is in <file>"): those already waiting when it starts, then each new
+//       arrival, each once per run. It reads the ack and verdict state and writes nothing, so an acked
+//       entry is never announced and a restarted watcher loses nothing. Exits 0 after --for seconds
+//       (default 1500, capped at 1740, below Monitor's 30-minute limit): the manager re-arms it.
 //   node maestro-epic.cjs ack <slug> <id>... [--by "<session name>"]
 //       Record that the manager received a report (rNNN) or a note (nNNN). Cross-session messages
 //       have no delivery receipt, so the acknowledgement lives in the epic's state.
@@ -138,14 +150,6 @@ function fail(message) {
 function need(value, usage) {
   if (!value) fail(`missing argument. Usage: ${usage}`);
   return value;
-}
-
-// What to do when the SendMessage to the recorded manager fails. The saved file is the delivery.
-function sendFailedHint(kind) {
-  return (
-    `  If that SendMessage fails, run ListAgents. If exactly one session plausibly matches the manager, ask the user before messaging it. ` +
-    `Never conclude the manager is gone from one failed send: the saved ${kind} file is the real delivery, and the manager sees it as unacknowledged on its next check.\n`
-  );
 }
 
 // `170`: the git runner the report guard is given (a core module never spawns git itself).
@@ -246,9 +250,10 @@ try {
           typed,
         "add-worker <slug> <name> [--task <task.md>]"
       );
-      epics.addWorker(projectDir, slug, name, flags.task);
+      epics.addWorker(projectDir, slug, name, flags.task, flags.pane);
       process.stdout.write(
         `Maestro epic: recorded worker "${name}" on "${slug}"` +
+          (flags.pane ? ` (herdr pane ${flags.pane.trim()})` : "") +
           (typed && typed !== name ? ` (the session's recorded name, not "${typed}")` : "") +
           "\n"
       );
@@ -287,10 +292,7 @@ try {
       const r = epics.writeReport(projectDir, task, body, preferOwn(flags.from));
       process.stdout.write(
         `Maestro epic: report ${r.id} for "${path.basename(task)}" written to ${r.file}\n` +
-          (r.manager
-            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: report ${r.id} for ${path.basename(task)} is in ${r.file}. The file is the report; do not paste its contents.\n` +
-              sendFailedHint("report")
-            : `  No manager session is recorded for "${r.epic}", so there is nobody to message. The report is saved and a resumed manager will list it as unacknowledged.\n`)
+          epics.deliveryWords("report", r, { task: path.basename(task) }, epics.isContainerWorker())
       );
       break;
     }
@@ -308,10 +310,7 @@ try {
       });
       process.stdout.write(
         `Maestro epic: note ${r.id} from "${fromEpic}" to "${r.epic}" written to ${r.file}\n` +
-          (r.manager
-            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: note ${r.id} from epic ${fromEpic} is in ${r.file}. The file is the note; do not paste its contents.\n` +
-              sendFailedHint("note")
-            : `  No manager session is recorded for "${r.epic}", so there is nobody to message. The note is saved and a resumed manager will list it as unacknowledged.\n`)
+          epics.deliveryWords("note", r, { fromEpic }, epics.isContainerWorker())
       );
       break;
     }
@@ -331,14 +330,10 @@ try {
         r.redirects >= r.cap
           ? `  The cap is reached (${r.redirects} redirects of ${r.cap}): if the manager's verdict on this round is redirect, it escalates to human review.\n`
           : `  Manager redirects on this ticket so far: ${r.redirects} of ${r.cap}.\n`;
-      const line = `manager review ${r.id} (round ${r.round}) for ${base} is in ${r.file}`;
       process.stdout.write(
         `Maestro epic: ${r.already ? "review request already recorded, still waiting for a verdict" : "review request recorded"}: ${r.id}, round ${r.round}, "${base}", epic "${r.epic}"\n` +
           capLine +
-          (r.manager
-            ? `  Check ListAgents for the manager session "${r.manager}". If it is live, send it (SendMessage) ONE short line: ${line}. The file is the brief; do not paste it. Then wait for its verdict.\n` +
-              `  If it is not live, or the send fails, fall back to a human review at this stop, with the same file as its summary.\n`
-            : `  No manager session is recorded for "${r.epic}": fall back to a human review at this stop, with the same file as its summary.\n`)
+          epics.reviewDeliveryWords(r, epics.isContainerWorker())
       );
       break;
     }
@@ -381,6 +376,36 @@ try {
       }
       break;
     }
+    case "watch": {
+      // `176`: meant to run under Monitor. One stdout line per inbox entry the manager has not yet
+      // acknowledged or answered, the ones already waiting included, then one per new arrival. Reads
+      // the ack/verdict state; moves and writes nothing. Ends after a bounded time so it can be re-armed.
+      const usage = "watch <slug> [--for <seconds>] [--interval <seconds>]";
+      const slug = need(positional[0], usage);
+      const seconds = (flag, fallback, max) => {
+        if (flags[flag] === undefined) return fallback;
+        const n = Number(flags[flag]);
+        if (!(n > 0)) fail(`--${flag} must be a positive number of seconds, not "${flags[flag]}". Usage: ${usage}`);
+        return Math.min(n, max);
+      };
+      const forSeconds = seconds("for", epics.WATCH_DEFAULT_SECONDS, epics.WATCH_MAX_SECONDS);
+      const everySeconds = seconds("interval", epics.WATCH_DEFAULT_INTERVAL_SECONDS, forSeconds);
+      const seen = new Set();
+      const poll = () => {
+        try {
+          for (const line of epics.newInboxAnnouncements(projectDir, slug, seen)) process.stdout.write(`${line}\n`);
+        } catch (err) {
+          fail(err.message);
+        }
+      };
+      poll(); // an unknown epic fails here, before anything waits
+      const timer = setInterval(poll, everySeconds * 1000);
+      setTimeout(() => {
+        clearInterval(timer);
+        process.exit(0);
+      }, forSeconds * 1000);
+      break;
+    }
     case "boundary": {
       const usage = "boundary <slug> start|end [--force]";
       const slug = need(positional[0], usage);
@@ -396,7 +421,7 @@ try {
           "  set-manager <slug> <name>\n  add-worker <slug> <name>\n  remove-worker <slug> <name>\n  report --task <task.md> [--file <path>|-]\n" +
           "  note <to-slug> --from-epic <slug> [--from <name>] [--subject <text>] --file <path>|-\n" +
           "  review-request --task <task.md> --file <review file> [--from <name>]\n" +
-          "  review-verdict --task <task.md> <on-track|redirect|escalate> [--by <name>]\n  reports <slug>\n  ack <slug> <id>...\n" +
+          "  review-verdict --task <task.md> <on-track|redirect|escalate> [--by <name>]\n  reports <slug>\n  watch <slug> [--for <seconds>] [--interval <seconds>]\n  ack <slug> <id>...\n" +
           "  boundary <slug> start|end [--force]"
       );
   }

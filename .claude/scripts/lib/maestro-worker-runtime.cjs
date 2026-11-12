@@ -48,20 +48,25 @@ __export(maestro_worker_runtime_exports, {
   filterSettingsLocal: () => filterSettingsLocal,
   gatherImageSpec: () => gatherImageSpec,
   hookPackagesFor: () => hookPackagesFor,
+  imagePluginProbe: () => imagePluginProbe,
   imageTag: () => imageTag,
   imageTagInputs: () => imageTagInputs,
   installedPluginsJsonFor: () => installedPluginsJsonFor,
+  isContainerWorker: () => isContainerWorker,
   isExcludedName: () => isExcludedName,
   isExcludedPath: () => isExcludedPath,
   knownMarketplacesJsonFor: () => knownMarketplacesJsonFor,
   managedSettingsJson: () => managedSettingsJson,
+  missingPluginMessage: () => missingPluginMessage,
   mountArg: () => mountArg,
   parsePackageSpecs: () => parsePackageSpecs,
+  parseProbeOutput: () => parseProbeOutput,
   pinPlugins: () => pinPlugins,
   readWorkerToken: () => readWorkerToken,
   resolveWorkerRuntime: () => resolveWorkerRuntime,
   tokenSetupMessage: () => tokenSetupMessage,
   trustedPaths: () => trustedPaths,
+  userSettingsJsonFor: () => userSettingsJsonFor,
   workerMounts: () => workerMounts,
   workerRunArgs: () => workerRunArgs,
   worktreeMountPath: () => worktreeMountPath,
@@ -105,6 +110,9 @@ var READONLY_PATHS = [
 var KNOWN_HOOK_PACKAGES = {
   "ts-morph": "28.0.0"
 };
+function isContainerWorker(env = process.env) {
+  return env[WORKER_RUNTIME_ENV]?.trim().toLowerCase() === "docker";
+}
 function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
@@ -254,7 +262,8 @@ function hookPackagesFor(roots, extra = {}) {
 function imageTagInputs(spec) {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 3,
+    layout: 4,
+    userPlugins: [...spec.userPlugins ?? []].sort(),
     base: spec.baseImage ?? BASE_IMAGE,
     claude: spec.claudeVersion,
     trusted: trustedPaths(spec.projectRoot),
@@ -286,9 +295,22 @@ function knownMarketplacesJsonFor(marketplaces) {
   for (const m of marketplaces) {
     if (/:\/\/[^/@\s]+@/.test(JSON.stringify(m.entry.source ?? null)))
       throw new Error(`marketplace "${m.name}" has credentials in its source URL; refusing to bake it into an image`);
-    out[m.name] = { ...m.entry, installLocation: `${CONTAINER_HOME}/.claude/plugins/marketplaces/${m.name}` };
+    const location = `${CONTAINER_HOME}/.claude/plugins/marketplaces/${m.name}`;
+    const source = m.entry.source;
+    const local = source && typeof source === "object" && source.source === "directory" && m.dir;
+    out[m.name] = {
+      ...m.entry,
+      ...local ? { source: { ...source, path: location } } : {},
+      installLocation: location
+    };
   }
   return `${JSON.stringify(out, null, 2)}
+`;
+}
+function userSettingsJsonFor(pluginIds) {
+  const enabledPlugins = {};
+  for (const id of [...new Set(pluginIds)].sort()) enabledPlugins[id] = true;
+  return `${JSON.stringify({ enabledPlugins }, null, 2)}
 `;
 }
 function managedSettingsJson() {
@@ -317,12 +339,18 @@ function readJsonFile(p) {
   }
 }
 function gatherImageSpec(projectRoot, g) {
+  const userPlugins = [
+    ...new Set(enabledPluginIds(readJsonFile(import_node_path2.default.join(g.home, ".claude", "settings.json"))))
+  ].sort();
   const ids = [
     ...enabledPluginIds(readJsonFile(import_node_path2.default.join(projectRoot, ".claude", "settings.json"))),
-    ...enabledPluginIds(readJsonFile(import_node_path2.default.join(projectRoot, ".claude", "settings.local.json")))
+    ...enabledPluginIds(readJsonFile(import_node_path2.default.join(projectRoot, ".claude", "settings.local.json"))),
+    ...userPlugins
   ];
   const installed = readJsonFile(import_node_path2.default.join(g.home, ".claude", "plugins", "installed_plugins.json"));
-  const { pins, missing } = pinPlugins(ids, installed);
+  const pinned = pinPlugins(ids, installed);
+  const pins = pinned.pins.filter((p) => import_node_fs2.default.existsSync(p.installPath));
+  const missing = [...pinned.missing, ...pinned.pins.filter((p) => !pins.includes(p)).map((p) => p.id)].sort();
   const known = readJsonFile(import_node_path2.default.join(g.home, ".claude", "plugins", "known_marketplaces.json"));
   const marketplaces = [];
   for (const name of [...new Set(pins.map((p) => pluginParts(p.id).marketplace))].sort()) {
@@ -343,6 +371,7 @@ function gatherImageSpec(projectRoot, g) {
       claudeVersion: g.claudeVersion,
       plugins: pins,
       marketplaces,
+      userPlugins: userPlugins.filter((id) => pins.some((p) => p.id === id)),
       npmPackages: hookPackagesFor(
         [
           ...pins.flatMap((p) => [import_node_path2.default.join(p.installPath, "hooks"), import_node_path2.default.join(p.installPath, "scripts")]),
@@ -379,8 +408,27 @@ function dockerfileFor(spec) {
     `COPY --chown=${own} plugins/ ${CONTAINER_HOME}/.claude/plugins/cache/`,
     `COPY --chown=${own} known_marketplaces.json ${CONTAINER_HOME}/.claude/plugins/known_marketplaces.json`,
     `COPY --chown=${own} marketplaces/ ${CONTAINER_HOME}/.claude/plugins/marketplaces/`,
+    `COPY --chown=${own} user-settings.json ${CONTAINER_HOME}/.claude/settings.json`,
     ""
   ].join("\n");
+}
+function imagePluginProbe(spec) {
+  const lines = spec.plugins.map((p) => `[ -d ${shellQuote(containerPluginPath(p))} ] || echo ${shellQuote(p.id)}`);
+  for (const id of spec.userPlugins ?? [])
+    lines.push(
+      `grep -q ${shellQuote(`"${id}": true`)} ${CONTAINER_HOME}/.claude/settings.json || echo ${shellQuote(id)}`
+    );
+  return `${lines.join("; ")}${lines.length ? "" : ":"}`;
+}
+function parseProbeOutput(out) {
+  return [
+    ...new Set(
+      out.split("\n").map((l) => l.trim()).filter(Boolean)
+    )
+  ].sort();
+}
+function missingPluginMessage(tag, missing) {
+  return `the worker image ${tag} does not carry ${missing.length === 1 ? "this plugin" : "these plugins"} the host session has enabled: ${missing.join(", ")}. A worker started on it would stop mid-run on a missing agent or skill. Rebuild the image: node .claude/scripts/maestro-worker-runtime.cjs image (if that reuses this image, remove it first with docker image rm ${tag}).`;
 }
 function isExcludedName(name) {
   return name === ".git" || name === "node_modules" || name === ".npmrc" || name === ".credentials.json" || name.startsWith(".env") || name.startsWith("id_rsa") || name.endsWith(".pem");
@@ -400,6 +448,7 @@ function writeBuildContext(dir, spec, overrides = {}) {
   put("claude.json", claudeJsonFor(spec.projectRoot));
   put("managed-settings.json", managedSettingsJson());
   put("installed_plugins.json", installedPluginsJsonFor(spec.plugins));
+  put("user-settings.json", userSettingsJsonFor(spec.userPlugins ?? []));
   const marketplaces = spec.marketplaces ?? [];
   put("known_marketplaces.json", knownMarketplacesJsonFor(marketplaces));
   import_node_fs2.default.mkdirSync(import_node_path2.default.join(dir, "plugins"), { recursive: true });
@@ -447,20 +496,25 @@ var defaultContextIO = {
   filterSettingsLocal,
   gatherImageSpec,
   hookPackagesFor,
+  imagePluginProbe,
   imageTag,
   imageTagInputs,
   installedPluginsJsonFor,
+  isContainerWorker,
   isExcludedName,
   isExcludedPath,
   knownMarketplacesJsonFor,
   managedSettingsJson,
+  missingPluginMessage,
   mountArg,
   parsePackageSpecs,
+  parseProbeOutput,
   pinPlugins,
   readWorkerToken,
   resolveWorkerRuntime,
   tokenSetupMessage,
   trustedPaths,
+  userSettingsJsonFor,
   workerMounts,
   workerRunArgs,
   worktreeMountPath,
