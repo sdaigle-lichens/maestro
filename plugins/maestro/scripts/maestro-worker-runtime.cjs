@@ -18,6 +18,8 @@
 //       ~/.config/maestro/worker-token (passed through the environment, never printed or put in
 //       argv). Stops with a setup message, before starting anything, when the token file is
 //       missing. The herdr socket is never mounted.
+//       `176`: the image carries every plugin the host session has enabled, user scope included, and
+//       `run` checks that (a shell probe in the image) and refuses an image missing one, naming it.
 
 const fs = require("fs");
 const os = require("os");
@@ -144,6 +146,17 @@ try {
         fail(
           `the worker image ${tag} does not exist. Build it first: node .claude/scripts/maestro-worker-runtime.cjs image`
         );
+
+      // `176`: refuse an image that lacks a plugin the host session has enabled, instead of a worker
+      // that stops mid-run on a missing agent. Shell-only: nothing of claude runs.
+      const probe = spawnSync("docker", ["run", "--rm", "--entrypoint", "sh", tag, "-c", rt.imagePluginProbe(spec)], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      if (probe.error || probe.status !== 0)
+        fail(`cannot check the plugins in image ${tag}: ${String(probe.stderr || probe.error).trim()}`);
+      const lacking = rt.parseProbeOutput(String(probe.stdout));
+      if (lacking.length) fail(rt.missingPluginMessage(tag, lacking));
 
       const worktreePath = rt.worktreeMountPath(root, taskRel);
       if (worktreePath) fs.mkdirSync(worktreePath, { recursive: true });

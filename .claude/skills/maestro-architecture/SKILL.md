@@ -138,7 +138,7 @@ To learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` 
 
 **Manager review (`132`).** A `manager review` step is no longer run as a human review, except on escalation or fallback. The worker (orchestrator template Step 3):
 
-1. **Fallback check.** No `active_task`, `maestro-epic.cjs of` prints nothing, or the named manager is not live in `ListAgents` → run the stop as a `human review`, the brief as its review file. `review-request` also prints this fallback for a task in no epic or an epic with no manager recorded, and so does a failed send.
+1. **Fallback check.** No `active_task`, `maestro-epic.cjs of` prints nothing, or the named manager is not live in `ListAgents` (host workers only; `176`) → run the stop as a `human review`, the brief as its review file. `review-request` also prints this fallback for a task in no epic or an epic with no manager recorded, and so does a failed send.
 2. **Brief.** The round's review file as a short direction brief: `## Goal`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Questions`. No commit or suite result (`150`): the test and reviewer steps own that. On the fallback and escalation paths the stop is a human review, so the worker also adds `## Verified` to the brief. A re-request after a redirect opens with `Round <N>` and quotes the redirect note, each point with how it was addressed; that round checks only that the redirect was addressed.
 3. **Request.** `maestro-epic.cjs review-request --task <t> --file <f>` refuses a file that does not exist or is not that task's review file, logs a `review` inbox entry `mNNN` with its `round` (the ticket's request count + 1), and prints the ONE `SendMessage` line for the manager. The same file again while it waits is a re-send, not a new round. `show`/`reports` list it until a verdict exists or a newer request for the ticket supersedes it; `ack` refuses an `mNNN`.
 4. **Verdict.** `maestro-epic.cjs review-verdict --task <t> <on-track|redirect|escalate>`, run by the manager when it decides and by the worker on the reply; the second caller gets the recorded verdict back. It logs a `verdict` entry with `verdict` and `effective`.
@@ -204,7 +204,7 @@ inside a worker session, and only for a task that has an epic:
 - **Step 4's report.** Before the task is marked done, the orchestrator runs
   `maestro-epic.cjs report --task <active_task> --from <name> --file -` with the report on stdin. It
   writes `.claude/epics/<slug>/inbox/rNNN-<task>.md`, prints the manager's name, and the orchestrator
-  sends ONE short SendMessage line. A task in no epic prints "belongs to no epic" and nothing else
+  sends ONE short SendMessage line (a containerized worker sends none, `176`). A task in no epic prints "belongs to no epic" and nothing else
   happens. A report written while no manager runs survives and is listed unacknowledged when a
   manager resumes; the manager's `ack` is the only delivery proof. If that SendMessage fails, the
   printed hint says to run ListAgents and ask the user before messaging a plausible match, never to
@@ -222,7 +222,7 @@ inside a worker session, and only for a task that has an epic:
 - **Workers can run in Docker (`175`).** With `worker_runtime: "docker"` in `maestro.json`, the spawn list
   launches each worker in a per-project container. The worker runs the same `/maestro` command, but its
   container mounts the settings and hook paths read-only, authenticates with a worker token instead of the
-  host login, and never gets the herdr socket. Mounts and what is still unverified: `task-queue`'s
+  host login, and never gets the herdr socket. `176`: such a worker reports through the inbox and is answered by pane with a `[manager message]` line, which the manager's `maestro-epic.cjs watch` loop picks up; the worker image carries the user's enabled plugins, and `run` refuses an image missing one. The in-container inbox-write prompt is unverified and left for task 177's Docker run. Mounts and what is still unverified: `task-queue`'s
   `sub-concepts/epics.md`.
 
 Everything else (the tracker's `epic` field, the inbox, the write discipline, why session names,

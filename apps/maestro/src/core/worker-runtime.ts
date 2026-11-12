@@ -46,6 +46,15 @@ export const KNOWN_HOOK_PACKAGES: Readonly<Record<string, string>> = {
   "ts-morph": "28.0.0",
 };
 
+/**
+ * `176`: true inside a containerized worker. The docker launcher sets WORKER_RUNTIME_ENV=docker on
+ * the container; the epic CLI words its output differently there (no SendMessage or ListAgents:
+ * the manager watches the inbox and answers by herdr pane input).
+ */
+export function isContainerWorker(env: Record<string, string | undefined> = process.env): boolean {
+  return env[WORKER_RUNTIME_ENV]?.trim().toLowerCase() === "docker";
+}
+
 /** POSIX single-quote a value. */
 export function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
@@ -222,6 +231,11 @@ export interface ImageSpec {
   plugins: PluginPin[];
   /** Metadata for the marketplaces of `plugins`, so they load without an interactive step. */
   marketplaces?: MarketplacePin[];
+  /**
+   * `176`: the plugin ids enabled at USER scope on the host (`~/.claude/settings.json`). The image
+   * enables them in its own user settings, since no project file does.
+   */
+  userPlugins?: string[];
   npmPackages: Record<string, string>;
   baseImage?: string;
 }
@@ -320,7 +334,8 @@ export function hookPackagesFor(roots: string[], extra: Record<string, string> =
 export function imageTagInputs(spec: ImageSpec): Record<string, unknown> {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 3,
+    layout: 4,
+    userPlugins: [...(spec.userPlugins ?? [])].sort(),
     base: spec.baseImage ?? BASE_IMAGE,
     claude: spec.claudeVersion,
     trusted: trustedPaths(spec.projectRoot),
@@ -377,9 +392,26 @@ export function knownMarketplacesJsonFor(marketplaces: MarketplacePin[]): string
   for (const m of marketplaces) {
     if (/:\/\/[^/@\s]+@/.test(JSON.stringify(m.entry.source ?? null)))
       throw new Error(`marketplace "${m.name}" has credentials in its source URL; refusing to bake it into an image`);
-    out[m.name] = { ...m.entry, installLocation: `${CONTAINER_HOME}/.claude/plugins/marketplaces/${m.name}` };
+    const location = `${CONTAINER_HOME}/.claude/plugins/marketplaces/${m.name}`;
+    const source = m.entry.source;
+    // `176`: a local-directory marketplace names a HOST path, which does not exist in the container
+    // (only this repo is mounted there). Point it at the copy baked into the image.
+    const local =
+      source && typeof source === "object" && (source as { source?: unknown }).source === "directory" && m.dir;
+    out[m.name] = {
+      ...m.entry,
+      ...(local ? { source: { ...(source as Record<string, unknown>), path: location } } : {}),
+      installLocation: location,
+    };
   }
   return `${JSON.stringify(out, null, 2)}\n`;
+}
+
+/** `176`: the image's own `~/.claude/settings.json`: it enables the plugins the host enabled at user scope. */
+export function userSettingsJsonFor(pluginIds: string[]): string {
+  const enabledPlugins: Record<string, boolean> = {};
+  for (const id of [...new Set(pluginIds)].sort()) enabledPlugins[id] = true;
+  return `${JSON.stringify({ enabledPlugins }, null, 2)}\n`;
 }
 
 /** Managed settings baked in: the container is the isolation, so Claude Code's own sandbox is off. */
@@ -428,12 +460,21 @@ export interface GatherInput {
  * `missing` names enabled plugins with no host install, which the caller must refuse on.
  */
 export function gatherImageSpec(projectRoot: string, g: GatherInput): { spec: ImageSpec; missing: string[] } {
+  // `176`: the user's own enabled plugins count too. The worker session loads them exactly like the
+  // host session does (on this machine `maestro@maestro` supplies the workflow's agents and skills).
+  const userPlugins = [
+    ...new Set(enabledPluginIds(readJsonFile(path.join(g.home, ".claude", "settings.json")))),
+  ].sort();
   const ids = [
     ...enabledPluginIds(readJsonFile(path.join(projectRoot, ".claude", "settings.json"))),
     ...enabledPluginIds(readJsonFile(path.join(projectRoot, ".claude", "settings.local.json"))),
+    ...userPlugins,
   ];
   const installed = readJsonFile(path.join(g.home, ".claude", "plugins", "installed_plugins.json"));
-  const { pins, missing } = pinPlugins(ids, installed);
+  const pinned = pinPlugins(ids, installed);
+  // An install whose files are gone cannot be copied into the image: refuse it like an absent one.
+  const pins = pinned.pins.filter((p) => fs.existsSync(p.installPath));
+  const missing = [...pinned.missing, ...pinned.pins.filter((p) => !pins.includes(p)).map((p) => p.id)].sort();
   const known = readJsonFile(path.join(g.home, ".claude", "plugins", "known_marketplaces.json"));
   const marketplaces: MarketplacePin[] = [];
   for (const name of [...new Set(pins.map((p) => pluginParts(p.id).marketplace))].sort()) {
@@ -454,6 +495,7 @@ export function gatherImageSpec(projectRoot: string, g: GatherInput): { spec: Im
       claudeVersion: g.claudeVersion,
       plugins: pins,
       marketplaces,
+      userPlugins: userPlugins.filter((id) => pins.some((p) => p.id === id)),
       npmPackages: hookPackagesFor(
         [
           ...pins.flatMap((p) => [path.join(p.installPath, "hooks"), path.join(p.installPath, "scripts")]),
@@ -494,8 +536,45 @@ export function dockerfileFor(spec: ImageSpec): string {
     `COPY --chown=${own} plugins/ ${CONTAINER_HOME}/.claude/plugins/cache/`,
     `COPY --chown=${own} known_marketplaces.json ${CONTAINER_HOME}/.claude/plugins/known_marketplaces.json`,
     `COPY --chown=${own} marketplaces/ ${CONTAINER_HOME}/.claude/plugins/marketplaces/`,
+    `COPY --chown=${own} user-settings.json ${CONTAINER_HOME}/.claude/settings.json`,
     "",
   ].join("\n");
+}
+
+/**
+ * `176`: a shell script that prints, one per line, each plugin the image should carry but does not:
+ * a pinned plugin whose install directory is not in the image, or a user-scope one its baked user
+ * settings do not enable. The launcher runs it in the image (`sh -c`) before starting a worker.
+ */
+export function imagePluginProbe(spec: ImageSpec): string {
+  const lines = spec.plugins.map((p) => `[ -d ${shellQuote(containerPluginPath(p))} ] || echo ${shellQuote(p.id)}`);
+  for (const id of spec.userPlugins ?? [])
+    lines.push(
+      `grep -q ${shellQuote(`"${id}": true`)} ${CONTAINER_HOME}/.claude/settings.json || echo ${shellQuote(id)}`
+    );
+  return `${lines.join("; ")}${lines.length ? "" : ":"}`;
+}
+
+/** The plugin ids a probe run printed (blank lines dropped, repeats merged, sorted). */
+export function parseProbeOutput(out: string): string[] {
+  return [
+    ...new Set(
+      out
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+    ),
+  ].sort();
+}
+
+/** The launcher's refusal for an image without plugins the host session has enabled. */
+export function missingPluginMessage(tag: string, missing: string[]): string {
+  return (
+    `the worker image ${tag} does not carry ${missing.length === 1 ? "this plugin" : "these plugins"} ` +
+    `the host session has enabled: ${missing.join(", ")}. A worker started on it would stop mid-run on a ` +
+    `missing agent or skill. Rebuild the image: node .claude/scripts/maestro-worker-runtime.cjs image ` +
+    `(if that reuses this image, remove it first with docker image rm ${tag}).`
+  );
 }
 
 /**
@@ -544,6 +623,7 @@ export function writeBuildContext(dir: string, spec: ImageSpec, overrides: Parti
   put("claude.json", claudeJsonFor(spec.projectRoot));
   put("managed-settings.json", managedSettingsJson());
   put("installed_plugins.json", installedPluginsJsonFor(spec.plugins));
+  put("user-settings.json", userSettingsJsonFor(spec.userPlugins ?? []));
   const marketplaces = spec.marketplaces ?? [];
   put("known_marketplaces.json", knownMarketplacesJsonFor(marketplaces));
   fs.mkdirSync(path.join(dir, "plugins"), { recursive: true });

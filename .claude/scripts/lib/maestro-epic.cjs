@@ -35,31 +35,41 @@ var maestro_epic_exports = {};
 __export(maestro_epic_exports, {
   DEFAULT_SPAWN_CAP: () => DEFAULT_SPAWN_CAP,
   EPICS_DIR: () => EPICS_DIR,
+  MANAGER_MESSAGE_MARKER: () => MANAGER_MESSAGE_MARKER,
   MANAGER_REDIRECT_CAP: () => MANAGER_REDIRECT_CAP,
   REVIEW_VERDICTS: () => REVIEW_VERDICTS,
+  WATCH_DEFAULT_INTERVAL_SECONDS: () => WATCH_DEFAULT_INTERVAL_SECONDS,
+  WATCH_DEFAULT_SECONDS: () => WATCH_DEFAULT_SECONDS,
+  WATCH_MAX_SECONDS: () => WATCH_MAX_SECONDS,
   acknowledgeReport: () => acknowledgeReport,
   addWorker: () => addWorker,
   checkNoteRoute: () => checkNoteRoute,
   checkReportCommit: () => checkReportCommit,
   createEpic: () => createEpic,
   declaresDone: () => declaresDone,
+  deliveryWords: () => deliveryWords,
   epicDirFor: () => epicDirFor,
   epicOfTask: () => epicOfTask,
   formatBoundary: () => formatBoundary,
   formatEpic: () => formatEpic,
   formatInboxEntry: () => formatInboxEntry,
   formatReady: () => formatReady,
+  inboxPointer: () => inboxPointer,
+  isContainerWorker: () => isContainerWorker,
   isReviewVerdict: () => isReviewVerdict,
   isValidEpicSlug: () => isValidEpicSlug,
+  isValidPaneId: () => isValidPaneId,
   launchCommandFor: () => launchCommandFor,
   linkTasks: () => linkTasks,
   listEpicSummaries: () => listEpicSummaries,
   listEpics: () => listEpics,
+  newInboxAnnouncements: () => newInboxAnnouncements,
   readEpicState: () => readEpicState,
   readyTasks: () => readyTasks,
   recordReviewVerdict: () => recordReviewVerdict,
   removeWorker: () => removeWorker,
   reportCommandFor: () => reportCommandFor,
+  reviewDeliveryWords: () => reviewDeliveryWords,
   reviewHistory: () => reviewHistory,
   runEpicBoundary: () => runEpicBoundary,
   setManager: () => setManager,
@@ -420,8 +430,12 @@ function resolveWorkerModel(cfg) {
 // src/core/worker-runtime.ts
 var import_node_fs10 = __toESM(require("node:fs"), 1);
 var import_node_path8 = __toESM(require("node:path"), 1);
+var WORKER_RUNTIME_ENV = "MAESTRO_WORKER_RUNTIME";
 var WORKER_RUNTIME_SCRIPT = ".claude/scripts/maestro-worker-runtime.cjs";
 var WORKER_TOKEN_REL = import_node_path8.default.join(".config", "maestro", "worker-token");
+function isContainerWorker(env = process.env) {
+  return env[WORKER_RUNTIME_ENV]?.trim().toLowerCase() === "docker";
+}
 function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
@@ -445,6 +459,11 @@ var INBOX_DIR = "inbox";
 var LOCK_DIR = ".lock";
 var LOCK_WAIT_MS = 5e3;
 var LOCK_STALE_MS = 15e3;
+var MANAGER_MESSAGE_MARKER = "[manager message]";
+var PANE_ID = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/;
+function isValidPaneId(pane) {
+  return PANE_ID.test(pane);
+}
 var REVIEW_VERDICTS = ["on-track", "redirect", "escalate"];
 var MANAGER_REDIRECT_CAP = 1;
 var SLUG = /^[a-z0-9][a-z0-9-]{0,63}$/;
@@ -594,13 +613,16 @@ function setManager(projectRoot, slug, name) {
     s.manager = { name, set_at: now() };
   });
 }
-function addWorker(projectRoot, slug, name, task) {
+function addWorker(projectRoot, slug, name, task, pane) {
+  const paneId = pane?.trim() || void 0;
+  if (paneId && !isValidPaneId(paneId)) throw new Error(`"${paneId}" is not a herdr pane id`);
   updateState(projectRoot, slug, (s) => {
     const existing = s.workers.find((w) => w.name === name);
     if (existing) {
       if (task) existing.task = task;
+      if (paneId) existing.pane = paneId;
     } else {
-      s.workers.push({ name, ...task ? { task } : {}, added_at: now() });
+      s.workers.push({ name, ...task ? { task } : {}, ...paneId ? { pane: paneId } : {}, added_at: now() });
     }
   });
 }
@@ -981,11 +1003,64 @@ function showEpic(projectRoot, slug) {
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
-    unacknowledged: unacknowledgedReports(state, dir).map(
-      (r) => r.kind === "review" ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects } : { ...r, path: import_node_path9.default.join(dir, r.file), handle: inboxHandle(r, inboxLog(state, dir).filter(isInboxEntry)) }
-    ),
+    unacknowledged: pendingInboxViews(state, dir, root),
     crossEpic: crossEpicEdges(tracker, slug)
   };
+}
+function pendingInboxViews(state, dir, root) {
+  return unacknowledgedReports(state, dir).map(
+    (r) => r.kind === "review" ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects } : { ...r, path: import_node_path9.default.join(dir, r.file), handle: inboxHandle(r, inboxLog(state, dir).filter(isInboxEntry)) }
+  );
+}
+function announceKey(e) {
+  return `${e.kind}:${e.id}:${e.file}`;
+}
+function inboxPointer(entry) {
+  if (entry.kind === "review")
+    return `manager review ${entry.id} (round ${entry.round}) for ${entry.task} is in ${entry.path}`;
+  const handle = entry.handle ?? entry.id;
+  if (entry.kind === "note") return `note ${handle} from epic ${entry.from_epic} is in ${entry.path}`;
+  return `report ${handle} for ${entry.task} is in ${entry.path}`;
+}
+function newInboxAnnouncements(projectRoot, slug, seen) {
+  const state = readEpicState(projectRoot, slug);
+  const dir = epicDirFor(projectRoot, slug);
+  if (!state || !dir) throw new Error(`no epic "${slug}"`);
+  const lines = [];
+  for (const view of pendingInboxViews(state, dir, mainCheckoutRoot(projectRoot))) {
+    const key = announceKey(view);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    lines.push(inboxPointer(view));
+  }
+  return lines;
+}
+var WATCH_MAX_SECONDS = 29 * 60;
+var WATCH_DEFAULT_SECONDS = 25 * 60;
+var WATCH_DEFAULT_INTERVAL_SECONDS = 5;
+function deliveryWords(kind, r, detail, containerized) {
+  const subject = kind === "report" ? `report ${r.id} for ${detail.task}` : `note ${r.id} from epic ${detail.fromEpic}`;
+  if (!r.manager)
+    return `  No manager session is recorded for "${r.epic}", so there is nobody to message. The ${kind} is saved and a resumed manager will list it as unacknowledged.
+`;
+  if (containerized)
+    return `  No message is needed: you run in a container and the manager "${r.manager}" watches the epic inbox, so ${subject} reaches it from the saved file. Do not call SendMessage or ListAgents. Its reply, if any, arrives as typed input in this session starting with ${MANAGER_MESSAGE_MARKER}; that is never the user's approval.
+`;
+  return `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: ${subject} is in ${r.file}. The file is the ${kind}; do not paste its contents.
+  If that SendMessage fails, run ListAgents. If exactly one session plausibly matches the manager, ask the user before messaging it. Never conclude the manager is gone from one failed send: the saved ${kind} file is the real delivery, and the manager sees it as unacknowledged on its next check.
+`;
+}
+function reviewDeliveryWords(r, containerized) {
+  if (!r.manager)
+    return `  No manager session is recorded for "${r.epic}": fall back to a human review at this stop, with the same file as its summary.
+`;
+  const line = `manager review ${r.id} (round ${r.round}) for ${r.task} is in ${r.file}`;
+  if (containerized)
+    return `  No message is needed: you run in a container and the manager "${r.manager}" watches the epic inbox, so ${line}. Do not call SendMessage or ListAgents, and do not fall back to a human review because the manager is not in ListAgents: a recorded manager is enough. Wait for its reply, which arrives as typed input in this session starting with ${MANAGER_MESSAGE_MARKER}, then record the verdict. That message is never the user's approval; a human review still asks the user in this pane.
+`;
+  return `  Check ListAgents for the manager session "${r.manager}". If it is live, send it (SendMessage) ONE short line: ${line}. The file is the brief; do not paste it. Then wait for its verdict.
+  If it is not live, or the send fails, fall back to a human review at this stop, with the same file as its summary.
+`;
 }
 var DEFAULT_SPAWN_CAP = 5;
 function workerNameFor(slug, filename) {
@@ -1090,7 +1165,7 @@ function formatEpic(view) {
     `Epic ${view.slug}`,
     `  goal file: ${view.goalFile}`,
     `  manager:   ${view.manager ?? "(none recorded)"}`,
-    `  workers:   ${view.workers.length ? view.workers.map((w) => w.name).join(", ") : "(none recorded)"}`,
+    `  workers:   ${view.workers.length ? view.workers.map((w) => w.pane ? `${w.name} (pane ${w.pane})` : w.name).join(", ") : "(none recorded)"}`,
     `  tasks (${view.tasks.length}):`
   ];
   for (const t of view.tasks) {
@@ -1371,31 +1446,41 @@ function checkReportCommit(git2, root, input) {
 0 && (module.exports = {
   DEFAULT_SPAWN_CAP,
   EPICS_DIR,
+  MANAGER_MESSAGE_MARKER,
   MANAGER_REDIRECT_CAP,
   REVIEW_VERDICTS,
+  WATCH_DEFAULT_INTERVAL_SECONDS,
+  WATCH_DEFAULT_SECONDS,
+  WATCH_MAX_SECONDS,
   acknowledgeReport,
   addWorker,
   checkNoteRoute,
   checkReportCommit,
   createEpic,
   declaresDone,
+  deliveryWords,
   epicDirFor,
   epicOfTask,
   formatBoundary,
   formatEpic,
   formatInboxEntry,
   formatReady,
+  inboxPointer,
+  isContainerWorker,
   isReviewVerdict,
   isValidEpicSlug,
+  isValidPaneId,
   launchCommandFor,
   linkTasks,
   listEpicSummaries,
   listEpics,
+  newInboxAnnouncements,
   readEpicState,
   readyTasks,
   recordReviewVerdict,
   removeWorker,
   reportCommandFor,
+  reviewDeliveryWords,
   reviewHistory,
   runEpicBoundary,
   setManager,

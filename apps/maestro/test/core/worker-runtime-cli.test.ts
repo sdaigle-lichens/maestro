@@ -44,6 +44,7 @@ beforeEach(() => {
       `  image) if [ "$3" = "$EXISTING_TAG" ]; then exit 0; else exit 1; fi ;;`,
       `  build) if [ -n "$CTX_OUT" ]; then cp -R "$4" "$CTX_OUT"; fi; exit 0 ;;`,
       `  run)`,
+      `    if [ "$3" = "--entrypoint" ]; then printf '%s' "$PROBE_OUT"; exit \${PROBE_EXIT:-0}; fi`,
       `    printf '%s' "$CLAUDE_CODE_OAUTH_TOKEN" > "$TOKEN_ENV_OUT"`,
       `    for a in "$@"; do case "$a" in */.claude/settings.local.json:*) cp "\${a%%:*}" "$SETTINGS_OUT" ;; esac; done`,
       `    exit 0 ;;`,
@@ -160,7 +161,7 @@ describe("the launcher run command (175)", () => {
     expect(r.stdout + r.stderr).not.toContain(TOKEN);
 
     // The recorded calls are --version, image inspect and run; only the run argv is checked here.
-    const argv = dockerCalls().find((c) => c[0] === "run");
+    const argv = dockerCalls().find((c) => c[0] === "run" && c.includes("-it"));
     expect(argv).toBeDefined();
     expect(argv.join("\n")).not.toContain(TOKEN);
     expect(argv).toContain("CLAUDE_CODE_OAUTH_TOKEN");
@@ -195,6 +196,59 @@ describe("the launcher run command (175)", () => {
       "sonnet",
       "/maestro .claude/maestro-tasks/175-x.md",
     ]);
+  });
+});
+
+describe("the launcher refuses an image missing a host plugin (176)", () => {
+  async function withUserPlugin(): Promise<string> {
+    await installed();
+    writeToken();
+    const dir = path.join(home, ".claude", "plugins", "cache", "m", "agents", "1.0.0");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(home, ".claude", "settings.json"),
+      JSON.stringify({ enabledPlugins: { "agents@m": true } })
+    );
+    fs.writeFileSync(
+      path.join(home, ".claude", "plugins", "installed_plugins.json"),
+      JSON.stringify({ version: 2, plugins: { "agents@m": [{ scope: "user", installPath: dir, version: "1.0.0" }] } })
+    );
+    return launcher(["image", "--print-tag"]).stdout.trim();
+  }
+
+  it("a user-scope plugin is in the image tag, and the probe checks it in the image", async () => {
+    const tag = await withUserPlugin();
+    const r = launcher(["run", "--name", "e1-176", ".claude/maestro-tasks/175-x.md"], { EXISTING_TAG: tag });
+    expect(r.code).toBe(0);
+    const probe = dockerCalls().find((c) => c[0] === "run" && c[3] === "sh");
+    expect(probe).toBeDefined();
+    expect(probe![probe!.indexOf("-c") + 1]).toContain("agents@m");
+    // The image runs only after the probe.
+    expect(dockerCalls().some((c) => c.includes("-it"))).toBe(true);
+  });
+
+  it("names the missing plugin and the fix, and starts no worker", async () => {
+    const tag = await withUserPlugin();
+    const r = launcher(["run", "--name", "e1-176", ".claude/maestro-tasks/175-x.md"], {
+      EXISTING_TAG: tag,
+      PROBE_OUT: "agents@m\n",
+    });
+    expect(r.code).toBe(1);
+    expect(r.stderr).toContain("agents@m");
+    expect(r.stderr).toContain("maestro-worker-runtime.cjs image");
+    expect(dockerCalls().some((c) => c.includes("-it"))).toBe(false);
+    expect(fs.existsSync(`${root}-task-175`)).toBe(false);
+  });
+
+  it("refuses when the probe itself fails", async () => {
+    const tag = await withUserPlugin();
+    const r = launcher(["run", "--name", "e1-176", ".claude/maestro-tasks/175-x.md"], {
+      EXISTING_TAG: tag,
+      PROBE_EXIT: "3",
+    });
+    expect(r.code).toBe(1);
+    expect(r.stderr).toContain("cannot check the plugins");
+    expect(dockerCalls().some((c) => c.includes("-it"))).toBe(false);
   });
 });
 

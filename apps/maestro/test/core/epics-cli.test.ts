@@ -1285,3 +1285,193 @@ describe("to-maestro-tasks linking", () => {
     expect(Object.values(statusJson(root)).filter((v) => (v as { epic?: string }).epic).length).toBe(2);
   });
 });
+
+// `176`: containerized workers reach the manager through the inbox and a pane, not SendMessage.
+function epicIn(root: string, args: string[], extraEnv: NodeJS.ProcessEnv = {}) {
+  const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-epic.cjs"), ...args], {
+    encoding: "utf8",
+    env: { ...env(root, SESSION_A), ...extraEnv },
+    input: "",
+  });
+  return { code: res.status ?? -1, stdout: res.stdout ?? "", stderr: res.stderr ?? "" };
+}
+const DOCKER = { MAESTRO_WORKER_RUNTIME: "docker" };
+
+describe("container versus host wording (176)", () => {
+  it("a containerized worker is told no SendMessage or ListAgents is needed; the host wording is unchanged", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "e1", "--manager", "boss"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    const rf = ".claude/maestro-tasks/001-a.review.md";
+    fs.writeFileSync(path.join(root, rf), "summary");
+
+    const host = epicIn(root, ["report", "--task", "001-a.md"]);
+    expect(host.stdout).toContain("If that SendMessage fails, run ListAgents");
+
+    const box = epicIn(root, ["report", "--task", "001-a.md"], DOCKER);
+    expect(box.code).toBe(0);
+    expect(box.stdout).not.toContain("run ListAgents");
+    expect(box.stdout).toContain("[manager message]");
+    expect(box.stdout).toMatch(/not the user's approval|never the user's approval/);
+
+    const review = epicIn(root, ["review-request", "--task", "001-a.md", "--file", rf], DOCKER);
+    expect(review.code).toBe(0);
+    expect(review.stdout).not.toContain("run ListAgents");
+    expect(review.stdout).not.toContain("Check ListAgents");
+    expect(review.stdout).toContain("[manager message]");
+
+    const hostReview = epicIn(root, ["review-request", "--task", "001-a.md", "--file", rf]);
+    expect(hostReview.stdout).toContain("ListAgents");
+  });
+});
+
+describe("the worker's herdr pane id (176)", () => {
+  it("round-trips through add-worker, show and show --json, and a bad id is refused", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "e1"]);
+    const ok = epic(root, ["add-worker", "e1", "w1", "--task", "001-a.md", "--pane", "w1-2"]);
+    expect(ok.code).toBe(0);
+    expect(ok.stdout).toContain("herdr pane w1-2");
+    expect(epic(root, ["show", "e1"]).stdout).toContain("(pane w1-2)");
+    const json = JSON.parse(epic(root, ["show", "e1", "--json"]).stdout);
+    expect(JSON.stringify(json)).toContain('"pane":"w1-2"');
+
+    const bad = epic(root, ["add-worker", "e1", "w2", "--pane", "bad pane;id"]);
+    expect(bad.code).toBe(1);
+    expect(bad.stderr).toContain("not a herdr pane id");
+    expect(epic(root, ["show", "e1"]).stdout).not.toContain("w2");
+
+    // A host worker with no pane is unchanged.
+    expect(epic(root, ["add-worker", "e1", "w3"]).stdout).not.toContain("pane");
+  });
+});
+
+describe("watch (176)", () => {
+  const lines = (s: string) => s.split("\n").filter(Boolean);
+  const watch = (root: string) => epicIn(root, ["watch", "e1", "--for", "1", "--interval", "0.2"]);
+
+  it("announces what is already in the inbox, each once, and exits 0 after --for", async () => {
+    const root = await withTasks("001-a.md", "002-b.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    epic(root, ["report", "--task", "001-a.md"], "one");
+    const rf = ".claude/maestro-tasks/002-b.review.md";
+    fs.writeFileSync(path.join(root, rf), "summary");
+    expect(epic(root, ["review-request", "--task", "002-b.md", "--file", rf]).code).toBe(0);
+
+    const w = watch(root);
+    expect(w.code).toBe(0);
+    const out = lines(w.stdout);
+    expect(out).toHaveLength(2);
+    expect(out.some((l) => l.includes("report r001") && l.includes("001-a.md"))).toBe(true);
+    expect(out.some((l) => l.includes("review") && l.includes("002-b.md"))).toBe(true);
+  });
+
+  it("does not announce an acknowledged report or an answered review, and loses nothing on a restart", async () => {
+    const root = await withTasks("001-a.md", "002-b.md", "003-c.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md", "003-c.md"]);
+    epic(root, ["report", "--task", "001-a.md"], "one");
+    epic(root, ["report", "--task", "003-c.md"], "three");
+    const rf = ".claude/maestro-tasks/002-b.review.md";
+    fs.writeFileSync(path.join(root, rf), "summary");
+    expect(epic(root, ["review-request", "--task", "002-b.md", "--file", rf]).code).toBe(0);
+
+    epic(root, ["ack", "e1", "r001"]);
+    expect(epic(root, ["review-verdict", "--task", "002-b.md", "on-track"]).code).toBe(0);
+
+    const first = lines(watch(root).stdout);
+    expect(first).toHaveLength(1);
+    expect(first[0]).toContain("003-c.md");
+
+    // A restarted watcher announces the still-unacknowledged entry again, and only it.
+    expect(lines(watch(root).stdout)).toEqual(first);
+    epic(root, ["ack", "e1", "r002"]);
+    expect(watch(root).stdout).toBe("");
+  });
+
+  it("announces an arrival while it runs, once, and writes nothing to the epic", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+
+    const child = spawn(
+      "node",
+      [path.join(root, ".claude", "scripts", "maestro-epic.cjs"), "watch", "e1", "--for", "3", "--interval", "0.2"],
+      { env: env(root, SESSION_A) }
+    );
+    let out = "";
+    child.stdout.on("data", (d) => (out += d));
+    const closed = new Promise<number | null>((r) => child.on("close", r));
+    await new Promise((r) => setTimeout(r, 700));
+    epic(root, ["report", "--task", "001-a.md"], "late");
+    expect(await closed).toBe(0);
+    expect(lines(out).filter((l) => l.includes("report r001"))).toHaveLength(1);
+  });
+
+  it("refuses an unknown epic at once and a non-positive --for or bad --interval", async () => {
+    const root = await installed();
+    expect(epicIn(root, ["watch", "nope"]).code).toBe(1);
+    epic(root, ["create", "e1"]);
+    expect(epicIn(root, ["watch", "e1", "--for", "0"]).code).toBe(1);
+    expect(epicIn(root, ["watch", "e1", "--interval", "abc"]).code).toBe(1);
+  });
+});
+
+describe("containerized notes and reports reach the watcher (176)", () => {
+  const bodyFile = (root: string, text: string) => {
+    const f = path.join(root, `body-${Math.random().toString(36).slice(2)}.md`);
+    fs.writeFileSync(f, text);
+    return f;
+  };
+
+  it("a containerized note says no message is needed; the host note keeps SendMessage and ListAgents", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing", "--manager", "boss-billing"]);
+    epic(root, ["create", "search", "--manager", "boss-search"]);
+    const noteArgs = ["note", "search", "--from-epic", "billing", "--file", bodyFile(root, "schema changed\n")];
+
+    const host = epicIn(root, noteArgs);
+    expect(host.code).toBe(0);
+    expect(host.stdout).toContain('Now message the manager session "boss-search" (SendMessage)');
+    expect(host.stdout).toContain("If that SendMessage fails, run ListAgents");
+    expect(host.stdout).not.toContain("No message is needed");
+
+    const box = epicIn(root, ["note", "search", "--from-epic", "billing", "--file", bodyFile(root, "again\n")], DOCKER);
+    expect(box.code).toBe(0);
+    expect(box.stdout).toContain("No message is needed");
+    expect(box.stdout).toContain('manager "boss-search" watches the epic inbox');
+    expect(box.stdout).not.toContain("(SendMessage) with ONE short line");
+    expect(box.stdout).not.toContain("run ListAgents");
+    expect(box.stdout).toContain("[manager message]");
+  });
+
+  it("a containerized done report appears in watch with no SendMessage or ListAgents call", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "billing", "--manager", "boss-billing"]);
+    epic(root, ["link", "billing", "001-a.md"]);
+
+    const reported = epicIn(root, ["report", "--task", "001-a.md", "--file", bodyFile(root, "done\n")], DOCKER);
+    expect(reported.code).toBe(0);
+    expect(reported.stdout).toContain("No message is needed");
+
+    const w = epicIn(root, ["watch", "billing", "--for", "1", "--interval", "0.2"]);
+    expect(w.code).toBe(0);
+    const out = w.stdout.split("\n").filter(Boolean);
+    expect(out).toEqual([expect.stringContaining("report r001 for 001-a.md is in")]);
+  });
+
+  it("a containerized note reaches the receiving epic's watch once", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing", "--manager", "boss-billing"]);
+    epic(root, ["create", "search", "--manager", "boss-search"]);
+    expect(
+      epicIn(root, ["note", "search", "--from-epic", "billing", "--file", bodyFile(root, "schema\n")], DOCKER).code
+    ).toBe(0);
+
+    const w = epicIn(root, ["watch", "search", "--for", "1", "--interval", "0.2"]);
+    expect(w.stdout.split("\n").filter(Boolean)).toEqual([
+      expect.stringContaining("note n001 from epic billing is in"),
+    ]);
+  });
+});

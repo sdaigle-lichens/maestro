@@ -23,7 +23,12 @@ import {
   hookPackagesFor,
   imageTag,
   imageTagInputs,
+  imagePluginProbe,
   installedPluginsJsonFor,
+  isContainerWorker,
+  missingPluginMessage,
+  parseProbeOutput,
+  userSettingsJsonFor,
   parsePackageSpecs,
   pinPlugins,
   readWorkerToken,
@@ -261,9 +266,11 @@ describe("image tag inputs (175)", () => {
     const home = tmp();
     const proj = tmp();
     fs.mkdirSync(path.join(home, ".claude", "plugins"), { recursive: true });
+    const cdir = path.join(home, "cache-c");
+    fs.mkdirSync(cdir);
     fs.writeFileSync(
       path.join(home, ".claude", "plugins", "installed_plugins.json"),
-      JSON.stringify({ plugins: { "code-graph@code-graph": [{ scope: "user", installPath: "/c", version: "9" }] } })
+      JSON.stringify({ plugins: { "code-graph@code-graph": [{ scope: "user", installPath: cdir, version: "9" }] } })
     );
     fs.mkdirSync(path.join(proj, ".claude"));
     fs.mkdirSync(path.join(proj, ".claude", "hooks"));
@@ -274,7 +281,7 @@ describe("image tag inputs (175)", () => {
     );
     const { spec: s, missing } = gatherImageSpec(proj, { home, uid: 5, gid: 6, claudeVersion: "2.0.0" });
     expect(missing).toEqual([]);
-    expect(s.plugins).toEqual([{ id: "code-graph@code-graph", version: "9", installPath: "/c" }]);
+    expect(s.plugins).toEqual([{ id: "code-graph@code-graph", version: "9", installPath: cdir }]);
     expect(s.npmPackages).toEqual({ "ts-morph": "28.0.0" });
     expect([s.uid, s.gid, s.claudeVersion]).toEqual([5, 6, "2.0.0"]);
     expect(s.marketplaces).toEqual([]);
@@ -287,7 +294,7 @@ describe("image tag inputs (175)", () => {
     fs.mkdirSync(mdir, { recursive: true });
     fs.writeFileSync(
       path.join(home, ".claude", "plugins", "installed_plugins.json"),
-      JSON.stringify({ plugins: { "p@code-graph": [{ scope: "user", installPath: "/c", version: "1" }] } })
+      JSON.stringify({ plugins: { "p@code-graph": [{ scope: "user", installPath: mdir, version: "1" }] } })
     );
     fs.writeFileSync(
       path.join(home, ".claude", "plugins", "known_marketplaces.json"),
@@ -343,6 +350,7 @@ describe("image files (175)", () => {
       "managed-settings.json",
       "marketplaces",
       "plugins",
+      "user-settings.json",
     ]);
     expect(fs.existsSync(path.join(ctx, "plugins", "m", "p", "3", "hook.js"))).toBe(true);
   });
@@ -408,7 +416,7 @@ describe("image files (175)", () => {
   });
 
   it("the layout marker is part of the tag inputs", () => {
-    expect(imageTagInputs(spec()).layout).toBe(3);
+    expect(imageTagInputs(spec()).layout).toBe(4);
   });
 
   it("trusts the project and its parent, so a sibling <repo>-task-N worktree needs no prompt", () => {
@@ -437,5 +445,88 @@ describe("image files (175)", () => {
     expect(fs.existsSync(path.join(ctx, "marketplaces", "m", "marketplace.json"))).toBe(true);
     expect(imageTag(withM)).not.toBe(imageTag(spec()));
     expect(dockerfileFor(withM)).toContain("known_marketplaces.json");
+  });
+});
+
+describe("user-scope plugins in the image (176)", () => {
+  function host(userEnabled: Record<string, boolean>) {
+    const home = tmp();
+    const proj = tmp();
+    const plugins: Record<string, unknown> = {};
+    for (const id of ["maestro@maestro", "code-graph@code-graph", "gone@m"]) {
+      const d = path.join(home, "cache", id);
+      if (id !== "gone@m") fs.mkdirSync(d, { recursive: true });
+      plugins[id] = [{ scope: "user", installPath: d, version: "1" }];
+    }
+    fs.mkdirSync(path.join(home, ".claude", "plugins"), { recursive: true });
+    fs.writeFileSync(path.join(home, ".claude", "plugins", "installed_plugins.json"), JSON.stringify({ plugins }));
+    fs.writeFileSync(path.join(home, ".claude", "settings.json"), JSON.stringify({ enabledPlugins: userEnabled }));
+    fs.mkdirSync(path.join(proj, ".claude"));
+    fs.writeFileSync(
+      path.join(proj, ".claude", "settings.json"),
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
+    );
+    return { home, proj };
+  }
+
+  it("pins plugins enabled at user scope as well as the project's, once each", () => {
+    const { home, proj } = host({ "maestro@maestro": true, "code-graph@code-graph": true, "off@m": false });
+    const g = gatherImageSpec(proj, { home, uid: 1, gid: 1, claudeVersion: "2" });
+    expect(g.missing).toEqual([]);
+    expect(g.spec.plugins.map((p) => p.id)).toEqual(["code-graph@code-graph", "maestro@maestro"]);
+    expect(g.spec.userPlugins).toEqual(["code-graph@code-graph", "maestro@maestro"]);
+    expect(imageTagInputs(g.spec).userPlugins).toEqual(["code-graph@code-graph", "maestro@maestro"]);
+  });
+
+  it("an enabled plugin whose install files are gone is missing, not silently dropped", () => {
+    const { home, proj } = host({ "gone@m": true });
+    const g = gatherImageSpec(proj, { home, uid: 1, gid: 1, claudeVersion: "2" });
+    expect(g.missing).toEqual(["gone@m"]);
+    expect(g.spec.plugins.map((p) => p.id)).toEqual(["code-graph@code-graph"]);
+  });
+
+  it("the image enables the user plugins in its own user settings and the Dockerfile copies them", () => {
+    expect(JSON.parse(userSettingsJsonFor(["b@m", "a@m", "a@m"]))).toEqual({
+      enabledPlugins: { "a@m": true, "b@m": true },
+    });
+    expect(dockerfileFor(spec())).toContain("user-settings.json /home/worker/.claude/settings.json");
+    const ctx = path.join(tmp(), "ctx");
+    writeBuildContext(ctx, spec({ plugins: [], userPlugins: ["maestro@maestro"] }));
+    expect(JSON.parse(fs.readFileSync(path.join(ctx, "user-settings.json"), "utf8"))).toEqual({
+      enabledPlugins: { "maestro@maestro": true },
+    });
+    expect(imageTag(spec({ userPlugins: ["maestro@maestro"] }))).not.toBe(imageTag(spec()));
+  });
+
+  it("a local-directory marketplace is retargeted to its copy in the image", () => {
+    const entry = { source: { source: "directory", path: "/host/repo" }, installLocation: "/host/repo" };
+    const j = JSON.parse(knownMarketplacesJsonFor([{ name: "maestro", entry, dir: "/host/repo" }]));
+    expect(j.maestro.source).toEqual({
+      source: "directory",
+      path: "/home/worker/.claude/plugins/marketplaces/maestro",
+    });
+    expect(j.maestro.installLocation).toBe("/home/worker/.claude/plugins/marketplaces/maestro");
+  });
+
+  it("the probe lists what the image lacks; output parses sorted and unique; the refusal names plugin and fix", () => {
+    const s = spec({
+      plugins: [{ id: "maestro@maestro", version: "0.1", installPath: "/x" }],
+      userPlugins: ["maestro@maestro"],
+    });
+    const script = imagePluginProbe(s);
+    expect(script).toContain("maestro@maestro");
+    expect(script).toContain("settings.json");
+    expect(imagePluginProbe(spec({ plugins: [] }))).toBe(":");
+    expect(parseProbeOutput("b@m\n\na@m\nb@m\n")).toEqual(["a@m", "b@m"]);
+    const msg = missingPluginMessage("maestro-worker-p:abc", ["maestro@maestro"]);
+    expect(msg).toContain("maestro@maestro");
+    expect(msg).toContain("maestro-worker-runtime.cjs image");
+  });
+
+  it("isContainerWorker is true only for the docker marker", () => {
+    expect(isContainerWorker({ MAESTRO_WORKER_RUNTIME: "docker" })).toBe(true);
+    expect(isContainerWorker({ MAESTRO_WORKER_RUNTIME: " Docker " })).toBe(true);
+    expect(isContainerWorker({ MAESTRO_WORKER_RUNTIME: "host" })).toBe(false);
+    expect(isContainerWorker({})).toBe(false);
   });
 });

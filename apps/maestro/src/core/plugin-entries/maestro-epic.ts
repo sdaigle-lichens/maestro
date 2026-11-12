@@ -44,7 +44,19 @@ export {
   launchCommandFor,
   readyTasks,
   formatReady,
+  MANAGER_MESSAGE_MARKER,
+  isValidPaneId,
+  inboxPointer,
+  newInboxAnnouncements,
+  deliveryWords,
+  reviewDeliveryWords,
+  WATCH_MAX_SECONDS,
+  WATCH_DEFAULT_SECONDS,
+  WATCH_DEFAULT_INTERVAL_SECONDS,
 } from "../epics.js";
+
+// `176`: the CLI words its output for a containerized worker (see `deliveryWords`).
+export { isContainerWorker } from "../worker-runtime.js";
 
 export { runEpicBoundary, formatBoundary } from "../epic-boundary.js";
 
