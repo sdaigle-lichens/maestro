@@ -1,0 +1,103 @@
+{
+  "slug": "containerized-workers",
+  "created_at": "2026-11-12T15:13:11.562Z",
+  "manager": {
+    "name": "maestro-mgr-6c076e03",
+    "set_at": "2026-11-12T15:26:43.496Z"
+  },
+  "workers": [
+    {
+      "name": "containerized-workers-175",
+      "task": "175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "added_at": "2026-11-12T15:40:51.727Z"
+    },
+    {
+      "name": "containerized-workers-176",
+      "task": "176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md",
+      "added_at": "2026-11-12T19:53:26.624Z"
+    }
+  ],
+  "log": [
+    {
+      "kind": "review",
+      "id": "m001",
+      "task": "175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/175-run-maestro-workers-in-a-per-project-docker-container.review.md",
+      "at": "2026-11-12T16:10:42.393Z",
+      "from": "containerized-workers-175"
+    },
+    {
+      "kind": "verdict",
+      "id": "m001",
+      "task": "175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-12T16:11:16.235Z",
+      "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "file": "inbox/r001-175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "at": "2026-11-12T16:57:33.580Z",
+      "from": "containerized-workers-175"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "file": "inbox/r002-175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "at": "2026-11-12T17:21:37.481Z",
+      "from": "containerized-workers-175"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "file": "inbox/r001-175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "at": "2026-11-12T17:21:56.768Z",
+      "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "file": "inbox/r002-175-run-maestro-workers-in-a-per-project-docker-container.md",
+      "at": "2026-11-12T17:21:57.116Z",
+      "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "review",
+      "id": "m002",
+      "task": "176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.review.md",
+      "at": "2026-11-12T20:11:25.743Z",
+      "from": "containerized-workers-176"
+    },
+    {
+      "kind": "verdict",
+      "id": "m002",
+      "task": "176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-12T20:11:48.843Z",
+      "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "report",
+      "id": "r003",
+      "task": "176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md",
+      "file": "inbox/r003-176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md",
+      "at": "2026-11-12T20:27:50.504Z",
+      "from": "containerized-workers-176"
+    },
+    {
+      "kind": "ack",
+      "id": "r003",
+      "file": "inbox/r003-176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md",
+      "at": "2026-11-12T20:28:03.526Z",
+      "by": "maestro-mgr-6c076e03"
+    }
+  ]
+}
