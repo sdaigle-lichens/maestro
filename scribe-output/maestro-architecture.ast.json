@@ -8285,7 +8285,7 @@
       "apps/maestro/src/core/plugin-entries/maestro-skill-regions.ts": "sha256:8fff00a30208bc85dca630ba604cd286515dfcdfa1d0050f20bced2e70881943",
       "apps/maestro/src/core/plugin-entries/maestro-skill-tags.ts": "sha256:0af0304d2d7a53edd437e248407acc38cd0033f81aee13e3483af126cf00e525",
       "apps/maestro/src/core/plugin-entries/maestro-team-meeting.ts": "sha256:b23313f72ec2e7d94f278b312b75586cf166a1a377f4cefc9c0058d8aa902c0b",
-      "apps/maestro/src/core/plugin-entries/maestro-worker-runtime.ts": "sha256:2f586d7cae9217601a2c3cdccb2bbd841d35317020d0171a8242d69363da2b01",
+      "apps/maestro/src/core/plugin-entries/maestro-worker-runtime.ts": "sha256:4b319367bd34c7e51e118a7bfe52a1535419f56293d4a47849f4c69d996b130f",
       "apps/maestro/src/core/plugin-entries/maestro-workflow-spec.ts": "sha256:e06f42af73c8d5b4c3db76edbe5391fed4094804242d64495fb5ec7764694431",
       "apps/maestro/src/core/render.ts": "sha256:09a1812fa96193e19b2d13624bce4f2ce2a8bf6ca3680d7e60db3bc93d58ee59",
       "apps/maestro/src/core/report-defaults.ts": "sha256:231d5edf8909fbbbfbbdd8365fdb609fbb5773b3bd5d05744dce63c22dc0bb55",
