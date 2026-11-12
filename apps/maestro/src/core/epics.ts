@@ -29,6 +29,7 @@ import { isReviewFile } from "./human-review-gate.js";
 import { readTaskTracker, setTaskEpic, tasksDirFor, type SetEpicResult, type TrackerEntry } from "./tasks.js";
 import { claimSessionName, readClaims } from "./claims.js";
 import { readConfig, resolveWorkerModel } from "./config.js";
+import { dockerLaunchCommandFor, resolveWorkerRuntime, shellQuote, type WorkerRuntime } from "./worker-runtime.js";
 
 export const EPICS_DIR = path.join(".claude", "epics");
 const EPIC_FILE = "EPIC.md";
@@ -1016,16 +1017,19 @@ export function workerNameFor(slug: string, filename: string): string {
   return `${slug}-${num ? num[1] : base}`;
 }
 
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, `'\\''`)}'`;
-}
-
 /**
  * `claude -n <name> [--model <model>] '/maestro .claude/maestro-tasks/<task.md>'`, quoted for a
  * POSIX shell. `model` is the project's `worker_model`; omitted or blank leaves the command as it
- * was before the setting existed.
+ * was before the setting existed. With `runtime` "docker" (`175`, the project's `worker_runtime`)
+ * it is the containerized launcher's command instead; "host" is byte-identical to before.
  */
-export function launchCommandFor(name: string, filename: string, model?: string): string {
+export function launchCommandFor(
+  name: string,
+  filename: string,
+  model?: string,
+  runtime: WorkerRuntime = "host"
+): string {
+  if (runtime === "docker") return dockerLaunchCommandFor(name, filename, model);
   const rel = path.posix.join(".claude", "maestro-tasks", path.basename(filename));
   const flag = model?.trim() ? ` --model ${shellQuote(model.trim())}` : "";
   return `claude -n ${shellQuote(name)}${flag} ${shellQuote(`/maestro ${rel}`)}`;
@@ -1047,7 +1051,9 @@ export function readyTasks(projectRoot: string, slug: string, cap: number = DEFA
   const root = mainCheckoutRoot(projectRoot);
   const tracker = readTaskTracker(root);
   const claims = readClaims(root, tasksDirFor(root));
-  const model = resolveWorkerModel(readConfig(root));
+  const config = readConfig(root);
+  const model = resolveWorkerModel(config);
+  const runtime = resolveWorkerRuntime(config);
   const workerOf = new Map<string, string>();
   for (const w of state.workers) if (w.task) workerOf.set(path.basename(w.task), w.name);
 
@@ -1090,7 +1096,7 @@ export function readyTasks(projectRoot: string, slug: string, cap: number = DEFA
       filename,
       relativePath: path.posix.join(".claude", "maestro-tasks", filename),
       worker: name,
-      command: launchCommandFor(name, filename, model),
+      command: launchCommandFor(name, filename, model, runtime),
     });
   }
   view.slots = Math.max(0, cap - view.running.length - view.pending.length);

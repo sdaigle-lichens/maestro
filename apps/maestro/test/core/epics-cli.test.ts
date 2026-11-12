@@ -918,6 +918,26 @@ describe("ready: the manager's spawn list (125)", () => {
     );
   });
 
+  it("worker_runtime docker prints the container launch command; unset or host is unchanged (175)", async () => {
+    const root = await installed();
+    writeBlocked(root, "001-a.md", []);
+    expect(status(root, ["sync"]).code).toBe(0);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    const hostCmd = "claude -n 'e1-001' '/maestro .claude/maestro-tasks/001-a.md'";
+    const cfgPath = path.join(root, ".claude", "maestro.json");
+    const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
+
+    fs.writeFileSync(cfgPath, JSON.stringify({ ...cfg, worker_runtime: "host" }, null, 2));
+    expect(ready(root).ready[0].command).toBe(hostCmd);
+
+    fs.writeFileSync(cfgPath, JSON.stringify({ ...cfg, worker_runtime: "docker", worker_model: "sonnet" }, null, 2));
+    const docker =
+      "node .claude/scripts/maestro-worker-runtime.cjs run --name 'e1-001' --model 'sonnet' '.claude/maestro-tasks/001-a.md'";
+    expect(ready(root).ready[0].command).toBe(docker);
+    expect(epic(root, ["ready", "e1"]).stdout).toContain(docker);
+  });
+
   it("a dead claim does not hide a ready task, and closing its blocker makes a blocked task ready", async () => {
     const root = await installed();
     writeBlocked(root, "001-a.md", []);

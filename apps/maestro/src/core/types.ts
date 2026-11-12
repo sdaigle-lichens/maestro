@@ -141,6 +141,13 @@ export interface MaestroConfigV3 {
    */
   worker_model?: string;
   /**
+   * Where epic worker sessions run (`175`): "host" (the default) or "docker". "docker" makes
+   * `maestro-epic.cjs ready` print the containerized launcher's command instead of the plain
+   * `claude -n ...`. Any other value means "host". Hand-edited; no slice writes it.
+   * `resolveWorkerRuntime` in `worker-runtime.ts` is the one reader.
+   */
+  worker_runtime?: "host" | "docker";
+  /**
    * The project's full verification command (`170`), run by `maestro-task-status.cjs merge` on the
    * merged result, as a shell command line in the main checkout (e.g. `pnpm verify`, `make check`).
    * Absent means "detect it" (`resolveVerifyCommand` in `verify-command.ts`: a package.json `verify`

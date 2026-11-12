@@ -6,18 +6,18 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups, **35 files** today: 13 scripts, 10 libs,
+Everything lands under `<project>/.claude/`. Three groups, **37 files** today: 14 scripts, 11 libs,
 `maestro-session-cleanup.cjs`, and the 11 `HOOK_SCRIPTS` renamed `.cjs`. (`084` added
 `scripts/maestro-epic.cjs` and `scripts/lib/maestro-epic.cjs`; `113` added `maestro-session-name`, and
 the post-mortem hook joined the same list; `121` added `maestro-channel-write-guard`; `130`
 `maestro-human-review-gate`; `141` `maestro-session-heartbeat`; `162` `scripts/maestro-workflow-drift.cjs`
-and `scripts/lib/maestro-seed.cjs`.) `test/core/install.test.ts` and `parity.test.ts` pin the
+and `scripts/lib/maestro-seed.cjs`; `175` `scripts/maestro-worker-runtime.cjs` and `scripts/lib/maestro-worker-runtime.cjs`.) `test/core/install.test.ts` and `parity.test.ts` pin the
 set; count from `STATIC_ASSETS` in `install.ts`, not from here.
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-end-skills` (`089`), `maestro-step4-gate` (`046`), `maestro-resume-target` (`039`), `maestro-resolve-skill-path` (`061`), `maestro-workflow-spec` (`063` — the `create-workflow`/`update-workflow` skills' CLI), `maestro-epic` (`084` — epics and the report inbox) |
-| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`), `maestro-workflow-spec` (`063`), `maestro-epic` (`084`), `maestro-skill-lists` (`089`) |
+| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-end-skills` (`089`), `maestro-step4-gate` (`046`), `maestro-resume-target` (`039`), `maestro-resolve-skill-path` (`061`), `maestro-workflow-spec` (`063` — the `create-workflow`/`update-workflow` skills' CLI), `maestro-epic` (`084` — epics and the report inbox), `maestro-worker-runtime` (`175` — the containerized worker launcher, `image`/`run`) |
+| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`), `maestro-workflow-spec` (`063`), `maestro-epic` (`084`), `maestro-skill-lists` (`089`), `maestro-worker-runtime` (`175`) |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 
 **The shared-libs group is a DEPENDENCY LIST, and it fails silently when it is wrong (`035`).** The

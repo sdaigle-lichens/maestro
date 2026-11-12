@@ -125,6 +125,36 @@ manager's workspace (`herdr tab create --workspace "$HERDR_WORKSPACE_ID"`), labe
 worker's session name. To skip herdr for one epic, tell the manager so: it prints the
 `claude -n ...` commands for you to run instead.
 
+## 5. Optional: run the workers in Docker
+
+By default each worker is a `claude` session on your machine. To run them in a per-project Docker
+container instead (no login, no first-run screens, no sandbox or personal-guardrail prompts; only
+the worker's real review stops remain), set it up once:
+
+1. Build the project's image: `node .claude/scripts/maestro-worker-runtime.cjs image`. The image
+   pins each plugin the project enables to the version installed on this machine, installs the
+   packages their hooks need (ts-morph, when a hook names it) and Claude Code at your version, and gives
+   the container user your uid so files it writes stay yours. Running it again with nothing changed
+   reuses the image; a plugin version bump builds a new one. Nothing secret goes into it.
+2. Create the worker token. Run `claude setup-token` yourself, then save what it prints:
+
+   ```bash
+   mkdir -p ~/.config/maestro
+   # put the token in this file, then:
+   chmod 600 ~/.config/maestro/worker-token
+   ```
+
+   The token is inference-only (no Remote Control), which is fine for workers. Remote Control stays
+   on the manager only. The launcher stops with a setup message when the file is missing.
+3. Set `"worker_runtime": "docker"` in `.claude/maestro.json` (`"host"` is the default).
+
+From then on `maestro-epic.cjs ready` prints the container launch command and the manager spawns
+workers exactly as above. The repo is mounted at its real path with `.claude/settings.json`,
+`.claude/settings.local.json` (with its `hooks` removed), `.claude/scripts`, `.claude/hooks`,
+`.git/hooks` and `.git/config` read-only. Each task's worktree (`<repo>-task-N`) is mounted at its
+own path so it exists on the host too. The herdr socket is never mounted: pane input stays the only
+way the manager reaches a worker.
+
 ## If herdr is missing, unreachable or not around the manager
 
 Nothing fails. This covers herdr not being installed, the server not running, the sandbox blocking

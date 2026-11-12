@@ -112,6 +112,23 @@ is a normal named `/maestro` session in its own herdr tab; you start it and reco
       `haiku`, or a full model id; edited on the app's `/maestro` page), `ready` adds
       `--model '<worker_model>'` to every launch command, so workers start on that model instead of
       the manager's. Unset, the command is unchanged. Never add or edit the flag yourself.
+
+      **Docker runtime.** When `.claude/maestro.json` sets `"worker_runtime": "docker"` (default
+      `"host"`), `ready` prints `node .claude/scripts/maestro-worker-runtime.cjs run --name '<worker
+      name>' ... '.claude/maestro-tasks/<task.md>'` in place of the `claude -n ...` line. Run it the
+      same way, unchanged: it starts the worker in a per-project container (repo mounted at its real
+      path, settings and hooks read-only, no login or first-run screens). It needs a one-time setup
+      by the user, below. If the launcher prints a setup message (no token file, no image), that is
+      the user's step: relay it, record nothing for that task, and do not retry. Remote Control stays
+      on you, the manager; workers never have it. The herdr pane is still the only control channel
+      to a worker: the container gets no herdr socket.
+
+      One-time setup, for the user (each with `!`, since they change things outside the project):
+      1. `node .claude/scripts/maestro-worker-runtime.cjs image` builds the image, or reuses it when
+         nothing changed; a plugin version bump or Claude Code upgrade makes it build a new one.
+      2. Run `claude setup-token` yourself, save the token to `~/.config/maestro/worker-token` and
+         `chmod 600` that file. The token is read at launch and never printed or baked into an image.
+      3. Set `"worker_runtime": "docker"` in `.claude/maestro.json`.
    3. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<worker name>" --task <task.md>`.
       Recording it is what keeps a second worker from being spawned for the same task before the
       first one claims it.

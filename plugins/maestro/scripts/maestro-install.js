@@ -656,6 +656,9 @@ const STATIC_ASSETS = [
   // The read-only workflow drift report run by maestro-update (`162`) — see
   // apps/maestro/src/core/install.ts's STATIC_ASSETS.
   { src: "scripts/maestro-workflow-drift.cjs", dest: ".claude/scripts/maestro-workflow-drift.cjs" },
+  // The containerized worker launcher (`175`) — see apps/maestro/src/core/install.ts's STATIC_ASSETS.
+  { src: "scripts/maestro-worker-runtime.cjs", dest: ".claude/scripts/maestro-worker-runtime.cjs" },
+  { src: "scripts/lib/maestro-worker-runtime.cjs", dest: ".claude/scripts/lib/maestro-worker-runtime.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },

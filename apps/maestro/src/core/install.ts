@@ -245,6 +245,12 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // Backs maestro-epic.cjs above, generated from apps/maestro/src/core/epics.ts (`084`).
   { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
+  // The containerized worker launcher (`175`): `image` builds or reuses the project's worker image,
+  // `run` starts one worker; the `ready` spawn list prints a command that calls it when the
+  // project's `worker_runtime` is "docker". Run from the project copy, like maestro-epic.cjs.
+  { src: "scripts/maestro-worker-runtime.cjs", dest: ".claude/scripts/maestro-worker-runtime.cjs" },
+  // Backs maestro-worker-runtime.cjs above, generated from apps/maestro/src/core/worker-runtime.ts.
+  { src: "scripts/lib/maestro-worker-runtime.cjs", dest: ".claude/scripts/lib/maestro-worker-runtime.cjs" },
   // Backs maestro-workflow-drift.cjs above (`162`): the seed builder, generated from seed.ts.
   { src: "scripts/lib/maestro-seed.cjs", dest: ".claude/scripts/lib/maestro-seed.cjs" },
   // Backs maestro-step1-gates.cjs and maestro-end-skills.cjs above: the one `resolveSkillLists`
