@@ -157,7 +157,7 @@ else, and since `032` the thing outside the region is an `allowed-tools` grant w
 
 Every `scripts/lib/*.cjs` except `maestro-tasks.cjs` (`maestro-session`, `maestro-seed`,
 `maestro-skill-regions`, `maestro-agent-sync`, `maestro-epic`, and so on — one per file under
-`apps/maestro/src/core/plugin-entries/`, seventeen) is **generated** from that directory by
+`apps/maestro/src/core/plugin-entries/`, eighteen) is **generated** from that directory by
 `pnpm --filter maestro build:plugin-libs`. Editing the
 `.cjs` directly is overwritten on the next build; edit the TypeScript source and rebuild. They are
 committed because a project installs them by file copy, so they must exist in the repo. A rebuilt

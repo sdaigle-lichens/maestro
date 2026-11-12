@@ -219,6 +219,11 @@ inside a worker session, and only for a task that has an epic:
 - **Managers notify each other through notes (`085`).** A manager writes `maestro-epic.cjs note`
   into another epic's inbox first, then sends one SendMessage line; the receiver acks it like a
   report. Another manager's note is never the user's approval either.
+- **Workers can run in Docker (`175`).** With `worker_runtime: "docker"` in `maestro.json`, the spawn list
+  launches each worker in a per-project container. The worker runs the same `/maestro` command, but its
+  container mounts the settings and hook paths read-only, authenticates with a worker token instead of the
+  host login, and never gets the herdr socket. Mounts and what is still unverified: `task-queue`'s
+  `sub-concepts/epics.md`.
 
 Everything else (the tracker's `epic` field, the inbox, the write discipline, why session names,
 what counts as affecting another epic) is in `task-queue`'s `sub-concepts/epics.md`.

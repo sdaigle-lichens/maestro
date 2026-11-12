@@ -14,7 +14,7 @@ import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { installRuntime, findUpPluginRoot } from "../../src/core/install.js";
+import { installRuntime, findUpPluginRoot, runtimeAssets } from "../../src/core/install.js";
 import { writeConfig } from "../../src/core/config.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 
@@ -125,7 +125,14 @@ function preChangePluginRoot(): string {
   const tar = path.join(tmp, "pre160.tar");
   execFileSync("git", ["-C", REPO_ROOT, "archive", "--output", tar, PRE_160_COMMIT, "plugins/maestro"]);
   execFileSync("tar", ["-xf", tar, "-C", dir]);
-  return path.join(dir, "plugins", "maestro");
+  // Assets added after the old commit exist only in the working tree, but the install manifest
+  // lists them: borrow them (they are not what this test probes).
+  const old = path.join(dir, "plugins", "maestro");
+  for (const asset of runtimeAssets(PLUGIN_ROOT)) {
+    const to = path.join(old, ...asset.src.split("/"));
+    if (!fs.existsSync(to)) fs.copyFileSync(path.join(PLUGIN_ROOT, ...asset.src.split("/")), to);
+  }
+  return old;
 }
 
 const subagentStart = (root: string, agent: string, id: string) =>

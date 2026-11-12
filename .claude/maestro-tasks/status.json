@@ -868,5 +868,17 @@
     "blockedBy": [
       "169-write-a-durable-session-log-record-when-an-interim-stop-is-settled-as-missing.md"
     ]
+  },
+  "175-run-maestro-workers-in-a-per-project-docker-container.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "containerized-workers"
+  },
+  "176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md": {
+    "status": "ready",
+    "blockedBy": [
+      "175-run-maestro-workers-in-a-per-project-docker-container.md"
+    ],
+    "epic": "containerized-workers"
   }
 }

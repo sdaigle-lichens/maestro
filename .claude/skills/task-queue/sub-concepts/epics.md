@@ -168,6 +168,22 @@ the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an inte
   `maestro-session-name` hook keeps a `claude -n` name (`113`).
 - **`cwd` is `mainCheckoutRoot`**, so run from a worktree it still prints the main checkout as the
   launch directory.
+- **The docker runtime (`175`).** With `worker_runtime: "docker"` in `maestro.json`, `launchCommandFor`
+  prints `node .claude/scripts/maestro-worker-runtime.cjs run --name '<name>' [--model '<m>']
+  '.claude/maestro-tasks/<task.md>'` instead; the herdr steps do not change. `run` (in
+  `worker-runtime.ts`, wrapped by `maestro-worker-runtime.cjs`) starts `docker run -it --rm` with:
+  - the repo bind-mounted at its host path, and `.claude/settings.json`, `.claude/settings.local.json`
+    (a copy with its `hooks` section removed), `.claude/scripts`, `.claude/hooks`, `.git/hooks` and
+    `.git/config` mounted read-only over it;
+  - the task's `<repo>-task-N` worktree mounted at its own path, so it exists on both sides;
+  - `CLAUDE_CODE_OAUTH_TOKEN` read from `~/.config/maestro/worker-token` and passed by environment
+    name only, never printed or put in argv. A missing file stops the launch before any container starts.
+
+  The herdr socket is never mounted: pane input from the manager stays the only control channel.
+  `image` builds the per-project image, tagged by a hash of the enabled plugins pinned to their host
+  versions, the npm packages the hooks need, the Claude Code version, the uid/gid and the project path.
+  **Not yet proven in a real container:** the inbox-write prompt, plugin loading, worktree trust and the
+  disabled sandbox. Each stays unverified until a real worker run records it in the task's report.
 
 ## Epic boundaries: `boundary` (`158`)
 

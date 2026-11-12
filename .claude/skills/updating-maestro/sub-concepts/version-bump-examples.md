@@ -141,3 +141,10 @@ task-routing line in Step 4 but shares none of its shape: that one is a `STATIC_
 injected via `!`-prefixed command injection; this one is prose the model reads directly, gated on the
 session's own judgement rather than a config field. Patch, by the table's plainest row: a behaviour
 change to an existing template.
+
+## `0.15.7` — the containerized worker launcher (`175`) — patch
+
+A new `STATIC_ASSETS` pair (`maestro-worker-runtime.cjs` and its lib) and an optional `maestro.json`
+field (`worker_runtime`) read only by the epic spawn list. The ticket asked for a minor. The manager
+overrode it at m001: a new script adds no skill, agent, command or hook event, so under the publishing
+rule it is a patch.

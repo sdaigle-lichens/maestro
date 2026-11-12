@@ -284,6 +284,6 @@ fork-review block that renders below the card (`031`) are
 - [`test-maestro`](../test-maestro/SKILL.md) — how the measured numbers above were measured, and how
   to re-measure them.
 - [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — `maestro-agent-sync` is one of the
-  seventeen generated bundles, and the reason the fork record had to leave `agent-fork.ts`.
+  eighteen generated bundles, and the reason the fork record had to leave `agent-fork.ts`.
 - `updating-maestro` (at the repo root `.claude/skills`) — why a plugin-tier fork is checked by
   version string alone, and why that is the *correct* answer rather than a shortcut.
