@@ -43,6 +43,7 @@ __export(maestro_worker_runtime_exports, {
   detectHookPackages: () => detectHookPackages,
   dockerLaunchCommandFor: () => dockerLaunchCommandFor,
   dockerfileFor: () => dockerfileFor,
+  dockerignoreText: () => dockerignoreText,
   enabledPluginIds: () => enabledPluginIds,
   filterSettingsLocal: () => filterSettingsLocal,
   gatherImageSpec: () => gatherImageSpec,
@@ -50,6 +51,8 @@ __export(maestro_worker_runtime_exports, {
   imageTag: () => imageTag,
   imageTagInputs: () => imageTagInputs,
   installedPluginsJsonFor: () => installedPluginsJsonFor,
+  isExcludedName: () => isExcludedName,
+  isExcludedPath: () => isExcludedPath,
   knownMarketplacesJsonFor: () => knownMarketplacesJsonFor,
   managedSettingsJson: () => managedSettingsJson,
   mountArg: () => mountArg,
@@ -251,7 +254,7 @@ function hookPackagesFor(roots, extra = {}) {
 function imageTagInputs(spec) {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 2,
+    layout: 3,
     base: spec.baseImage ?? BASE_IMAGE,
     claude: spec.claudeVersion,
     trusted: trustedPaths(spec.projectRoot),
@@ -379,7 +382,18 @@ function dockerfileFor(spec) {
     ""
   ].join("\n");
 }
-function writeBuildContext(dir, spec, io = defaultContextIO) {
+function isExcludedName(name) {
+  return name === ".git" || name === "node_modules" || name === ".npmrc" || name === ".credentials.json" || name.startsWith(".env") || name.startsWith("id_rsa") || name.endsWith(".pem");
+}
+function isExcludedPath(rel) {
+  return rel.split(/[\\/]/).some((seg) => seg !== "" && isExcludedName(seg));
+}
+function dockerignoreText() {
+  return `${["**/.git", "**/node_modules", "**/.env*", "**/.credentials.json", "**/*.pem", "**/id_rsa*", "**/.npmrc"].join("\n")}
+`;
+}
+function writeBuildContext(dir, spec, overrides = {}) {
+  const io = { ...defaultContextIO, ...overrides };
   import_node_fs2.default.mkdirSync(dir, { recursive: true });
   const put = (name, text) => import_node_fs2.default.writeFileSync(import_node_path2.default.join(dir, name), text);
   put("Dockerfile", dockerfileFor(spec));
@@ -390,14 +404,31 @@ function writeBuildContext(dir, spec, io = defaultContextIO) {
   put("known_marketplaces.json", knownMarketplacesJsonFor(marketplaces));
   import_node_fs2.default.mkdirSync(import_node_path2.default.join(dir, "plugins"), { recursive: true });
   import_node_fs2.default.mkdirSync(import_node_path2.default.join(dir, "marketplaces"), { recursive: true });
-  for (const m of marketplaces) if (m.dir) io.copyDir(m.dir, import_node_path2.default.join(dir, "marketplaces", m.name));
+  put(".dockerignore", dockerignoreText());
+  const copy = (from, to) => io.copyDir(from, to, io.trackedFiles?.(from) ?? null);
+  for (const m of marketplaces) if (m.dir) copy(m.dir, import_node_path2.default.join(dir, "marketplaces", m.name));
   for (const p of spec.plugins) {
     const { name, marketplace } = pluginParts(p.id);
-    io.copyDir(p.installPath, import_node_path2.default.join(dir, "plugins", marketplace, name, p.version));
+    copy(p.installPath, import_node_path2.default.join(dir, "plugins", marketplace, name, p.version));
   }
 }
 var defaultContextIO = {
-  copyDir: (from, to) => import_node_fs2.default.cpSync(from, to, { recursive: true, filter: (src) => !/(^|[\\/])\.git$/.test(src) })
+  copyDir: (from, to, tracked) => {
+    if (tracked) {
+      import_node_fs2.default.mkdirSync(to, { recursive: true });
+      for (const rel of tracked) {
+        const src = import_node_path2.default.join(from, rel);
+        if (isExcludedPath(rel) || !import_node_fs2.default.existsSync(src)) continue;
+        import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(import_node_path2.default.join(to, rel)), { recursive: true });
+        import_node_fs2.default.cpSync(src, import_node_path2.default.join(to, rel));
+      }
+      return;
+    }
+    import_node_fs2.default.cpSync(from, to, {
+      recursive: true,
+      filter: (src) => !isExcludedPath(import_node_path2.default.relative(from, src))
+    });
+  }
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -411,6 +442,7 @@ var defaultContextIO = {
   detectHookPackages,
   dockerLaunchCommandFor,
   dockerfileFor,
+  dockerignoreText,
   enabledPluginIds,
   filterSettingsLocal,
   gatherImageSpec,
@@ -418,6 +450,8 @@ var defaultContextIO = {
   imageTag,
   imageTagInputs,
   installedPluginsJsonFor,
+  isExcludedName,
+  isExcludedPath,
   knownMarketplacesJsonFor,
   managedSettingsJson,
   mountArg,

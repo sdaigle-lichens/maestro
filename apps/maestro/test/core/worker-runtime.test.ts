@@ -12,6 +12,7 @@ import {
   READONLY_PATHS,
   claudeJsonFor,
   trustedPaths,
+  isExcludedPath,
   knownMarketplacesJsonFor,
   containerNameFor,
   dockerLaunchCommandFor,
@@ -334,6 +335,7 @@ describe("image files (175)", () => {
     const ctx = path.join(tmp(), "ctx");
     writeBuildContext(ctx, spec({ plugins: [{ id: "p@m", version: "3", installPath: plugin }] }));
     expect(fs.readdirSync(ctx).sort()).toEqual([
+      ".dockerignore",
       "Dockerfile",
       "claude.json",
       "installed_plugins.json",
@@ -343,6 +345,70 @@ describe("image files (175)", () => {
       "plugins",
     ]);
     expect(fs.existsSync(path.join(ctx, "plugins", "m", "p", "3", "hook.js"))).toBe(true);
+  });
+
+  function fakeMarketplace(): string {
+    const dir = tmp();
+    fs.writeFileSync(path.join(dir, "marketplace.json"), "{}");
+    fs.writeFileSync(path.join(dir, ".env"), "SECRET=1");
+    fs.writeFileSync(path.join(dir, ".env.local"), "SECRET=2");
+    fs.writeFileSync(path.join(dir, ".npmrc"), "//registry:_authToken=x");
+    fs.writeFileSync(path.join(dir, ".credentials.json"), "{}");
+    fs.writeFileSync(path.join(dir, "key.pem"), "k");
+    fs.writeFileSync(path.join(dir, "id_rsa"), "k");
+    fs.mkdirSync(path.join(dir, ".git"));
+    fs.writeFileSync(path.join(dir, ".git", "config"), "x");
+    fs.mkdirSync(path.join(dir, "node_modules", "d"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "node_modules", "d", "i.js"), "x");
+    fs.mkdirSync(path.join(dir, "sub"));
+    fs.writeFileSync(path.join(dir, "sub", ".env"), "SECRET=3");
+    fs.writeFileSync(path.join(dir, "sub", "ok.md"), "ok");
+    return dir;
+  }
+
+  function listAll(root: string, rel = ""): string[] {
+    return fs.readdirSync(path.join(root, rel), { withFileTypes: true }).flatMap((e) => {
+      const r = path.join(rel, e.name);
+      return e.isDirectory() ? listAll(root, r) : [r];
+    });
+  }
+
+  it("no secret, .git or node_modules lands in the context, with or without git's file list", () => {
+    for (const tracked of [
+      null,
+      [".env", ".npmrc", "marketplace.json", "sub/.env", "sub/ok.md", "gone.md", ".git/config"],
+    ]) {
+      const ctx = path.join(tmp(), "ctx");
+      const dir = fakeMarketplace();
+      writeBuildContext(ctx, spec({ plugins: [], marketplaces: [{ name: "m", entry: { source: {} }, dir }] }), {
+        trackedFiles: () => tracked,
+      });
+      expect(listAll(path.join(ctx, "marketplaces", "m")).sort()).toEqual([
+        "marketplace.json",
+        path.join("sub", "ok.md"),
+      ]);
+      const all = listAll(ctx).join("\n");
+      expect(all).not.toMatch(/\.env|\.npmrc|\.credentials|\.pem|id_rsa|node_modules|\.git[\\/]/);
+    }
+  });
+
+  it("plugin cache copies get the same exclusions, and .dockerignore lists them", () => {
+    const plugin = fakeMarketplace();
+    const ctx = path.join(tmp(), "ctx");
+    writeBuildContext(ctx, spec({ plugins: [{ id: "p@m", version: "1", installPath: plugin }] }));
+    expect(listAll(path.join(ctx, "plugins", "m", "p", "1")).sort()).toEqual([
+      "marketplace.json",
+      path.join("sub", "ok.md"),
+    ]);
+    const ignore = fs.readFileSync(path.join(ctx, ".dockerignore"), "utf8");
+    for (const n of [".git", "node_modules", ".env*", ".credentials.json", "*.pem", "id_rsa*", ".npmrc"])
+      expect(ignore).toContain(`**/${n}`);
+    expect(isExcludedPath("a/.env.production")).toBe(true);
+    expect(isExcludedPath("a/b.md")).toBe(false);
+  });
+
+  it("the layout marker is part of the tag inputs", () => {
+    expect(imageTagInputs(spec()).layout).toBe(3);
   });
 
   it("trusts the project and its parent, so a sibling <repo>-task-N worktree needs no prompt", () => {

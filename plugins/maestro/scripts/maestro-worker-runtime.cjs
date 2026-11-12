@@ -49,6 +49,15 @@ function capture(cmd, args, cwd) {
   return r.error || r.status !== 0 ? null : String(r.stdout).trim();
 }
 
+// The git-tracked files of a directory that is itself a repo root, else null (the caller then
+// copies with the exclusion filter alone).
+function gitTrackedFiles(dir) {
+  if (!fs.existsSync(path.join(dir, ".git"))) return null;
+  const r = spawnSync("git", ["-C", dir, "ls-files", "-z"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  if (r.error || r.status !== 0) return null;
+  return String(r.stdout).split("\0").filter(Boolean);
+}
+
 function claudeVersion() {
   const out = capture("claude", ["--version"]);
   const m = out && /(\d+\.\d+\.\d+[^\s]*)/.exec(out);
@@ -104,7 +113,7 @@ try {
       }
       const ctx = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-worker-image-"));
       try {
-        rt.writeBuildContext(ctx, spec);
+        rt.writeBuildContext(ctx, spec, { trackedFiles: gitTrackedFiles });
         process.stdout.write(`building maestro worker image ${tag}\n`);
         const b = spawnSync("docker", ["build", "-t", tag, ctx], { stdio: "inherit" });
         if (b.status !== 0) fail(`docker build failed (exit ${b.status})`);

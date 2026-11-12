@@ -320,7 +320,7 @@ export function hookPackagesFor(roots: string[], extra: Record<string, string> =
 export function imageTagInputs(spec: ImageSpec): Record<string, unknown> {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 2,
+    layout: 3,
     base: spec.baseImage ?? BASE_IMAGE,
     claude: spec.claudeVersion,
     trusted: trustedPaths(spec.projectRoot),
@@ -498,8 +498,37 @@ export function dockerfileFor(spec: ImageSpec): string {
   ].join("\n");
 }
 
+/**
+ * Names that never enter an image: `.git` and `node_modules` (bulk), and anything that looks like
+ * a credential. Matched against every path segment, so a nested `.env` is caught too.
+ */
+export function isExcludedName(name: string): boolean {
+  return (
+    name === ".git" ||
+    name === "node_modules" ||
+    name === ".npmrc" ||
+    name === ".credentials.json" ||
+    name.startsWith(".env") ||
+    name.startsWith("id_rsa") ||
+    name.endsWith(".pem")
+  );
+}
+
+/** True when any segment of a `/`-or-`\`-separated relative path is an excluded name. */
+export function isExcludedPath(rel: string): boolean {
+  return rel.split(/[\\/]/).some((seg) => seg !== "" && isExcludedName(seg));
+}
+
+/** The `.dockerignore` written into the context: the same exclusions, as a second line of defence. */
+export function dockerignoreText(): string {
+  return `${["**/.git", "**/node_modules", "**/.env*", "**/.credentials.json", "**/*.pem", "**/id_rsa*", "**/.npmrc"].join("\n")}\n`;
+}
+
 export interface ContextIO {
-  copyDir: (from: string, to: string) => void;
+  /** Copy `from` into `to`, never an excluded path; when `tracked` is given, copy only those files (relative to `from`). */
+  copyDir: (from: string, to: string, tracked?: string[] | null) => void;
+  /** The git-tracked files of `dir` when it is a git repo, else null. Needs a spawn, so the CLI supplies it. */
+  trackedFiles?: (dir: string) => string[] | null;
 }
 
 /**
@@ -507,7 +536,8 @@ export interface ContextIO {
  * settings, `installed_plugins.json` and a copy of each pinned plugin's installed files. Nothing in
  * it comes from a credential file.
  */
-export function writeBuildContext(dir: string, spec: ImageSpec, io: ContextIO = defaultContextIO): void {
+export function writeBuildContext(dir: string, spec: ImageSpec, overrides: Partial<ContextIO> = {}): void {
+  const io: ContextIO = { ...defaultContextIO, ...overrides };
   fs.mkdirSync(dir, { recursive: true });
   const put = (name: string, text: string) => fs.writeFileSync(path.join(dir, name), text);
   put("Dockerfile", dockerfileFor(spec));
@@ -518,13 +548,30 @@ export function writeBuildContext(dir: string, spec: ImageSpec, io: ContextIO = 
   put("known_marketplaces.json", knownMarketplacesJsonFor(marketplaces));
   fs.mkdirSync(path.join(dir, "plugins"), { recursive: true });
   fs.mkdirSync(path.join(dir, "marketplaces"), { recursive: true });
-  for (const m of marketplaces) if (m.dir) io.copyDir(m.dir, path.join(dir, "marketplaces", m.name));
+  put(".dockerignore", dockerignoreText());
+  const copy = (from: string, to: string) => io.copyDir(from, to, io.trackedFiles?.(from) ?? null);
+  for (const m of marketplaces) if (m.dir) copy(m.dir, path.join(dir, "marketplaces", m.name));
   for (const p of spec.plugins) {
     const { name, marketplace } = pluginParts(p.id);
-    io.copyDir(p.installPath, path.join(dir, "plugins", marketplace, name, p.version));
+    copy(p.installPath, path.join(dir, "plugins", marketplace, name, p.version));
   }
 }
 
 const defaultContextIO: ContextIO = {
-  copyDir: (from, to) => fs.cpSync(from, to, { recursive: true, filter: (src) => !/(^|[\\/])\.git$/.test(src) }),
+  copyDir: (from, to, tracked) => {
+    if (tracked) {
+      fs.mkdirSync(to, { recursive: true });
+      for (const rel of tracked) {
+        const src = path.join(from, rel);
+        if (isExcludedPath(rel) || !fs.existsSync(src)) continue;
+        fs.mkdirSync(path.dirname(path.join(to, rel)), { recursive: true });
+        fs.cpSync(src, path.join(to, rel));
+      }
+      return;
+    }
+    fs.cpSync(from, to, {
+      recursive: true,
+      filter: (src) => !isExcludedPath(path.relative(from, src)),
+    });
+  },
 };
