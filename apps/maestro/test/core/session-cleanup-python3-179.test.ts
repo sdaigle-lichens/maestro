@@ -89,12 +89,15 @@ describe("179: maestro-session-cleanup.sh with python3 missing says so instead o
   });
 
   const hasPython3 = hostCommand("python3") !== null;
-  it.skipIf(!hasPython3)("positive control: with python3 on PATH the same payload removes the session and prints no message", () => {
-    const state = seedSessionState();
-    const run = runCleanup(process.env.PATH ?? "");
+  it.skipIf(!hasPython3)(
+    "positive control: with python3 on PATH the same payload removes the session and prints no message",
+    () => {
+      const state = seedSessionState();
+      const run = runCleanup(process.env.PATH ?? "");
 
-    expect(run.code).toBe(0);
-    expect(run.stderr).not.toContain(MISSING);
-    expect(fs.existsSync(state)).toBe(false);
-  });
+      expect(run.code).toBe(0);
+      expect(run.stderr).not.toContain(MISSING);
+      expect(fs.existsSync(state)).toBe(false);
+    }
+  );
 });
