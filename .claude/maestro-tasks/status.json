@@ -891,5 +891,17 @@
   "178-maestro-update-remembers-a-declined-herdr-sandbox-opt-in.md": {
     "status": "ready",
     "blockedBy": []
+  },
+  "179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "containerized-workers"
+  },
+  "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md"
+    ],
+    "epic": "containerized-workers"
   }
 }
