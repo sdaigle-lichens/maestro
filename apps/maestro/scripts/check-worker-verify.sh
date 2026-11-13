@@ -20,6 +20,8 @@ tag="$(node "$runtime" image --print-tag)"
 name="$(git -C "$root" config user.name)"
 email="$(git -C "$root" config user.email)"
 echo "== image $tag, verify_command: $verify"
+# The last line always names the image and the result, so pasting only the tail is enough for a report.
+trap 'rc=$?; [[ $rc -eq 0 ]] || echo "RESULT: FAILED (exit $rc), image $tag" >&2' EXIT
 
 run() {
   docker run --rm --init --entrypoint bash \
@@ -59,4 +61,4 @@ scan() { # scan <pattern> <what>
 }
 scan "$token_re" "token-looking string"
 if [[ -n "$email" ]]; then scan "$identity_re" "git identity"; fi
-echo "OK: verify_command ran green in the container; image clean"
+echo "RESULT: OK, image $tag: verify_command ran green in the container; image clean"

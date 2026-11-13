@@ -65,7 +65,7 @@ Step kinds:
      - `redirect` → follow the `manager requested direction change` edge to the agent that produced the work, resolved like any loop-back below, handing it the manager's direction note, which repeats the direction the manager added to the task file (a worker in a worktree may not see that edit; read the task file again if it changed). The loop-back leaves this stop unfinished, so it runs again as the next round; the worker fixes the work and asks again. No such edge: treat it as `escalate`.
      - `escalate` → run a `human review` inline at this stop, the manager's note added to the summary (the brief stays the review file); its outcome decides as for a human review.
 
-     A loop-back from a test or reviewer step does not reopen this check. If a fix would change the ticket's scope or an epic decision, ask the user or the manager first, and any new direction goes into the task file.
+     A loop-back from a test or reviewer step does not reopen this check. If a fix would change the ticket's scope or an epic decision, ask the user or the manager first, and any new direction goes into the task file. The task file's `## Manager direction` items and the manager's verdict notes are part of the ticket, like its acceptance criteria: carry them out without asking the user whether to; ask only when one conflicts with the ticket or another direction item.
 
      **Never approve a red suite.** A human review, a reviewer step and your own final report do not approve work while the full suite is red, and never "pending the test step": the summary or report must state the commit verified and a green full suite on it, else loop back to the agent that produced the work. The manager review is exempt: it checks direction only.
 

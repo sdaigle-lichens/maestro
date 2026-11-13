@@ -22,6 +22,11 @@ This needs code in the worker-runtime TypeScript source and its plugin script (t
 - [ ] Tests cover prune's selection (current tag kept, superseded removed, in-use kept, other projects and non-worker images untouched), the dry run, the no-Docker path, and the finished-worker record; the full suite is green
 - [ ] plugins/maestro/.claude-plugin/plugin.json gets a patch bump, the generated libs are rebuilt and the .claude/scripts mirrors refreshed
 
+## Manager direction
+
+- (from r006, approved by the user) Every containerized worker the launcher starts runs with `--init`, so an init process reaps orphaned processes and they don't linger as zombies (two of 179's tests hung on them in the container). This goes in the launcher's own `docker run` arguments, so it is the default for every worker the manager starts, with nothing for the manager to add. Update the test that asserts the argument positions, and add one that asserts `--init` is present. Host workers are unchanged.
+- (from r006, approved by the user) The plugin marketplace copy baked into the worker image leaves out the repository's epic data (`.claude/epics/`, including every `inbox/`). It holds reports and decisions, not plugin files, and a worker reads the live epic through the bind-mounted repo anyway. A test asserts the copy excludes it, and the image tag changes so existing images rebuild.
+
 ## Touched surfaces
 
 - apps/maestro/src/core/worker-runtime.ts and plugin-entries/maestro-worker-runtime.ts, plus plugins/maestro/scripts/maestro-worker-runtime.cjs and its .claude/scripts mirror (shared with 179, which merges first)
