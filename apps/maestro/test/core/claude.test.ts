@@ -62,7 +62,13 @@ function emptyHome(): string {
 }
 
 /** Resolver options that see exactly one directory and no real machine. */
-const only = (dir: string, home: string) => ({ env: { PATH: dir }, home, platform: "linux" as const });
+// `systemDirs: []`: no system-wide `claude` (a host or worker image that has one) may answer.
+const only = (dir: string, home: string) => ({
+  env: { PATH: dir },
+  home,
+  platform: "linux" as const,
+  systemDirs: [],
+});
 
 const waitFor = async (cond: () => boolean, label: string, ms = 5000) => {
   const deadline = Date.now() + ms;
@@ -86,12 +92,19 @@ const spawnFailure = (child: import("node:child_process").ChildProcess): Promise
     else resolve();
   });
 
+// A killed process nobody has reaped yet is a zombie: kill(pid, 0) still succeeds. In a container
+// whose PID 1 is not an init (no `docker run --init`) an orphaned grandchild is never reaped, so a
+// zombie counts as dead here.
 const alive = (pid: number): boolean => {
   try {
     process.kill(pid, 0);
-    return true;
   } catch {
     return false;
+  }
+  try {
+    return !/^\d+ \(.*\) Z/.test(fs.readFileSync(`/proc/${pid}/stat`, "utf8"));
+  } catch {
+    return true;
   }
 };
 

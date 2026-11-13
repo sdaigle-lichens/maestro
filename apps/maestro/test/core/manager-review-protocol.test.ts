@@ -243,7 +243,14 @@ describe("maestro-epic.cjs review-request / review-verdict (installed scripts)",
   const epic = (root: string, args: string[]) => {
     const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-epic.cjs"), ...args], {
       encoding: "utf8",
-      env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: tmp, CLAUDE_CODE_SESSION_ID: "sess-132" },
+      env: {
+        ...process.env,
+        CLAUDE_PROJECT_DIR: root,
+        HOME: tmp,
+        CLAUDE_CODE_SESSION_ID: "sess-132",
+        // `179`: host wording is asserted here; never inherit a container's `docker`.
+        MAESTRO_WORKER_RUNTIME: "host",
+      },
     });
     return { code: res.status ?? -1, stdout: res.stdout ?? "", stderr: res.stderr ?? "" };
   };

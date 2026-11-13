@@ -34,6 +34,13 @@ export interface ResolveOptions {
   env?: NodeJS.ProcessEnv;
   home?: string;
   platform?: NodeJS.Platform;
+  /**
+   * Replaces the system directories of the fallback list (`/usr/local/bin`, `/opt/homebrew/bin`,
+   * `/usr/bin`, `/bin`, `/snap/bin`). A test that needs "no CLI anywhere" passes `[]`: a machine, or a
+   * worker image, with `claude` installed system-wide would otherwise answer from there whatever
+   * PATH and home say.
+   */
+  systemDirs?: string[];
 }
 
 /**
@@ -44,7 +51,7 @@ export interface ResolveOptions {
  * directories. First match wins, so a user who has both a native install and a stale global npm
  * copy gets the one the installer maintains.
  */
-function fallbackDirs(home: string, platform: NodeJS.Platform): string[] {
+function fallbackDirs(home: string, platform: NodeJS.Platform, systemDirs?: string[]): string[] {
   if (platform === "win32") {
     const appData = process.env.APPDATA ?? path.join(home, "AppData", "Roaming");
     const local = process.env.LOCALAPPDATA ?? path.join(home, "AppData", "Local");
@@ -54,16 +61,13 @@ function fallbackDirs(home: string, platform: NodeJS.Platform): string[] {
     path.join(home, ".local", "bin"), // the current installer
     path.join(home, ".claude", "local"), // the previous "local install" layout
     path.join(home, "bin"),
-    "/usr/local/bin",
-    "/opt/homebrew/bin", // Apple silicon Homebrew, absent from the default GUI PATH
+    ...(systemDirs ? [] : ["/usr/local/bin", "/opt/homebrew/bin"]), // /opt/homebrew: Apple silicon Homebrew, absent from the default GUI PATH
     path.join(home, ".local", "share", "pnpm"),
     path.join(home, ".bun", "bin"),
     path.join(home, ".volta", "bin"),
     path.join(home, ".yarn", "bin"),
     path.join(home, ".npm-global", "bin"),
-    "/usr/bin",
-    "/bin",
-    "/snap/bin",
+    ...(systemDirs ?? ["/usr/bin", "/bin", "/snap/bin"]),
   ];
 }
 
@@ -115,7 +119,7 @@ export function claudeSearchDirs(opts: ResolveOptions = {}): string[] {
   const fromPath = (env.PATH ?? env.Path ?? "").split(sep).filter(Boolean);
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const dir of [...fromPath, ...fallbackDirs(home, platform), ...nvmBinDirs(home)]) {
+  for (const dir of [...fromPath, ...fallbackDirs(home, platform, opts.systemDirs), ...nvmBinDirs(home)]) {
     const norm = path.normalize(dir);
     if (seen.has(norm)) continue;
     seen.add(norm);

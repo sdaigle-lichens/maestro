@@ -45,6 +45,8 @@ async function installed(): Promise<string> {
 
 function env(root: string, sessionId: string | null): NodeJS.ProcessEnv {
   const e: NodeJS.ProcessEnv = { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: tmp };
+  // `179`: never inherit the container's `docker` value; a test that wants it passes DOCKER itself.
+  delete e.MAESTRO_WORKER_RUNTIME;
   if (sessionId === null) delete e.CLAUDE_CODE_SESSION_ID;
   else e.CLAUDE_CODE_SESSION_ID = sessionId;
   return e;

@@ -24,6 +24,16 @@ import { listMarketplaces, marketplacePath } from "../../src/core/marketplaces.j
 import { nodeGit } from "../../src/core/git.js";
 import type { CreateRequest, GitPort } from "../../src/core/contracts.js";
 
+/**
+ * `179`: the process env without any git identity. A containerized worker has the host identity passed
+ * as GIT_AUTHOR and GIT_COMMITTER environment variables, which would answer before the fallback this test is about.
+ */
+function noIdentityEnv(extra: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env, ...extra };
+  for (const k of Object.keys(env)) if (/^GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL|DATE)$|^EMAIL$/.test(k)) delete env[k];
+  return env;
+}
+
 let tmp: string;
 let home: string;
 let project: string;
@@ -353,7 +363,7 @@ describe("scaffolding a marketplace", () => {
       // nothing in it. Without this the developer's own ~/.gitconfig answers and the fallback that
       // this test is about never runs.
       git: nodeGit({
-        env: { ...process.env, HOME: bareHome, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" },
+        env: noIdentityEnv({ HOME: bareHome, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" }),
       }),
     });
 

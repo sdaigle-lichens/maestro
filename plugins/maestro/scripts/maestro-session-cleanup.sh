@@ -32,6 +32,13 @@ set -euo pipefail
 
 STDIN_DATA=$(cat)
 
+# `179`: every field below is read with python3. Without it each read yields "" and the hook would exit 0
+# having removed nothing, silently. Say so (stderr, so the hook output stays clean) and still exit 0.
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "maestro-session-cleanup: python3 is not installed or not on PATH, so this SessionEnd hook cannot read its input and removed no session state. Install python3." >&2
+  exit 0
+fi
+
 cwd=$(echo "$STDIN_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('cwd',''))" 2>/dev/null || echo "")
 # `064`: the payload's session_id, empty when absent. An empty string is not a valid session id, so
 # resolveSessionId falls through to CLAUDE_CODE_SESSION_ID and then to null — exactly as in the

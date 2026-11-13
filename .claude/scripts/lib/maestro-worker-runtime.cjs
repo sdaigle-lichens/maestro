@@ -34,6 +34,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var maestro_worker_runtime_exports = {};
 __export(maestro_worker_runtime_exports, {
   CONTAINER_APPROVALS_DIR: () => CONTAINER_APPROVALS_DIR,
+  EMPTY_TOOLCHAIN: () => EMPTY_TOOLCHAIN,
   KNOWN_HOOK_PACKAGES: () => KNOWN_HOOK_PACKAGES,
   READONLY_PATHS: () => READONLY_PATHS,
   WORKER_RUNTIME_ENV: () => WORKER_RUNTIME_ENV,
@@ -43,6 +44,7 @@ __export(maestro_worker_runtime_exports, {
   claudeJsonFor: () => claudeJsonFor,
   containerNameFor: () => containerNameFor,
   detectHookPackages: () => detectHookPackages,
+  detectToolchain: () => detectToolchain,
   dockerLaunchCommandFor: () => dockerLaunchCommandFor,
   dockerfileFor: () => dockerfileFor,
   dockerignoreText: () => dockerignoreText,
@@ -61,10 +63,13 @@ __export(maestro_worker_runtime_exports, {
   managedSettingsJson: () => managedSettingsJson,
   missingPluginMessage: () => missingPluginMessage,
   mountArg: () => mountArg,
+  packageManagerInstall: () => packageManagerInstall,
+  parsePackageManager: () => parsePackageManager,
   parsePackageSpecs: () => parsePackageSpecs,
   parseProbeOutput: () => parseProbeOutput,
   pinPlugins: () => pinPlugins,
   readWorkerToken: () => readWorkerToken,
+  refreshRuntimeWords: () => refreshRuntimeWords,
   resolveManagerApproval: () => resolveManagerApproval,
   resolveWorkerRuntime: () => resolveWorkerRuntime,
   tokenSetupMessage: () => tokenSetupMessage,
@@ -133,6 +138,9 @@ var KNOWN_HOOK_PACKAGES = {
 };
 function isContainerWorker(env = process.env) {
   return env[WORKER_RUNTIME_ENV]?.trim().toLowerCase() === "docker";
+}
+function refreshRuntimeWords(env = process.env) {
+  return isContainerWorker(env) ? "run `pnpm refresh:runtime` on the HOST, not in this container: `.claude/scripts` and `.claude/settings.json` are read-only here by design. Ask the user to run exactly `pnpm refresh:runtime` in their own terminal in this repository (the container's repo is the same folder), then continue" : "run `pnpm refresh:runtime` (a sandboxed agent hands the user `! pnpm refresh:runtime`)";
 }
 function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
@@ -215,6 +223,80 @@ function readWorkerToken(tokenPath) {
   if (!token) return { ok: false, message: tokenSetupMessage(tokenPath) };
   return { ok: true, token };
 }
+var EMPTY_TOOLCHAIN = { packageManager: null, playwright: null, browsers: [], apt: [] };
+var VERIFY_APT = { make: "make" };
+var BROWSERS = ["chromium", "firefox", "webkit"];
+function parsePackageManager(value) {
+  if (typeof value !== "string") return null;
+  const m = /^(npm|pnpm|yarn|bun)@(\d+\.\d+\.\d+[A-Za-z0-9.-]*)(?:\+.*)?$/.exec(value.trim());
+  return m ? `${m[1]}@${m[2]}` : null;
+}
+function pinnedVersion(range) {
+  return typeof range === "string" && /^[\^~]?\d+\.\d+\.\d+[A-Za-z0-9.-]*$/.test(range.trim()) ? range.trim().replace(/^[\^~]/, "") : null;
+}
+function projectPackageDirs(root) {
+  const dirs = [root];
+  for (const group of ["apps", "packages"]) {
+    try {
+      for (const e of import_node_fs3.default.readdirSync(import_node_path3.default.join(root, group), { withFileTypes: true }))
+        if (e.isDirectory() && e.name !== "node_modules") dirs.push(import_node_path3.default.join(root, group, e.name));
+    } catch {
+    }
+  }
+  return dirs;
+}
+function detectToolchain(projectRoot, verifyCommand) {
+  const rootPkg = readJsonFile(import_node_path3.default.join(projectRoot, "package.json"));
+  const packageManager = parsePackageManager(rootPkg?.packageManager);
+  let playwright = null;
+  const browsers = /* @__PURE__ */ new Set();
+  for (const dir of projectPackageDirs(projectRoot)) {
+    const pkg = readJsonFile(import_node_path3.default.join(dir, "package.json"));
+    const version = pinnedVersion(pkg?.devDependencies?.playwright ?? pkg?.dependencies?.playwright);
+    let entries;
+    try {
+      entries = import_node_fs3.default.readdirSync(dir).filter((n) => /^vitest\.(config|workspace)\./.test(n));
+    } catch {
+      continue;
+    }
+    for (const n of entries) {
+      let text;
+      try {
+        text = import_node_fs3.default.readFileSync(import_node_path3.default.join(dir, n), "utf8");
+      } catch {
+        continue;
+      }
+      if (!/playwright/i.test(text)) continue;
+      for (const m of text.matchAll(/browser\s*:\s*["'`](chromium|firefox|webkit)["'`]/g)) browsers.add(m[1]);
+      if (version && !playwright) playwright = version;
+    }
+  }
+  const apt = /* @__PURE__ */ new Set();
+  for (const word of (verifyCommand ?? "").split(/[\s;&|()]+/)) {
+    const pkg = VERIFY_APT[word];
+    if (pkg) apt.add(pkg);
+  }
+  const usable = playwright !== null && browsers.size > 0;
+  return {
+    packageManager,
+    playwright: usable ? playwright : null,
+    browsers: usable ? BROWSERS.filter((b) => browsers.has(b)) : [],
+    apt: [...apt].sort()
+  };
+}
+function packageManagerInstall(pm) {
+  if (!pm) return [];
+  const [name, version] = pm.split("@");
+  if (name === "pnpm" || name === "yarn")
+    return [
+      "ENV COREPACK_HOME=/usr/local/share/corepack COREPACK_ENABLE_DOWNLOAD_PROMPT=0",
+      // `prepare` can cache only a shim (pnpm 12 fetches its native binary on first run), so run the
+      // manager once as root at build time to force every download, then make the home writable for
+      // the non-root worker in case a later run still wants to write there.
+      `RUN corepack enable && corepack prepare ${name}@${version} --activate && ${name} --version && chmod -R a+rwX /usr/local/share/corepack`
+    ];
+  return [`RUN npm install -g ${name}@${version} && npm cache clean --force`];
+}
 function enabledPluginIds(settings) {
   if (!settings || typeof settings !== "object") return [];
   const ep = settings.enabledPlugins;
@@ -283,10 +365,15 @@ function detectHookPackages(roots) {
 function hookPackagesFor(roots, extra = {}) {
   return { ...detectHookPackages(roots), ...extra };
 }
+function toolchainOf(spec) {
+  const t = spec.toolchain ?? EMPTY_TOOLCHAIN;
+  return { ...t, browsers: [...t.browsers].sort(), apt: [...t.apt].sort() };
+}
 function imageTagInputs(spec) {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 4,
+    layout: 6,
+    toolchain: toolchainOf(spec),
     userPlugins: [...spec.userPlugins ?? []].sort(),
     base: spec.baseImage ?? BASE_IMAGE,
     claude: spec.claudeVersion,
@@ -396,6 +483,7 @@ function gatherImageSpec(projectRoot, g) {
       plugins: pins,
       marketplaces,
       userPlugins: userPlugins.filter((id) => pins.some((p) => p.id === id)),
+      toolchain: detectToolchain(projectRoot, g.verifyCommand),
       npmPackages: hookPackagesFor(
         [
           ...pins.flatMap((p) => [import_node_path3.default.join(p.installPath, "hooks"), import_node_path3.default.join(p.installPath, "scripts")]),
@@ -411,14 +499,23 @@ function gatherImageSpec(projectRoot, g) {
 function dockerfileFor(spec) {
   const pkgs = Object.entries(spec.npmPackages).sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => ` ${n}@${v}`).join("");
   const own = `${spec.uid}:${spec.gid}`;
+  const tc = toolchainOf(spec);
+  const apt = ["git", "ca-certificates", "bash", "python3", ...tc.apt].join(" ");
+  const browsers = tc.playwright && tc.browsers.length ? [
+    "ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright",
+    `RUN npm exec --yes playwright@${tc.playwright} -- install --with-deps ${tc.browsers.join(" ")} \\`,
+    " && chmod -R a+rX /ms-playwright && rm -rf /var/lib/apt/lists/* && npm cache clean --force"
+  ] : [];
   return [
     `FROM ${spec.baseImage ?? BASE_IMAGE}`,
     "RUN apt-get update \\",
-    " && apt-get install -y --no-install-recommends git ca-certificates bash \\",
+    ` && apt-get install -y --no-install-recommends ${apt} \\`,
     " && rm -rf /var/lib/apt/lists/* \\",
     ` && npm install -g @anthropic-ai/claude-code@${spec.claudeVersion}${pkgs} \\`,
     " && npm cache clean --force",
     "ENV NODE_PATH=/usr/local/lib/node_modules",
+    ...packageManagerInstall(tc.packageManager),
+    ...browsers,
     "# The container user takes the host user's uid/gid so files written in the repo stay theirs.",
     `RUN (userdel -r node || true) \\`,
     ` && (getent group ${spec.gid} >/dev/null || groupadd -g ${spec.gid} ${CONTAINER_USER}) \\`,
@@ -506,6 +603,7 @@ var defaultContextIO = {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CONTAINER_APPROVALS_DIR,
+  EMPTY_TOOLCHAIN,
   KNOWN_HOOK_PACKAGES,
   READONLY_PATHS,
   WORKER_RUNTIME_ENV,
@@ -515,6 +613,7 @@ var defaultContextIO = {
   claudeJsonFor,
   containerNameFor,
   detectHookPackages,
+  detectToolchain,
   dockerLaunchCommandFor,
   dockerfileFor,
   dockerignoreText,
@@ -533,10 +632,13 @@ var defaultContextIO = {
   managedSettingsJson,
   missingPluginMessage,
   mountArg,
+  packageManagerInstall,
+  parsePackageManager,
   parsePackageSpecs,
   parseProbeOutput,
   pinPlugins,
   readWorkerToken,
+  refreshRuntimeWords,
   resolveManagerApproval,
   resolveWorkerRuntime,
   tokenSetupMessage,

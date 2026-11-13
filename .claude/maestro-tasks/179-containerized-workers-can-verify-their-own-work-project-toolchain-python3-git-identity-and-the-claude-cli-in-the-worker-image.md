@@ -47,3 +47,14 @@ Also fix the handoff for `pnpm refresh:runtime` in a container: `.claude/scripts
 ## Blocked by
 
 None — can start immediately
+
+## Post-Mortem
+
+- **Problem:** The first image could not run `verify_command`: corepack's pnpm 12 downloads its native binary lazily and the corepack home was read-only for the non-root worker (EACCES). Only the real-Docker run could show it; unit tests were green.
+  **Fix:** none
+- **Problem:** Six tests failed only inside the container: four "no CLI" tests found the `claude` the image now installs (system fallback dirs in `claudeSearchDirs`), two kill tests waited on zombie grandchildren (no init as PID 1). Fixed with a `systemDirs` option, a zombie-aware `alive()` and `--init` in the check script; the real worker launch still has no `--init`.
+  **Fix:** none
+- **Problem:** The check script's token scan was too loose (`sk-ant-`, `oauth_token`) and flagged a test fixture, an epic report and yarn's source. Tightened to real token shapes.
+  **Fix:** none
+- **Problem:** A hand-written plugin script failed the Prettier check during `refresh:runtime`, and the sandbox cannot run Docker or write the mirrors, so each fix needed a user-run round trip.
+  **Fix:** none

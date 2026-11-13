@@ -202,6 +202,46 @@ describe("merge conflict on a generated lib names the resolution (082)", () => {
     expect(run.stdout).not.toContain("cp plugins/maestro/scripts/lib/");
   });
 
+  // `179`: the same conflict run from a containerized worker. The mounts there are read-only, so the
+  // hint must send the user to the HOST, and must not offer the sandboxed-agent wording.
+  it("tells a containerized worker to run pnpm refresh:runtime on the host, not in the container (179)", async () => {
+    const { root, wt } = await worktreeRun();
+    const lib = path.join("plugins", "maestro", "scripts", "lib", "maestro-scratch-lib.cjs");
+    const mirror = path.join(".claude", "scripts", "lib", "maestro-scratch-lib.cjs");
+    for (const f of [lib, mirror]) {
+      fs.mkdirSync(path.dirname(path.join(root, f)), { recursive: true });
+      fs.writeFileSync(path.join(root, f), "base\n");
+    }
+    git(root, "add", "-A");
+    git(root, "commit", "-q", "-m", "libs");
+    git(wt, "merge", "-q", "main");
+    for (const f of [lib, mirror]) fs.writeFileSync(path.join(wt, f), "wt\n");
+    git(wt, "add", "-A");
+    git(wt, "commit", "-q", "-m", "wt libs");
+    expect(cli(wt, ["done", "002-b.md"], SESSION_B).status).toBe(0);
+    for (const f of [lib, mirror]) fs.writeFileSync(path.join(root, f), "main\n");
+    git(root, "commit", "-qam", "main libs");
+
+    const run = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-task-status.cjs"), "merge", "002"], {
+      encoding: "utf8",
+      env: pinnedEnv(tmp, {
+        CLAUDE_PROJECT_DIR: root,
+        MAESTRO_WORKER_RUNTIME: "docker",
+        GIT_AUTHOR_NAME: "t",
+        GIT_AUTHOR_EMAIL: "t@t",
+        GIT_COMMITTER_NAME: "t",
+        GIT_COMMITTER_EMAIL: "t@t",
+      }),
+    });
+
+    expect(run.status).toBe(1);
+    expect(run.stdout).toContain("on the HOST");
+    expect(run.stdout).toContain("read-only");
+    expect(run.stdout).not.toContain("sandboxed agent");
+    expect(run.stdout).not.toContain("! pnpm refresh:runtime");
+    expect(run.stdout).not.toContain("cp plugins/maestro/scripts/lib/");
+  });
+
   it("gives no mirror-copy hint when a hand-written file (or the hand-maintained maestro-tasks.cjs) also conflicts", async () => {
     const { root, wt } = await worktreeRun();
     const files = [path.join("src", "app.ts"), path.join("plugins", "maestro", "scripts", "lib", "maestro-tasks.cjs")];

@@ -759,10 +759,20 @@ function generatedLibResolution(conflicts) {
     return m && m[2] !== "maestro-tasks.cjs";
   });
   if (!conflicts.length || !generated) return null;
+  // `179`: a containerized worker cannot run the refresh (read-only .claude/scripts); it asks the user to run it on the host.
+  let refresh =
+    "run `pnpm refresh:runtime` (rebuilds the libs and copies each over its .claude/scripts/lib/ mirror; a sandboxed agent hands the user `! pnpm refresh:runtime`)";
+  try {
+    const { isContainerWorker, refreshRuntimeWords } = require("./lib/maestro-epic.cjs");
+    if (isContainerWorker())
+      refresh = `${refreshRuntimeWords()} (it rebuilds the libs and copies each over its .claude/scripts/lib/ mirror)`;
+  } catch {
+    // an older install without the epic bundle keeps the host wording
+  }
   return (
     "Every conflicting file is a generated plugin lib or its tracked mirror, so do NOT edit the bundle text. Resolve like this in the worktree:\n" +
     "  1. resolve any conflict in apps/maestro/src/core/** first (none listed here means the sources merged cleanly);\n" +
-    "  2. run `pnpm refresh:runtime` (rebuilds the libs and copies each over its .claude/scripts/lib/ mirror; a sandboxed agent hands the user `! pnpm refresh:runtime`);\n" +
+    `  2. ${refresh};\n` +
     "  3. `git add` those files, run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, commit, then ask for the merge again.\n"
   );
 }
