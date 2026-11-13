@@ -151,7 +151,7 @@ describe("workerMounts and workerRunArgs (175)", () => {
       mounts,
       gitIdentity: { name: "A B", email: "a@b.c" },
     });
-    expect(args.slice(0, 5)).toEqual(["run", "-it", "--rm", "--name", "maestro-worker-e1-175"]);
+    expect(args.slice(0, 6)).toEqual(["run", "-it", "--rm", "--init", "--name", "maestro-worker-e1-175"]);
     expect(args).toContain("CLAUDE_CODE_OAUTH_TOKEN");
     expect(args.join(" ")).not.toMatch(/CLAUDE_CODE_OAUTH_TOKEN=/);
     expect(args).toContain("MAESTRO_WORKER_RUNTIME=docker");
@@ -421,7 +421,7 @@ describe("image files (175)", () => {
   });
 
   it("the layout marker is part of the tag inputs", () => {
-    expect(imageTagInputs(spec()).layout).toBe(6);
+    expect(imageTagInputs(spec()).layout).toBe(7);
   });
 
   it("trusts the project and its parent, so a sibling <repo>-task-N worktree needs no prompt", () => {

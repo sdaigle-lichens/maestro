@@ -50,6 +50,11 @@ export interface EpicWorker {
    */
   pane?: string;
   added_at: string;
+  /**
+   * `180`: set once the user confirmed the worker's session was stopped. A finished worker keeps its
+   * record (name, task) but its pane id is dropped, so it is no longer listed as active.
+   */
+  finished_at?: string;
 }
 
 /**
@@ -362,6 +367,23 @@ export function addWorker(projectRoot: string, slug: string, name: string, task?
     } else {
       s.workers.push({ name, ...(task ? { task } : {}), ...(paneId ? { pane: paneId } : {}), added_at: now() });
     }
+  });
+}
+
+/**
+ * `180`: record a worker as finished, after the user confirmed its session was stopped. Drops the
+ * stale pane id; the worker stays on record with `finished_at`. Throws for a worker the epic does
+ * not know. Finishing twice keeps the first time.
+ */
+export function finishWorker(projectRoot: string, slug: string, name: string): void {
+  const state = readEpicState(projectRoot, slug);
+  if (!state) throw new Error(`no epic "${slug}"`);
+  if (!state.workers.some((w) => w.name === name)) throw new Error(`epic "${slug}" has no worker "${name}"`);
+  updateState(projectRoot, slug, (s) => {
+    const w = s.workers.find((x) => x.name === name);
+    if (!w) return;
+    delete w.pane;
+    w.finished_at ??= now();
   });
 }
 
@@ -932,7 +954,9 @@ export interface EpicView {
   dir: string;
   goalFile: string;
   manager: string | null;
+  /** Active workers only (`180`): a finished one is in `finishedWorkers`, with no pane. */
   workers: EpicWorker[];
+  finishedWorkers: EpicWorker[];
   tasks: EpicTaskView[];
   unacknowledged: EpicInboxView[];
   crossEpic: CrossEpicEdge[];
@@ -986,7 +1010,8 @@ export function showEpic(projectRoot: string, slug: string): EpicView {
     dir,
     goalFile: path.join(dir, EPIC_FILE),
     manager: state.manager?.name ?? null,
-    workers: state.workers,
+    workers: state.workers.filter((w) => !w.finished_at),
+    finishedWorkers: state.workers.filter((w) => w.finished_at),
     tasks,
     unacknowledged: pendingInboxViews(state, dir, root),
     crossEpic: crossEpicEdges(tracker, slug),
@@ -1174,7 +1199,7 @@ export function readyTasks(projectRoot: string, slug: string, cap: number = DEFA
   const model = resolveWorkerModel(config);
   const runtime = resolveWorkerRuntime(config);
   const workerOf = new Map<string, string>();
-  for (const w of state.workers) if (w.task) workerOf.set(path.basename(w.task), w.name);
+  for (const w of state.workers) if (w.task && !w.finished_at) workerOf.set(path.basename(w.task), w.name);
 
   const view: EpicReadyView = {
     slug,
@@ -1275,6 +1300,9 @@ export function formatEpic(view: EpicView): string {
     `  goal file: ${view.goalFile}`,
     `  manager:   ${view.manager ?? "(none recorded)"}`,
     `  workers:   ${view.workers.length ? view.workers.map((w) => (w.pane ? `${w.name} (pane ${w.pane})` : w.name)).join(", ") : "(none recorded)"}`,
+    ...(view.finishedWorkers.length
+      ? [`  finished:  ${view.finishedWorkers.map((w) => w.name).join(", ")} (session stopped)`]
+      : []),
     `  tasks (${view.tasks.length}):`,
   ];
   for (const t of view.tasks) {

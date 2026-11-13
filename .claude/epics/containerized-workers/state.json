@@ -27,6 +27,12 @@
       "task": "179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md",
       "pane": "w9:p1H",
       "added_at": "2026-11-13T01:26:13.686Z"
+    },
+    {
+      "name": "containerized-workers-180",
+      "task": "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
+      "pane": "w9:p1J",
+      "added_at": "2026-11-13T17:08:24.805Z"
     }
   ],
   "log": [
@@ -190,6 +196,24 @@
       "id": "r006",
       "file": "inbox/r006-179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md",
       "at": "2026-11-13T16:33:40.715Z",
+      "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "review",
+      "id": "m005",
+      "task": "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.review.md",
+      "at": "2026-11-13T17:18:16.660Z",
+      "from": "containerized-workers-180"
+    },
+    {
+      "kind": "verdict",
+      "id": "m005",
+      "task": "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-13T17:18:35.047Z",
       "by": "maestro-mgr-6c076e03"
     }
   ]

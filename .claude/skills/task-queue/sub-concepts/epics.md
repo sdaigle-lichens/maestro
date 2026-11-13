@@ -10,8 +10,8 @@ resumable `maestro-manager` session. A task in no epic behaves exactly as before
 CLI `plugins/maestro/scripts/maestro-epic.cjs`. One job: epic state, membership and the report inbox.
 
 **Interface:** `create | list [--json] | link | unlink | show [--json] | set-manager | add-worker |
-remove-worker | of | ready | report --task | note | review-request | review-verdict | reports | watch | ack` (`085` added `note` and `list`'s manager and
-backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`; `158` added `boundary`; `176` added `watch` and `add-worker --pane`). Callers never see the lock, the file layout or the id
+remove-worker | finish-worker | of | ready | report --task | note | review-request | review-verdict | reports | watch | ack` (`085` added `note` and `list`'s manager and
+backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`; `158` added `boundary`; `176` added `watch` and `add-worker --pane`; `180` added `finish-worker`). Callers never see the lock, the file layout or the id
 scheme.
 
 **Decisions**
@@ -171,7 +171,7 @@ the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an inte
 - **The docker runtime (`175`).** With `worker_runtime: "docker"` in `maestro.json`, `launchCommandFor`
   prints `node .claude/scripts/maestro-worker-runtime.cjs run --name '<name>' [--model '<m>']
   '.claude/maestro-tasks/<task.md>'` instead; the herdr steps do not change. `run` (in
-  `worker-runtime.ts`, wrapped by `maestro-worker-runtime.cjs`) starts `docker run -it --rm` with:
+  `worker-runtime.ts`, wrapped by `maestro-worker-runtime.cjs`) starts `docker run -it --rm --init` with:
   - the repo bind-mounted at its host path, and `.claude/settings.json`, `.claude/settings.local.json`
     (a copy with its `hooks` section removed), `.claude/scripts`, `.claude/hooks`, `.git/hooks` and
     `.git/config` mounted read-only over it;
@@ -185,6 +185,20 @@ the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an inte
   **Not yet proven in a real container:** the in-container inbox-write prompt (unverified; left for task
   177's Docker run), plugin loading, worktree trust and the disabled sandbox. Each stays unverified until
   a real worker run records it in the task's report.
+
+## Finishing and pruning workers (`180`)
+
+- **`finish-worker <slug> <name>`** (`maestro-epic.cjs`, `finishWorker`) records a worker whose session the
+  user confirmed stopped. It sets `EpicWorker.finished_at` and drops `pane`. `showEpic` moves it to
+  `finishedWorkers`, so `show` no longer lists it as active; `readyTasks` stops counting its task as recorded.
+- **`prune [--dry-run]`** (`maestro-worker-runtime.cjs`, `planPrune`/`formatPrune`) removes stopped worker
+  containers and this project's superseded worker images. An image is removed only when its `maestro.worker.project`
+  label (`PROJECT_LABEL`, set by `image`'s build) matches; an unlabelled image is listed as `skipped` with its
+  `docker rmi` line, never removed. Exit codes: 0 when Docker is absent (host workers) or unreachable (the
+  printed line says nothing was checked); 1 when a removal is refused or a docker query fails (each is named).
+- **`--init`** (`workerRunArgs`) puts a reaping init at pid 1 so orphaned children do not linger as zombies.
+- **Image layout 7** (`imageTagInputs`): the marketplace copy baked into the image leaves out `.claude/epics`
+  (`isMarketplaceExcluded`); a worker reads the live epic through the bind-mounted repository.
 
 ## Containerized workers: inbox, `watch` and pane replies (`176`)
 
@@ -216,7 +230,7 @@ enable the id. It does not show that Claude loads the plugin.
   pinned in `package.json` `packageManager` (corepack for pnpm/yarn, npm otherwise;
   `packageManagerInstall`), python3 always (hook scripts call it), the playwright version and browsers
   a `vitest.config.*` using playwright names, and apt packages named in `verify_command` (`make`).
-  The toolchain feeds `imageTagInputs` (layout 6), so a changed pin rebuilds the image.
+  The toolchain feeds `imageTagInputs` (layout 7), so a changed pin rebuilds the image.
 - **Git identity** is not an image input. `run` passes `GIT_AUTHOR_*`/`GIT_COMMITTER_*` as environment
   at launch (`dockerLaunchCommandFor`), so no layer holds it.
 - **`claude` CLI** is installed in the image as before; the worker's own flow calls it.

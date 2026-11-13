@@ -42,7 +42,7 @@ beforeEach(() => {
       `case "$1" in`,
       `  --version) exit 0 ;;`,
       `  image) if [ "$3" = "$EXISTING_TAG" ]; then exit 0; else exit 1; fi ;;`,
-      `  build) if [ -n "$CTX_OUT" ]; then cp -R "$4" "$CTX_OUT"; fi; exit 0 ;;`,
+      `  build) for a in "$@"; do ctx="$a"; done; if [ -n "$CTX_OUT" ]; then cp -R "$ctx" "$CTX_OUT"; fi; exit 0 ;;`,
       `  run)`,
       `    if [ "$3" = "--entrypoint" ]; then printf '%s' "$PROBE_OUT"; exit \${PROBE_EXIT:-0}; fi`,
       `    printf '%s' "$CLAUDE_CODE_OAUTH_TOKEN" > "$TOKEN_ENV_OUT"`,
