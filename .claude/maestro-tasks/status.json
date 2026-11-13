@@ -882,7 +882,7 @@
     "epic": "containerized-workers"
   },
   "177-the-epic-manager-approves-containerized-workers-stops-on-the-user-s-behalf-escalating-only-what-needs-the-user.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md"
     ],

@@ -18,6 +18,8 @@
 //       ~/.config/maestro/worker-token (passed through the environment, never printed or put in
 //       argv). Stops with a setup message, before starting anything, when the token file is
 //       missing. The herdr socket is never mounted.
+//       `177`: with manager_approval true in maestro.json, ~/.config/maestro/approvals is also mounted
+//       read-only (and named in MAESTRO_APPROVALS_DIR), so a worker can read approvals, never write one.
 //       `176`: the image carries every plugin the host session has enabled, user scope included, and
 //       `run` checks that (a shell probe in the image) and refuses an image missing one, naming it.
 
@@ -173,11 +175,24 @@ try {
             fail(`cannot prepare settings.local.json: ${err.message}`);
           }
         }
+        // `177`: with manager_approval on, the approvals directory (outside the repo) is mounted
+        // read-only, so a worker reads approval records and can never write one. Off: no mount.
+        let approvals = null;
+        try {
+          const cfg = JSON.parse(fs.readFileSync(path.join(root, ".claude", "maestro.json"), "utf8"));
+          if (rt.resolveManagerApproval(cfg)) {
+            approvals = rt.approvalsDir(os.homedir());
+            fs.mkdirSync(approvals, { recursive: true });
+          }
+        } catch {
+          approvals = null;
+        }
         const mounts = rt.workerMounts({
           repoRoot: root,
           worktreePath,
           filteredSettingsLocal: filtered,
           exists: (p) => fs.existsSync(p),
+          approvalsDir: approvals,
         });
         const args = rt.workerRunArgs({
           tag,

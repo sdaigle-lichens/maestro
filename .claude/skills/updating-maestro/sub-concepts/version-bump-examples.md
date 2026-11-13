@@ -148,3 +148,10 @@ A new `STATIC_ASSETS` pair (`maestro-worker-runtime.cjs` and its lib) and an opt
 field (`worker_runtime`) read only by the epic spawn list. The ticket asked for a minor. The manager
 overrode it at m001: a new script adds no skill, agent, command or hook event, so under the publishing
 rule it is a patch.
+
+## `0.15.10` — manager approval for containerized workers (`177`) — patch
+
+A second `PostToolUse` registration (matcher `AskUserQuestion`) of the existing `maestro-human-review-gate`
+script, plus an optional `maestro.json` field (`manager_approval`) and epic CLI subcommands. The event
+was already registered, and no skill, agent, command or new event is added, so the bump stays patch (the
+ticket's manager verdict, m003, said the same).

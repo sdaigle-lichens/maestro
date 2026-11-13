@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, code-graph's concept-skill state). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "2.5"
-  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47
+  version: "2.6"
+  last-update: f4d3afdb3911d934dcdfc8dde3300517d65494fc
 ---
 
 # Maestro config model (v3)
@@ -33,6 +33,7 @@ entry point the IPC layer calls.
 | `metrics?`                              | `{ recent_runs? }` (`080`) — how many finished runs stay as full records in `.claude/maestro-metrics/metrics.json`. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader. No slice writes it. |
 | `worker_model?`                         | Model epic worker sessions launch with (alias or full id). Trimmed; blank deletes the key. Sole reader `resolveWorkerModel` (`config.ts`); `launchCommandFor` (`epics.ts`) turns it into `--model '<value>'` in `maestro-epic.cjs ready`. Written only by the `worker-model` slice (IPC `data:worker-model` / `project:worker-model:set`, `WorkerModelCard` on `/maestro`). |
 | `worker_runtime?`                       | `"host"` (default) or `"docker"` (`175`). `"docker"` makes `maestro-epic.cjs ready` print the containerized launch command (`node .claude/scripts/maestro-worker-runtime.cjs run …`) in place of `claude -n …`. Sole reader `resolveWorkerRuntime` (`worker-runtime.ts`), used by `launchCommandFor` (`epics.ts`). Absent, blank, or any other value means host. No slice writes it; editing it in the app is out of scope. |
+| `manager_approval?`                     | `true` only (`177`). **Absent or any other value means off.** With `worker_runtime: "docker"`, the epic's manager approves a containerized worker's human-review, commit and merge stops from approval records. Sole reader `resolveManagerApproval` (`manager-approval.ts`). Hand-edited; no slice writes it. Host workers always ask the user. |
 | `use_maestro_tasks?`                    | A SIBLING of the skill lists, not nested in them (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**.                               |
 
 ## Slice merges are the load-bearing rule

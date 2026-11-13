@@ -11,6 +11,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { APPROVALS_DIR_ENV, APPROVALS_REL } from "./manager-approval.js";
 import type { MaestroConfigV3 } from "./types.js";
 import { worktreePathFor } from "./worktree.js";
 
@@ -24,6 +25,8 @@ export const WORKER_TOKEN_REL = path.join(".config", "maestro", "worker-token");
 export const CONTAINER_USER = "worker";
 export const CONTAINER_HOME = "/home/worker";
 export const BASE_IMAGE = "node:22-bookworm-slim";
+/** `177`: where the host's approvals directory appears inside a worker container (read-only). */
+export const CONTAINER_APPROVALS_DIR = `${CONTAINER_HOME}/${APPROVALS_REL.split(path.sep).join("/")}`;
 
 /** Mounted read-only over the bind-mounted repo, relative to the repo root. */
 export const READONLY_PATHS = [
@@ -111,6 +114,11 @@ export interface MountInput {
   filteredSettingsLocal: string | null;
   /** Whether a path exists on the host: a missing source would be created root-owned by docker. */
   exists: (p: string) => boolean;
+  /**
+   * `177`: the host's approvals directory, given only when `manager_approval` is on. It is mounted
+   * read-only at `CONTAINER_APPROVALS_DIR`; it lies outside the repository.
+   */
+  approvalsDir?: string | null;
 }
 
 /**
@@ -130,6 +138,7 @@ export function workerMounts(input: MountInput): Mount[] {
     if (input.exists(target)) mounts.push({ source: target, target, readonly: true });
   }
   if (input.worktreePath) mounts.push({ source: input.worktreePath, target: input.worktreePath, readonly: false });
+  if (input.approvalsDir) mounts.push({ source: input.approvalsDir, target: CONTAINER_APPROVALS_DIR, readonly: true });
   return mounts;
 }
 
@@ -160,6 +169,9 @@ export function containerNameFor(name: string): string {
 export function workerRunArgs(o: RunArgsInput): string[] {
   const args = ["run", "-it", "--rm", "--name", containerNameFor(o.name)];
   args.push("-e", "CLAUDE_CODE_OAUTH_TOKEN", "-e", `${WORKER_RUNTIME_ENV}=docker`);
+  // `177`: the worker reads approval records from the read-only mount, wherever the host keeps them.
+  if (o.mounts.some((m) => m.target === CONTAINER_APPROVALS_DIR))
+    args.push("-e", `${APPROVALS_DIR_ENV}=${CONTAINER_APPROVALS_DIR}`);
   const id = o.gitIdentity;
   if (id?.name) args.push("-e", `GIT_AUTHOR_NAME=${id.name}`, "-e", `GIT_COMMITTER_NAME=${id.name}`);
   if (id?.email) args.push("-e", `GIT_AUTHOR_EMAIL=${id.email}`, "-e", `GIT_COMMITTER_EMAIL=${id.email}`);

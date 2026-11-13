@@ -8,6 +8,7 @@
 export {
   WORKER_RUNTIME_ENV,
   WORKER_RUNTIME_SCRIPT,
+  CONTAINER_APPROVALS_DIR,
   WORKER_TOKEN_REL,
   READONLY_PATHS,
   KNOWN_HOOK_PACKAGES,
@@ -45,3 +46,6 @@ export {
   gatherImageSpec,
   writeBuildContext,
 } from "../worker-runtime.js";
+
+// `177`: the launcher mounts the approvals directory only when `manager_approval` is on.
+export { resolveManagerApproval, approvalsDir } from "../manager-approval.js";

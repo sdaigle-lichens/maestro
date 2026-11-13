@@ -398,6 +398,8 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("PreToolUse", CHANNEL_GUARD_MATCHER, "maestro-channel-write-guard.cjs"),
   // `132`: also SendMessage, so a manager review request waits for that round's review file.
   nodeHook("PreToolUse", "AskUserQuestion|SendMessage", "maestro-human-review-gate.cjs"),
+  // `177`: the same script records the user's answer to a manager's escalation question.
+  nodeHook("PostToolUse", "AskUserQuestion", "maestro-human-review-gate.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 

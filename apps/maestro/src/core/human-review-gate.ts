@@ -116,6 +116,13 @@ export function checkHumanReview(input: {
   managerName?: string | null;
   state: { plan?: PlanLike; active_task?: unknown } | null | undefined;
   exists: (file: string) => boolean;
+  /**
+   * `177`: set by the hook for a containerized worker whose project turned `manager_approval` on.
+   * A human review then never asks the user in this pane: the stop is approved by a matching
+   * record in the approvals directory (`message` says which case, built by `approvalGuidance`),
+   * so AskUserQuestion is refused either way, with `message` as the reason.
+   */
+  managerApproval?: { active: boolean; message: string } | null;
 }): HumanReviewVerdict {
   if (input.toolName !== "AskUserQuestion" && input.toolName !== "SendMessage") return { allow: true };
   const state = input.state;
@@ -131,7 +138,18 @@ export function checkHumanReview(input: {
   const { round } = stop;
   const name = reviewFileName(state.active_task, round);
   const file = `${input.tasksDir.replace(/[\\/]+$/, "")}/${name}`;
-  if (input.exists(file)) return { allow: true };
+  const reviewFileExists = input.exists(file);
+  if (
+    reviewFileExists &&
+    input.toolName === "AskUserQuestion" &&
+    stop.label === HUMAN_REVIEW_LABEL &&
+    input.managerApproval?.active
+  )
+    return {
+      allow: false,
+      reason: `Human review round ${stop.round}: manager approval is on. ${input.managerApproval.message}`,
+    };
+  if (reviewFileExists) return { allow: true };
 
   if (stop.label === MANAGER_REVIEW_LABEL) {
     return {

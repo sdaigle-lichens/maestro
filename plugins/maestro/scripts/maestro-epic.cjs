@@ -86,6 +86,23 @@
 //       `171`: each ack addresses exactly one entry. An id two entries share (an inbox written
 //       before `171`) is refused with each entry's handle (`r009-167`); `reports` prints that handle
 //       in place of the id, and `ack` takes it, or the report's file name, like an id.
+//   node maestro-epic.cjs approve --task <NNN-task.md> --stop "<human review|commit|merge>" --commit <sha> --decision <approved|rejected>
+//                          [--note "<text>"] [--suite <green|red|partial>] [--escalation <reason,...>] [--op "<git command>"] [--paths <a,b>]
+//       `177`: the manager's own decision on a containerized worker's stop, written to the approvals
+//       directory (~/.config/maestro/approvals, outside the repo, mounted read-only into workers).
+//       Needs `manager_approval: true` in maestro.json. An approval is REFUSED when the suite is not
+//       green or any escalation reason applies (scope change, decision conflict, a push or other
+//       outward/destructive git operation, a change to agents/skills/workflows/rules/settings, a
+//       security finding, a second redirect), or while an escalation awaits the user. A rejection is
+//       always recorded (with --note). Refused inside a worker container.
+//   node maestro-epic.cjs approval-escalate --task <NNN-task.md> --stop "<stop>" --commit <sha> --reason <reason>
+//       `177`: marks the stop as needing the user and prints the AskUserQuestion to ask in THIS
+//       (manager) session. The user's answer is recorded by the AskUserQuestion hook, never by the
+//       manager.
+//   node maestro-epic.cjs approval-check --task <NNN-task.md> --stop "<stop>" [--commit <sha>]
+//       `177`: a containerized worker's gate. Exit 0 and `APPROVED` only when a record exists for
+//       exactly this task, stop and commit (default: HEAD); otherwise the reason and exit 2, or
+//       `NOT-APPLICABLE` (exit 4) when manager approval is off or this is a host worker (ask the user).
 //   node maestro-epic.cjs boundary <slug> start|end [--force]
 //       Decides whether the epic's start or end step is due, claims it and writes its scope, then
 //       prints one line: nothing configured, not due with the reason, already ran, or the skills to
@@ -102,7 +119,8 @@ const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
 const epics = require("./lib/maestro-epic.cjs");
-const { resolveSessionId, storedSessionName } = require("./lib/maestro-session.cjs");
+const os = require("os");
+const { resolveSessionId, storedSessionName, mainCheckoutRoot } = require("./lib/maestro-session.cjs");
 
 const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
@@ -165,6 +183,18 @@ function gitRunner(cwd, args) {
 function readBody(file) {
   if (file && file !== "-") return fs.readFileSync(path.resolve(file), "utf8");
   return fs.readFileSync(0, "utf8");
+}
+
+// `177`: the project's maestro.json (a worker in a worktree falls back to the main checkout's), or null.
+function readProjectConfig() {
+  for (const dir of [projectDir, mainCheckoutRoot(projectDir)]) {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(dir, ".claude", "maestro.json"), "utf8"));
+    } catch {
+      /* try the next */
+    }
+  }
+  return null;
 }
 
 const { positional, flags } = parse(argv.slice(1));
@@ -406,6 +436,87 @@ try {
       }, forSeconds * 1000);
       break;
     }
+    case "approve":
+    case "approval-escalate":
+    case "approval-check": {
+      const usage = `${command} --task <NNN-task.md> --stop "<human review|commit|merge>" --commit <sha>${command === "approve" ? " --decision <approved|rejected>" : command === "approval-escalate" ? " --reason <reason>" : ""}`;
+      const task = need(flags.task, usage);
+      const stop = need(flags.stop, usage);
+      const cfg = readProjectConfig();
+      const epic = epics.epicOfTask(projectDir, task);
+      const project = epics.projectKeyFor(projectDir);
+      const root = epics.approvalsDir(os.homedir());
+      if (command === "approval-check") {
+        if (!epic || !epics.managerApprovalApplies(cfg, epics.isContainerWorker())) {
+          process.stdout.write(
+            `NOT-APPLICABLE: ${!epic ? "this task belongs to no epic" : "manager approval is off, or this is not a containerized worker"}; ask the user as before.\n`
+          );
+          process.exitCode = 4;
+          break;
+        }
+        const normalized = epics.normalizeStop(stop);
+        if (!normalized) fail(`"${stop}" is not a stop (one of ${epics.APPROVAL_STOPS.join(", ")})`);
+        const head = flags.commit || gitRunner(projectDir, ["rev-parse", "HEAD"]).out || null;
+        const verdict = epics.findApproval(root, { project, epic, task, stop: normalized }, head);
+        const words = epics.approvalGuidance(verdict, task, normalized);
+        process.stdout.write(verdict.ok ? `APPROVED: ${words}\n` : `NOT APPROVED (${verdict.code}): ${words}\n`);
+        process.exitCode = verdict.ok ? 0 : 2;
+        break;
+      }
+      // approve / approval-escalate write: the manager's session on the host, never a worker container.
+      if (epics.isContainerWorker())
+        fail("approval records are written by the manager on the host, never from a worker container");
+      if (!epics.resolveManagerApproval(cfg))
+        fail("manager_approval is not enabled in .claude/maestro.json: the user approves these stops");
+      if (!epic) fail(`"${path.basename(task)}" belongs to no epic: there is no manager to approve it`);
+      if (command === "approval-escalate") {
+        const r = epics.escalateStop(root, { project, epic, task, stop, commit: flags.commit, reason: flags.reason });
+        if (!r.ok) fail(r.message);
+        process.stdout.write(
+          `Maestro epic: escalation recorded for the user (${r.file}).\n` +
+            `Ask the user with AskUserQuestion, options "Approve" and "Reject" (their reason through the free-text option), keeping this marker in the question text:\n  ${r.question}\n` +
+            "The user's answer is recorded by a hook; never record it yourself.\n"
+        );
+        break;
+      }
+      const decision = need(flags.decision, usage);
+      if (decision !== "approved" && decision !== "rejected")
+        fail(`--decision must be approved or rejected, not "${decision}"`);
+      const csv = (v) =>
+        typeof v === "string"
+          ? v
+              .split(",")
+              .map((x) => x.trim())
+              .filter(Boolean)
+          : [];
+      const flagged = csv(flags.escalation);
+      const bad = flagged.filter((r) => !epics.isEscalationReason(r));
+      if (bad.length)
+        fail(`unknown escalation reason: ${bad.join(", ")} (one of ${epics.ESCALATION_REASONS.join(", ")})`);
+      const r = epics.approveStop(root, {
+        project,
+        epic,
+        task,
+        stop,
+        commit: flags.commit,
+        decision,
+        note: flags.note,
+        facts: {
+          suite: flags.suite,
+          operations: flags.op ? [flags.op] : [],
+          changedPaths: csv(flags.paths),
+          scopeChange: flagged.includes("scope-change"),
+          decisionConflict: flagged.includes("decision-conflict"),
+          securityFinding: flagged.includes("security-finding"),
+          redirects: flagged.includes("second-redirect") ? 2 : 0,
+        },
+      });
+      if (!r.ok) fail(r.message);
+      process.stdout.write(
+        `Maestro epic: ${decision} recorded for ${path.basename(task)} / ${r.record.stop} at ${r.record.commit} (${r.file})\n`
+      );
+      break;
+    }
     case "boundary": {
       const usage = "boundary <slug> start|end [--force]";
       const slug = need(positional[0], usage);
@@ -422,6 +533,9 @@ try {
           "  note <to-slug> --from-epic <slug> [--from <name>] [--subject <text>] --file <path>|-\n" +
           "  review-request --task <task.md> --file <review file> [--from <name>]\n" +
           "  review-verdict --task <task.md> <on-track|redirect|escalate> [--by <name>]\n  reports <slug>\n  watch <slug> [--for <seconds>] [--interval <seconds>]\n  ack <slug> <id>...\n" +
+          "  approve --task <task.md> --stop <stop> --commit <sha> --decision <approved|rejected>\n" +
+          "  approval-escalate --task <task.md> --stop <stop> --commit <sha> --reason <reason>\n" +
+          "  approval-check --task <task.md> --stop <stop> [--commit <sha>]\n" +
           "  boundary <slug> start|end [--force]"
       );
   }

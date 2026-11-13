@@ -33,11 +33,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/core/plugin-entries/maestro-worker-runtime.ts
 var maestro_worker_runtime_exports = {};
 __export(maestro_worker_runtime_exports, {
+  CONTAINER_APPROVALS_DIR: () => CONTAINER_APPROVALS_DIR,
   KNOWN_HOOK_PACKAGES: () => KNOWN_HOOK_PACKAGES,
   READONLY_PATHS: () => READONLY_PATHS,
   WORKER_RUNTIME_ENV: () => WORKER_RUNTIME_ENV,
   WORKER_RUNTIME_SCRIPT: () => WORKER_RUNTIME_SCRIPT,
   WORKER_TOKEN_REL: () => WORKER_TOKEN_REL,
+  approvalsDir: () => approvalsDir,
   claudeJsonFor: () => claudeJsonFor,
   containerNameFor: () => containerNameFor,
   detectHookPackages: () => detectHookPackages,
@@ -63,6 +65,7 @@ __export(maestro_worker_runtime_exports, {
   parseProbeOutput: () => parseProbeOutput,
   pinPlugins: () => pinPlugins,
   readWorkerToken: () => readWorkerToken,
+  resolveManagerApproval: () => resolveManagerApproval,
   resolveWorkerRuntime: () => resolveWorkerRuntime,
   tokenSetupMessage: () => tokenSetupMessage,
   trustedPaths: () => trustedPaths,
@@ -76,6 +79,10 @@ module.exports = __toCommonJS(maestro_worker_runtime_exports);
 
 // src/core/worker-runtime.ts
 var import_node_crypto = __toESM(require("node:crypto"), 1);
+var import_node_fs3 = __toESM(require("node:fs"), 1);
+var import_node_path3 = __toESM(require("node:path"), 1);
+
+// src/core/manager-approval.ts
 var import_node_fs2 = __toESM(require("node:fs"), 1);
 var import_node_path2 = __toESM(require("node:path"), 1);
 
@@ -92,13 +99,27 @@ function worktreePathFor(mainRoot, filename) {
   return import_node_path.default.join(import_node_path.default.dirname(mainRoot), `${import_node_path.default.basename(mainRoot)}-task-${n}`);
 }
 
+// src/core/manager-approval.ts
+var APPROVALS_DIR_ENV = "MAESTRO_APPROVALS_DIR";
+var APPROVALS_REL = import_node_path2.default.join(".config", "maestro", "approvals");
+function resolveManagerApproval(cfg) {
+  if (!cfg || cfg.version !== 3) return false;
+  const v = cfg.manager_approval;
+  return v === true;
+}
+function approvalsDir(home, env = process.env) {
+  const override = env[APPROVALS_DIR_ENV]?.trim();
+  return override ? override : import_node_path2.default.join(home, APPROVALS_REL);
+}
+
 // src/core/worker-runtime.ts
 var WORKER_RUNTIME_ENV = "MAESTRO_WORKER_RUNTIME";
 var WORKER_RUNTIME_SCRIPT = ".claude/scripts/maestro-worker-runtime.cjs";
-var WORKER_TOKEN_REL = import_node_path2.default.join(".config", "maestro", "worker-token");
+var WORKER_TOKEN_REL = import_node_path3.default.join(".config", "maestro", "worker-token");
 var CONTAINER_USER = "worker";
 var CONTAINER_HOME = "/home/worker";
 var BASE_IMAGE = "node:22-bookworm-slim";
+var CONTAINER_APPROVALS_DIR = `${CONTAINER_HOME}/${APPROVALS_REL.split(import_node_path3.default.sep).join("/")}`;
 var READONLY_PATHS = [
   ".claude/settings.json",
   ".claude/settings.local.json",
@@ -122,7 +143,7 @@ function resolveWorkerRuntime(cfg) {
   return typeof v === "string" && v.trim().toLowerCase() === "docker" ? "docker" : "host";
 }
 function dockerLaunchCommandFor(name, filename, model) {
-  const rel = import_node_path2.default.posix.join(".claude", "maestro-tasks", import_node_path2.default.basename(filename));
+  const rel = import_node_path3.default.posix.join(".claude", "maestro-tasks", import_node_path3.default.basename(filename));
   const flag = model?.trim() ? ` --model ${shellQuote(model.trim())}` : "";
   return `node ${WORKER_RUNTIME_SCRIPT} run --name ${shellQuote(name)}${flag} ${shellQuote(rel)}`;
 }
@@ -138,7 +159,7 @@ function workerMounts(input) {
   const { repoRoot } = input;
   const mounts = [{ source: repoRoot, target: repoRoot, readonly: false }];
   for (const rel of READONLY_PATHS) {
-    const target = import_node_path2.default.join(repoRoot, rel);
+    const target = import_node_path3.default.join(repoRoot, rel);
     if (rel === ".claude/settings.local.json") {
       if (input.filteredSettingsLocal) mounts.push({ source: input.filteredSettingsLocal, target, readonly: true });
       continue;
@@ -146,6 +167,7 @@ function workerMounts(input) {
     if (input.exists(target)) mounts.push({ source: target, target, readonly: true });
   }
   if (input.worktreePath) mounts.push({ source: input.worktreePath, target: input.worktreePath, readonly: false });
+  if (input.approvalsDir) mounts.push({ source: input.approvalsDir, target: CONTAINER_APPROVALS_DIR, readonly: true });
   return mounts;
 }
 function mountArg(m) {
@@ -157,6 +179,8 @@ function containerNameFor(name) {
 function workerRunArgs(o) {
   const args = ["run", "-it", "--rm", "--name", containerNameFor(o.name)];
   args.push("-e", "CLAUDE_CODE_OAUTH_TOKEN", "-e", `${WORKER_RUNTIME_ENV}=docker`);
+  if (o.mounts.some((m) => m.target === CONTAINER_APPROVALS_DIR))
+    args.push("-e", `${APPROVALS_DIR_ENV}=${CONTAINER_APPROVALS_DIR}`);
   const id = o.gitIdentity;
   if (id?.name) args.push("-e", `GIT_AUTHOR_NAME=${id.name}`, "-e", `GIT_COMMITTER_NAME=${id.name}`);
   if (id?.email) args.push("-e", `GIT_AUTHOR_EMAIL=${id.email}`, "-e", `GIT_COMMITTER_EMAIL=${id.email}`);
@@ -183,7 +207,7 @@ function tokenSetupMessage(tokenPath) {
 function readWorkerToken(tokenPath) {
   let raw;
   try {
-    raw = import_node_fs2.default.readFileSync(tokenPath, "utf8");
+    raw = import_node_fs3.default.readFileSync(tokenPath, "utf8");
   } catch {
     return { ok: false, message: tokenSetupMessage(tokenPath) };
   }
@@ -225,13 +249,13 @@ var SCAN_MAX_DEPTH = 4;
 function scanFiles(dir, depth, out) {
   let entries;
   try {
-    entries = import_node_fs2.default.readdirSync(dir, { withFileTypes: true });
+    entries = import_node_fs3.default.readdirSync(dir, { withFileTypes: true });
   } catch {
     return;
   }
   for (const e of entries) {
     if (e.name === "node_modules" || e.name === ".git") continue;
-    const p = import_node_path2.default.join(dir, e.name);
+    const p = import_node_path3.default.join(dir, e.name);
     if (e.isDirectory()) {
       if (depth < SCAN_MAX_DEPTH) scanFiles(p, depth + 1, out);
     } else if (SCAN_EXT.test(e.name)) out.push(p);
@@ -244,8 +268,8 @@ function detectHookPackages(roots) {
   for (const f of files) {
     let text;
     try {
-      if (import_node_fs2.default.statSync(f).size > SCAN_MAX_BYTES) continue;
-      text = import_node_fs2.default.readFileSync(f, "utf8");
+      if (import_node_fs3.default.statSync(f).size > SCAN_MAX_BYTES) continue;
+      text = import_node_fs3.default.readFileSync(f, "utf8");
     } catch {
       continue;
     }
@@ -277,12 +301,12 @@ function imageTagInputs(spec) {
 }
 function imageTag(spec) {
   const hash = import_node_crypto.default.createHash("sha256").update(JSON.stringify(imageTagInputs(spec))).digest("hex").slice(0, 12);
-  const slug = import_node_path2.default.basename(spec.projectRoot).toLowerCase().replace(/[^a-z0-9_.-]/g, "-").replace(/^[-.]+/, "") || "project";
+  const slug = import_node_path3.default.basename(spec.projectRoot).toLowerCase().replace(/[^a-z0-9_.-]/g, "-").replace(/^[-.]+/, "") || "project";
   return `maestro-worker-${slug}:${hash}`;
 }
 function trustedPaths(projectRoot) {
-  const parent = import_node_path2.default.dirname(projectRoot);
-  return parent === projectRoot || parent === import_node_path2.default.dirname(parent) ? [projectRoot] : [projectRoot, parent];
+  const parent = import_node_path3.default.dirname(projectRoot);
+  return parent === projectRoot || parent === import_node_path3.default.dirname(parent) ? [projectRoot] : [projectRoot, parent];
 }
 function claudeJsonFor(projectRoot) {
   const projects = {};
@@ -333,25 +357,25 @@ function installedPluginsJsonFor(pins) {
 }
 function readJsonFile(p) {
   try {
-    return JSON.parse(import_node_fs2.default.readFileSync(p, "utf8"));
+    return JSON.parse(import_node_fs3.default.readFileSync(p, "utf8"));
   } catch {
     return null;
   }
 }
 function gatherImageSpec(projectRoot, g) {
   const userPlugins = [
-    ...new Set(enabledPluginIds(readJsonFile(import_node_path2.default.join(g.home, ".claude", "settings.json"))))
+    ...new Set(enabledPluginIds(readJsonFile(import_node_path3.default.join(g.home, ".claude", "settings.json"))))
   ].sort();
   const ids = [
-    ...enabledPluginIds(readJsonFile(import_node_path2.default.join(projectRoot, ".claude", "settings.json"))),
-    ...enabledPluginIds(readJsonFile(import_node_path2.default.join(projectRoot, ".claude", "settings.local.json"))),
+    ...enabledPluginIds(readJsonFile(import_node_path3.default.join(projectRoot, ".claude", "settings.json"))),
+    ...enabledPluginIds(readJsonFile(import_node_path3.default.join(projectRoot, ".claude", "settings.local.json"))),
     ...userPlugins
   ];
-  const installed = readJsonFile(import_node_path2.default.join(g.home, ".claude", "plugins", "installed_plugins.json"));
+  const installed = readJsonFile(import_node_path3.default.join(g.home, ".claude", "plugins", "installed_plugins.json"));
   const pinned = pinPlugins(ids, installed);
-  const pins = pinned.pins.filter((p) => import_node_fs2.default.existsSync(p.installPath));
+  const pins = pinned.pins.filter((p) => import_node_fs3.default.existsSync(p.installPath));
   const missing = [...pinned.missing, ...pinned.pins.filter((p) => !pins.includes(p)).map((p) => p.id)].sort();
-  const known = readJsonFile(import_node_path2.default.join(g.home, ".claude", "plugins", "known_marketplaces.json"));
+  const known = readJsonFile(import_node_path3.default.join(g.home, ".claude", "plugins", "known_marketplaces.json"));
   const marketplaces = [];
   for (const name of [...new Set(pins.map((p) => pluginParts(p.id).marketplace))].sort()) {
     const entry = known && typeof known === "object" ? known[name] : void 0;
@@ -360,7 +384,7 @@ function gatherImageSpec(projectRoot, g) {
     marketplaces.push({
       name,
       entry,
-      dir: typeof loc === "string" && import_node_fs2.default.existsSync(loc) && import_node_fs2.default.statSync(loc).isDirectory() ? loc : null
+      dir: typeof loc === "string" && import_node_fs3.default.existsSync(loc) && import_node_fs3.default.statSync(loc).isDirectory() ? loc : null
     });
   }
   return {
@@ -374,9 +398,9 @@ function gatherImageSpec(projectRoot, g) {
       userPlugins: userPlugins.filter((id) => pins.some((p) => p.id === id)),
       npmPackages: hookPackagesFor(
         [
-          ...pins.flatMap((p) => [import_node_path2.default.join(p.installPath, "hooks"), import_node_path2.default.join(p.installPath, "scripts")]),
-          import_node_path2.default.join(projectRoot, ".claude", "hooks"),
-          import_node_path2.default.join(projectRoot, ".claude", "scripts")
+          ...pins.flatMap((p) => [import_node_path3.default.join(p.installPath, "hooks"), import_node_path3.default.join(p.installPath, "scripts")]),
+          import_node_path3.default.join(projectRoot, ".claude", "hooks"),
+          import_node_path3.default.join(projectRoot, ".claude", "scripts")
         ],
         parsePackageSpecs(g.extraPackages ?? [])
       )
@@ -442,8 +466,8 @@ function dockerignoreText() {
 }
 function writeBuildContext(dir, spec, overrides = {}) {
   const io = { ...defaultContextIO, ...overrides };
-  import_node_fs2.default.mkdirSync(dir, { recursive: true });
-  const put = (name, text) => import_node_fs2.default.writeFileSync(import_node_path2.default.join(dir, name), text);
+  import_node_fs3.default.mkdirSync(dir, { recursive: true });
+  const put = (name, text) => import_node_fs3.default.writeFileSync(import_node_path3.default.join(dir, name), text);
   put("Dockerfile", dockerfileFor(spec));
   put("claude.json", claudeJsonFor(spec.projectRoot));
   put("managed-settings.json", managedSettingsJson());
@@ -451,41 +475,43 @@ function writeBuildContext(dir, spec, overrides = {}) {
   put("user-settings.json", userSettingsJsonFor(spec.userPlugins ?? []));
   const marketplaces = spec.marketplaces ?? [];
   put("known_marketplaces.json", knownMarketplacesJsonFor(marketplaces));
-  import_node_fs2.default.mkdirSync(import_node_path2.default.join(dir, "plugins"), { recursive: true });
-  import_node_fs2.default.mkdirSync(import_node_path2.default.join(dir, "marketplaces"), { recursive: true });
+  import_node_fs3.default.mkdirSync(import_node_path3.default.join(dir, "plugins"), { recursive: true });
+  import_node_fs3.default.mkdirSync(import_node_path3.default.join(dir, "marketplaces"), { recursive: true });
   put(".dockerignore", dockerignoreText());
   const copy = (from, to) => io.copyDir(from, to, io.trackedFiles?.(from) ?? null);
-  for (const m of marketplaces) if (m.dir) copy(m.dir, import_node_path2.default.join(dir, "marketplaces", m.name));
+  for (const m of marketplaces) if (m.dir) copy(m.dir, import_node_path3.default.join(dir, "marketplaces", m.name));
   for (const p of spec.plugins) {
     const { name, marketplace } = pluginParts(p.id);
-    copy(p.installPath, import_node_path2.default.join(dir, "plugins", marketplace, name, p.version));
+    copy(p.installPath, import_node_path3.default.join(dir, "plugins", marketplace, name, p.version));
   }
 }
 var defaultContextIO = {
   copyDir: (from, to, tracked) => {
     if (tracked) {
-      import_node_fs2.default.mkdirSync(to, { recursive: true });
+      import_node_fs3.default.mkdirSync(to, { recursive: true });
       for (const rel of tracked) {
-        const src = import_node_path2.default.join(from, rel);
-        if (isExcludedPath(rel) || !import_node_fs2.default.existsSync(src)) continue;
-        import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(import_node_path2.default.join(to, rel)), { recursive: true });
-        import_node_fs2.default.cpSync(src, import_node_path2.default.join(to, rel));
+        const src = import_node_path3.default.join(from, rel);
+        if (isExcludedPath(rel) || !import_node_fs3.default.existsSync(src)) continue;
+        import_node_fs3.default.mkdirSync(import_node_path3.default.dirname(import_node_path3.default.join(to, rel)), { recursive: true });
+        import_node_fs3.default.cpSync(src, import_node_path3.default.join(to, rel));
       }
       return;
     }
-    import_node_fs2.default.cpSync(from, to, {
+    import_node_fs3.default.cpSync(from, to, {
       recursive: true,
-      filter: (src) => !isExcludedPath(import_node_path2.default.relative(from, src))
+      filter: (src) => !isExcludedPath(import_node_path3.default.relative(from, src))
     });
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  CONTAINER_APPROVALS_DIR,
   KNOWN_HOOK_PACKAGES,
   READONLY_PATHS,
   WORKER_RUNTIME_ENV,
   WORKER_RUNTIME_SCRIPT,
   WORKER_TOKEN_REL,
+  approvalsDir,
   claudeJsonFor,
   containerNameFor,
   detectHookPackages,
@@ -511,6 +537,7 @@ var defaultContextIO = {
   parseProbeOutput,
   pinPlugins,
   readWorkerToken,
+  resolveManagerApproval,
   resolveWorkerRuntime,
   tokenSetupMessage,
   trustedPaths,

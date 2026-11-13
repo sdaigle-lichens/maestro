@@ -35,6 +35,7 @@ The maestro-manager skill and the worker template must say plainly: with manager
 ## Manager direction
 
 - This task's worker runs in Docker mode (`worker_runtime: "docker"`) as the epic's interactive container test, after the user refreshes the installed maestro plugin and the image is rebuilt. Its report states, for the container run itself: no prompts up to the first human review; every host-enabled plugin's agents and skills loaded; no worktree trust prompt; whether the CLI's inbox write prompted (never verified so far); the manager's `[manager message]` pane replies arriving and the worker continuing from them; the test agent writing its channel payload with no `missing_payload`. A prompt or failure found there is fixed in this task, or reported to the manager when it is outside this task's scope.
+- (m003, on-track) The extra AskUserQuestion matcher sits on the already-registered PostToolUse event, so the bump stays patch. Keep the hook's capture to the manager session's own answer to a marked escalation question: it must never write a record from a worker session or from text a worker or peer supplied.
 
 ## Touched surfaces
 
