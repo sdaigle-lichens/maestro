@@ -7,12 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-import {
-  CONTAINER_APPROVALS_DIR,
-  mountArg,
-  workerMounts,
-  workerRunArgs,
-} from "../../src/core/worker-runtime.js";
+import { CONTAINER_APPROVALS_DIR, mountArg, workerMounts, workerRunArgs } from "../../src/core/worker-runtime.js";
 import { checkHumanReview, reviewFileName } from "../../src/core/human-review-gate.js";
 import {
   approvalFile,
@@ -92,7 +87,12 @@ describe("the human-review gate with manager approval (177)", () => {
   const review = path.join(tasksDir, reviewFileName(task, 1));
   const state = {
     active_task: task,
-    plan: { steps: [{ label: "@backend", status: "done" }, { label: "human review", status: "pending" }] },
+    plan: {
+      steps: [
+        { label: "@backend", status: "done" },
+        { label: "human review", status: "pending" },
+      ],
+    },
   };
   const verdict = (toolName: string, managerApproval: { active: boolean; message: string } | null) =>
     checkHumanReview({
@@ -141,7 +141,17 @@ describe("the installed epic CLI refuses approval outside the manager's host ses
     if (!("MAESTRO_WORKER_RUNTIME" in extra)) delete env.MAESTRO_WORKER_RUNTIME;
     return spawnSync("node", [EPIC_CLI, ...args], { encoding: "utf8", env, cwd: root });
   };
-  const approveArgs = ["approve", "--task", "177-x.md", "--stop", "commit", "--commit", "abcdef1", "--decision", "approved"];
+  const approveArgs = [
+    "approve",
+    "--task",
+    "177-x.md",
+    "--stop",
+    "commit",
+    "--commit",
+    "abcdef1",
+    "--decision",
+    "approved",
+  ];
 
   it("off by default: approval-check answers NOT-APPLICABLE (exit 4) and the manager's approve is refused", () => {
     writeConfig(undefined);
@@ -154,7 +164,7 @@ describe("the installed epic CLI refuses approval outside the manager's host ses
     expect(fs.existsSync(approvals)).toBe(false);
   });
 
-  it("the string \"true\" is not on: a hand-edited config must use the boolean", () => {
+  it('the string "true" is not on: a hand-edited config must use the boolean', () => {
     writeConfig("true");
     expect(cli(approveArgs).status).not.toBe(0);
     expect(fs.existsSync(approvals)).toBe(false);
@@ -225,25 +235,58 @@ describe("the installed epic CLI never overwrites the user's answer for the same
     delete env.MAESTRO_WORKER_RUNTIME;
     return spawnSync("node", [EPIC_CLI, ...args], { encoding: "utf8", env, cwd: root });
   };
-  const recordPath = () => approvalFile(approvals, { project: projectKeyFor(root), epic: EPIC, task: TASK_FILE, stop: "commit" });
+  const recordPath = () =>
+    approvalFile(approvals, { project: projectKeyFor(root), epic: EPIC, task: TASK_FILE, stop: "commit" });
 
   it("approve over the user's Approve for the same commit exits non-zero, prints the refusal, and keeps the user's record", () => {
     const before = fs.readFileSync(recordPath(), "utf8");
-    const r = cli(["approve", "--task", TASK_FILE, "--stop", "commit", "--commit", "abcdef1", "--decision", "rejected"]);
+    const r = cli([
+      "approve",
+      "--task",
+      TASK_FILE,
+      "--stop",
+      "commit",
+      "--commit",
+      "abcdef1",
+      "--decision",
+      "rejected",
+    ]);
     expect(r.status).not.toBe(0);
     expect(r.stderr).toContain("already answered");
     expect(fs.readFileSync(recordPath(), "utf8")).toBe(before);
   });
 
   it("approval-escalate on the same commit exits non-zero, prints the refusal, and records no pending escalation", () => {
-    const r = cli(["approval-escalate", "--task", TASK_FILE, "--stop", "commit", "--commit", "abcdef1", "--reason", "outward-git"]);
+    const r = cli([
+      "approval-escalate",
+      "--task",
+      TASK_FILE,
+      "--stop",
+      "commit",
+      "--commit",
+      "abcdef1",
+      "--reason",
+      "outward-git",
+    ]);
     expect(r.status).not.toBe(0);
     expect(r.stderr).toContain("already answered");
-    expect(readPendingEscalation(approvals, { project: projectKeyFor(root), epic: EPIC, task: TASK_FILE, stop: "commit" })).toBeNull();
+    expect(
+      readPendingEscalation(approvals, { project: projectKeyFor(root), epic: EPIC, task: TASK_FILE, stop: "commit" })
+    ).toBeNull();
   });
 
   it("a new commit reopens the stop through the CLI: approval-escalate on another commit is recorded", () => {
-    const r = cli(["approval-escalate", "--task", TASK_FILE, "--stop", "commit", "--commit", "9999999fedcba", "--reason", "outward-git"]);
+    const r = cli([
+      "approval-escalate",
+      "--task",
+      TASK_FILE,
+      "--stop",
+      "commit",
+      "--commit",
+      "9999999fedcba",
+      "--reason",
+      "outward-git",
+    ]);
     expect(r.status).toBe(0);
     expect(r.stdout).toContain("escalation recorded");
   });

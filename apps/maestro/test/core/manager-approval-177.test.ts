@@ -51,7 +51,9 @@ function record(over: Partial<ApprovalRecord> = {}): ApprovalRecord {
   };
 }
 
-const want = (over: Partial<{ task: string; stop: "commit" | "merge" | "human review"; commit: string | null }> = {}) => ({
+const want = (
+  over: Partial<{ task: string; stop: "commit" | "merge" | "human review"; commit: string | null }> = {}
+) => ({
   task: `/p/.claude/maestro-tasks/${TASK}`,
   stop: "commit" as const,
   commit: COMMIT,
@@ -293,9 +295,7 @@ describe("parseEscalationAnswer: only the user's answer to a marked question cou
     const q = question();
     expect(parseEscalationAnswer(input(q), { answers: { [q]: "do not approve" } })?.decision).toBeNull();
     expect(parseEscalationAnswer(input(q), { answers: { [q]: "maybe later" } })?.decision).toBeNull();
-    expect(
-      parseEscalationAnswer(input(q), { answers: { a: "Approve", b: "Reject" } })?.decision
-    ).toBeNull();
+    expect(parseEscalationAnswer(input(q), { answers: { a: "Approve", b: "Reject" } })?.decision).toBeNull();
     expect(parseEscalationAnswer(input("Approve the commit?"), { answers: {} })).toBeNull();
   });
 
