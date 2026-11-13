@@ -47,6 +47,8 @@ interface Fixture {
   psFails?: boolean;
   /** Refs whose `docker image inspect` fails. */
   inspectFails?: string[];
+  /** Refs whose inspect succeeds but prints this raw text instead of `id|size|config-json`. */
+  inspectGarbage?: Record<string, string>;
 }
 
 // A node script, so the stub's logic is plain. Written with concatenation, not template literals,
@@ -68,7 +70,37 @@ const DOCKER_STUB_LINES = [
   'if (cmd === "image" && sub === "inspect") {',
   "  const im = fx.images.find((i) => i.ref === args[args.length - 1]);",
   "  if (!im || (fx.inspectFails || []).includes(im.ref)) process.exit(1);",
-  '  out(im.id + "|" + im.size + "|" + im.label + "\\n");',
+  "  if (fx.inspectGarbage && fx.inspectGarbage[im.ref] !== undefined) {",
+  '    out(fx.inspectGarbage[im.ref] + "\\n");',
+  "    process.exit(0);",
+  "  }",
+  // Like real docker: an image built without labels has NO Config.Labels map, so a template that
+  // dereferences it directly (index, bare field) errors; only a tolerant one (json) prints "null".
+  '  const tpl = args[args.indexOf("--format") + 1] || "";',
+  '  const labels = im.label && im.label !== "<no value>" ? { "maestro.worker.project": im.label } : null;',
+  "  let bad = false;",
+  "  const text = tpl.replace(/\\{\\{([^}]*)\\}\\}/g, (m, e) => {",
+  "    e = e.trim();",
+  '    if (e === ".Id") return im.id;',
+  '    if (e === ".Size") return String(im.size);',
+  '    if (e === "json .Config") return JSON.stringify(labels ? { Cmd: ["node"], Labels: labels } : { Cmd: ["node"] });',
+  // Real docker only tolerates a lone `{{json .Config.Labels}}`; beside other fields it errors on a missing map.
+  '    if (e === "json .Config.Labels") {',
+  '      if (!labels && tpl.trim() !== m) { bad = true; return ""; }',
+  "      return JSON.stringify(labels);",
+  "    }",
+  '    if (/^index \\.Config\\.Labels /.test(e) || e === ".Config.Labels") {',
+  '      if (!labels) { bad = true; return ""; }',
+  '      return labels["maestro.worker.project"] || "";',
+  "    }",
+  "    bad = true;",
+  '    return "";',
+  "  });",
+  "  if (bad) {",
+  '    process.stderr.write("template parsing error: template: :1:33: executing \\"\\" at <.Config.Labels>: map has no entry for key \\"Labels\\"\\n");',
+  "    process.exit(1);",
+  "  }",
+  '  out(text + "\\n");',
   "  process.exit(0);",
   "}",
   'if (cmd === "ps") {',
@@ -265,6 +297,44 @@ describe("prune through the installed launcher against a docker stub (180)", () 
     expect(r.stdout).not.toMatch(/^removed /m);
   });
 
+  // Real docker: an image built before the label has no Config.Labels map, and a template that
+  // dereferences it errors. The stub models that, so this is the negative control for the launcher's template.
+  it("the stub fails an unlabelled image on a direct Labels template (negative control) and accepts json", () => {
+    writeFixture(fixture());
+    const inspect = (tpl: string) =>
+      spawnSync("docker", ["image", "inspect", "--format", tpl, `${repo}:unl`], { encoding: "utf8", env: childEnv() });
+    const old = inspect('{{.Id}}|{{.Size}}|{{index .Config.Labels "maestro.worker.project"}}');
+    expect(old.status).toBe(1);
+    expect(old.stderr).toContain('executing "" at <.Config.Labels>: map has no entry for key "Labels"');
+    // Found live: `json .Config.Labels` beside other fields also errors, so the launcher reads `json .Config`.
+    expect(inspect("{{.Id}}|{{.Size}}|{{json .Config.Labels}}").status).toBe(1);
+    const tolerant = inspect("{{.Id}}|{{.Size}}|{{json .Config}}");
+    expect(tolerant.status).toBe(0);
+    expect(tolerant.stdout).not.toContain("Labels");
+  });
+
+  it("images built before the label (no Labels map) are skipped with their docker rmi and exit 0, real and dry run", () => {
+    writeFixture(
+      fixture({
+        containers: [],
+        images: [
+          { ref: current, id: "sha256:c0ffee000001", size: GB, label: LABEL },
+          { ref: `${repo}:a35a50566c04`, id: "sha256:0c0c0c0c0c03", size: GB, label: "" },
+          { ref: `${repo}:bf3bc6f5215e`, id: "sha256:0d0d0d0d0d04", size: GB, label: "" },
+        ],
+      })
+    );
+    for (const args of [["prune"], ["prune", "--dry-run"]]) {
+      const r = run(LAUNCHER, args);
+      expect(r.code).toBe(0);
+      expect(r.stdout).not.toContain("could not inspect");
+      expect(r.stdout).toContain(`docker rmi ${repo}:a35a50566c04`);
+      expect(r.stdout).toContain(`docker rmi ${repo}:bf3bc6f5215e`);
+      expect(removalCalls()).toEqual([]);
+      fs.rmSync(dockerLog, { force: true });
+    }
+  });
+
   it("an unlabelled image is never removed, in a real run or a dry run, and is listed with its docker rmi", () => {
     writeFixture(fixture());
     for (const args of [["prune"], ["prune", "--dry-run"]]) {
@@ -372,6 +442,51 @@ describe("prune through the installed launcher against a docker stub (180)", () 
     expect(r.stdout).not.toContain("nothing needed removing");
     expect(r.stdout).toMatch(/docker/i);
     expect(removalCalls()).toEqual([]);
+  });
+
+  // Garbled inspect output is a failed query, not "unlabelled": named, never removed, exit 1.
+  describe("garbled inspect output", () => {
+    const cases: Record<string, string> = {
+      "no separators": "garbage",
+      "invalid json": "sha256:0a0a0a0a0a01|2000000000|{not json",
+      "non-object json": "sha256:0a0a0a0a0a01|2000000000|[1,2]",
+      "empty id": "|2000000000|{}",
+    };
+    for (const [label, text] of Object.entries(cases)) {
+      for (const args of [["prune"], ["prune", "--dry-run"]]) {
+        it(`${label}, ${args.join(" ")}: names the image, exits 1, removes nothing`, () => {
+          writeFixture(fixture({ containers: [], inspectGarbage: { [`${repo}:old1`]: text } }));
+          const r = run(LAUNCHER, args);
+          expect(r.code).toBe(1);
+          expect(r.stdout).toContain(`could not inspect image ${repo}:old1: unreadable inspect output`);
+          expect(r.stdout).not.toContain("nothing needed removing");
+          expect(removalCalls().some((c) => c.includes(`${repo}:old1`))).toBe(false);
+        });
+      }
+    }
+
+    it("a garbled current image removes no image at all, real and dry run", () => {
+      for (const args of [["prune"], ["prune", "--dry-run"]]) {
+        writeFixture(fixture({ containers: [], inspectGarbage: { [current]: "garbage" } }));
+        const r = run(LAUNCHER, args);
+        expect(r.code).toBe(1);
+        expect(r.stdout).toContain(`could not inspect image ${current}: unreadable inspect output`);
+        expect(removalCalls()).toEqual([]);
+        fs.rmSync(dockerLog, { force: true });
+      }
+    });
+
+    it("a valid config with no Labels key is unlabelled, not an error", () => {
+      writeFixture(
+        fixture({
+          containers: [],
+          inspectGarbage: { [`${repo}:old1`]: "sha256:0a0a0a0a0a01|2000000000|{}" },
+        })
+      );
+      const r = run(LAUNCHER, ["prune", "--dry-run"]);
+      expect(r.code).toBe(0);
+      expect(r.stdout).toContain(`docker rmi ${repo}:old1`);
+    });
   });
 
   // DEFECT (180, found by the QA re-test of item 3): `docker ps` fails after `image ls` succeeded. The

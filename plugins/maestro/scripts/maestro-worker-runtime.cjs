@@ -181,18 +181,41 @@ function pruneCommand(dryRun) {
       "image",
       "inspect",
       "--format",
-      `{{.Id}}|{{.Size}}|{{index .Config.Labels "${rt.PROJECT_LABEL}"}}`,
+      // Read the whole Config as json and take Labels in JS: an image built without labels has no Labels
+      // key, and any template that names `.Config.Labels` beside other fields errors on it in real docker.
+      "{{.Id}}|{{.Size}}|{{json .Config}}",
       ref,
     ]);
     const line = q.lines && q.lines[0];
-    if (!line) {
-      // Never dropped silently: named, never removed, and the run exits 1.
-      queryFailures.push(`could not inspect image ${ref}: ${q.reason || "no output"}`);
+    // Never dropped silently: a failed or unreadable inspect is named, the image is never removed, exit 1.
+    const unreadable = (why) => {
+      queryFailures.push(`could not inspect image ${ref}: ${why}`);
       if (ref === currentTag) currentUninspected = true;
+    };
+    if (!line) {
+      unreadable(q.reason || "no output");
       continue;
     }
-    const [id, size, label] = line.split("|");
-    images.push({ ref, id, bytes: Number(size) || 0, label: label && label !== "<no value>" ? label : null });
+    const first = line.indexOf("|");
+    const second = first < 0 ? -1 : line.indexOf("|", first + 1);
+    let config = null;
+    if (second > 0) {
+      try {
+        config = JSON.parse(line.slice(second + 1));
+      } catch {
+        config = null;
+      }
+    }
+    const id = second > 0 ? line.slice(0, first) : "";
+    if (!id || !config || typeof config !== "object" || Array.isArray(config)) {
+      unreadable("unreadable inspect output");
+      continue;
+    }
+    const size = line.slice(first + 1, second);
+    // A valid Config with no Labels key is an unlabelled image, not an error.
+    const labels = config.Labels && typeof config.Labels === "object" ? config.Labels : null;
+    const label = labels && typeof labels[rt.PROJECT_LABEL] === "string" ? labels[rt.PROJECT_LABEL] : "";
+    images.push({ ref, id, bytes: Number(size) || 0, label: label || null });
   }
   const ps = dockerQuery(["ps", "-a", "--format", "{{.Names}}|{{.Image}}|{{.State}}"]);
   const containers = (ps.lines || []).map((l) => {
