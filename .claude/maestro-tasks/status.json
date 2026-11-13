@@ -893,12 +893,12 @@
     "blockedBy": []
   },
   "179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "containerized-workers"
   },
   "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md"
     ],

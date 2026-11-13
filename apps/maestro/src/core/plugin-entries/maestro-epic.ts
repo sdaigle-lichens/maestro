@@ -56,7 +56,7 @@ export {
 } from "../epics.js";
 
 // `176`: the CLI words its output for a containerized worker (see `deliveryWords`).
-export { isContainerWorker } from "../worker-runtime.js";
+export { isContainerWorker, refreshRuntimeWords } from "../worker-runtime.js";
 
 export { runEpicBoundary, formatBoundary } from "../epic-boundary.js";
 

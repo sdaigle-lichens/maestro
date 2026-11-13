@@ -210,6 +210,22 @@ executes `imagePluginProbe` in the image; `parseProbeOutput` lists what is missi
 `image` reuses it). The probe checks presence only: that the directory exists and the baked settings
 enable the id. It does not show that Claude loads the plugin.
 
+## Worker image toolchain and refresh wording (`179`)
+
+- **Toolchain, read from the project (`detectToolchain`).** The image carries the package manager
+  pinned in `package.json` `packageManager` (corepack for pnpm/yarn, npm otherwise;
+  `packageManagerInstall`), python3 always (hook scripts call it), the playwright version and browsers
+  a `vitest.config.*` using playwright names, and apt packages named in `verify_command` (`make`).
+  The toolchain feeds `imageTagInputs` (layout 6), so a changed pin rebuilds the image.
+- **Git identity** is not an image input. `run` passes `GIT_AUTHOR_*`/`GIT_COMMITTER_*` as environment
+  at launch (`dockerLaunchCommandFor`), so no layer holds it.
+- **`claude` CLI** is installed in the image as before; the worker's own flow calls it.
+- **`pnpm refresh:runtime` in a container.** `refreshRuntimeWords` tells a containerized worker to ask
+  the user to run it on the host, since `.claude/scripts` and `.claude/settings.json` are read-only
+  there. Host wording is unchanged. `maestro-task-status.cjs` uses it in the refresh hint.
+- **Real-Docker check.** `apps/maestro/scripts/check-worker-verify.sh` (user-run, `! bash ...`) builds
+  the image and runs `verify_command` in it. Not yet run for this change.
+
 ## Manager approval for containerized workers (`177`)
 
 Opt-in: `"manager_approval": true` in `maestro.json` (absent or any other value is off). It applies only

@@ -88,6 +88,7 @@ __export(maestro_epic_exports, {
   readyTasks: () => readyTasks,
   recordReviewVerdict: () => recordReviewVerdict,
   recordUserAnswer: () => recordUserAnswer,
+  refreshRuntimeWords: () => refreshRuntimeWords,
   removeWorker: () => removeWorker,
   reportCommandFor: () => reportCommandFor,
   resolveManagerApproval: () => resolveManagerApproval,
@@ -780,6 +781,9 @@ var CONTAINER_HOME = "/home/worker";
 var CONTAINER_APPROVALS_DIR = `${CONTAINER_HOME}/${APPROVALS_REL.split(import_node_path9.default.sep).join("/")}`;
 function isContainerWorker(env = process.env) {
   return env[WORKER_RUNTIME_ENV]?.trim().toLowerCase() === "docker";
+}
+function refreshRuntimeWords(env = process.env) {
+  return isContainerWorker(env) ? "run `pnpm refresh:runtime` on the HOST, not in this container: `.claude/scripts` and `.claude/settings.json` are read-only here by design. Ask the user to run exactly `pnpm refresh:runtime` in their own terminal in this repository (the container's repo is the same folder), then continue" : "run `pnpm refresh:runtime` (a sandboxed agent hands the user `! pnpm refresh:runtime`)";
 }
 function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
@@ -1844,6 +1848,7 @@ function checkReportCommit(git2, root, input) {
   readyTasks,
   recordReviewVerdict,
   recordUserAnswer,
+  refreshRuntimeWords,
   removeWorker,
   reportCommandFor,
   resolveManagerApproval,

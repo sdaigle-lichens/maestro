@@ -26,6 +26,11 @@ import {
   imagePluginProbe,
   installedPluginsJsonFor,
   isContainerWorker,
+  refreshRuntimeWords,
+  parsePackageManager,
+  detectToolchain,
+  packageManagerInstall,
+  EMPTY_TOOLCHAIN,
   missingPluginMessage,
   parseProbeOutput,
   userSettingsJsonFor,
@@ -416,7 +421,7 @@ describe("image files (175)", () => {
   });
 
   it("the layout marker is part of the tag inputs", () => {
-    expect(imageTagInputs(spec()).layout).toBe(4);
+    expect(imageTagInputs(spec()).layout).toBe(6);
   });
 
   it("trusts the project and its parent, so a sibling <repo>-task-N worktree needs no prompt", () => {
@@ -528,5 +533,125 @@ describe("user-scope plugins in the image (176)", () => {
     expect(isContainerWorker({ MAESTRO_WORKER_RUNTIME: " Docker " })).toBe(true);
     expect(isContainerWorker({ MAESTRO_WORKER_RUNTIME: "host" })).toBe(false);
     expect(isContainerWorker({})).toBe(false);
+  });
+});
+
+describe("project toolchain in the image (179)", () => {
+  const write = (root: string, rel: string, text: string) => {
+    fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    fs.writeFileSync(path.join(root, rel), text);
+  };
+
+  it("parsePackageManager keeps name@version and drops the hash; rejects anything else", () => {
+    expect(parsePackageManager("pnpm@12.10.1+sha512.abc")).toBe("pnpm@12.10.1");
+    expect(parsePackageManager("yarn@4.1.0")).toBe("yarn@4.1.0");
+    expect(parsePackageManager("pnpm")).toBeNull();
+    expect(parsePackageManager("deno@1.2.3")).toBeNull();
+    expect(parsePackageManager(undefined)).toBeNull();
+  });
+
+  it("detectToolchain reads the package manager, playwright browser and verify apt from the project", () => {
+    const root = tmp();
+    write(root, "package.json", JSON.stringify({ packageManager: "pnpm@12.10.1+sha1.x" }));
+    write(root, "apps/web/package.json", JSON.stringify({ devDependencies: { playwright: "1.64.0" } }));
+    write(
+      root,
+      "apps/web/vitest.config.ts",
+      'import { playwright } from "@vitest/browser-playwright"; export default { browser: { instances: [{ browser: "chromium" }] } };'
+    );
+    expect(detectToolchain(root, "make check && pnpm verify")).toEqual({
+      packageManager: "pnpm@12.10.1",
+      playwright: "1.64.0",
+      browsers: ["chromium"],
+      apt: ["make"],
+    });
+  });
+
+  it("detectToolchain reports no browser without a pinned playwright or without a playwright config", () => {
+    const root = tmp();
+    write(root, "package.json", "{}");
+    write(root, "vitest.config.ts", 'export default { test: { browser: "chromium" } };');
+    expect(detectToolchain(root)).toEqual(EMPTY_TOOLCHAIN);
+    write(root, "package.json", JSON.stringify({ devDependencies: { playwright: "^1.50.0" } }));
+    expect(detectToolchain(root).browsers).toEqual([]);
+  });
+
+  it("the Dockerfile installs python3, the pinned package manager and the browser, and no identity", () => {
+    const df = dockerfileFor(
+      spec({
+        toolchain: { packageManager: "pnpm@12.10.1", playwright: "1.64.0", browsers: ["chromium"], apt: ["make"] },
+      })
+    );
+    expect(df).toMatch(/apt-get install -y --no-install-recommends git ca-certificates bash python3 make/);
+    expect(df).toContain("corepack prepare pnpm@12.10.1 --activate");
+    // The binary is fetched at build time and the corepack home is writable by the non-root worker.
+    expect(df).toMatch(/--activate && pnpm --version && chmod -R a\+rwX \/usr\/local\/share\/corepack/);
+    expect(packageManagerInstall("yarn@4.1.0").join("\n")).toMatch(/yarn --version/);
+    expect(packageManagerInstall("bun@1.1.0")).toEqual(["RUN npm install -g bun@1.1.0 && npm cache clean --force"]);
+    expect(packageManagerInstall(null)).toEqual([]);
+    expect(df).toContain("playwright@1.64.0 -- install --with-deps chromium");
+    expect(df).toContain("PLAYWRIGHT_BROWSERS_PATH=/ms-playwright");
+    expect(df).not.toMatch(/GIT_AUTHOR|GIT_COMMITTER|user\.(name|email)|OAUTH/);
+    expect(dockerfileFor(spec())).not.toContain("corepack");
+    expect(dockerfileFor(spec())).toContain("python3");
+  });
+
+  it("a different pinned package manager, browser or apt package changes the tag; the same input does not", () => {
+    const tc = { packageManager: "pnpm@12.10.1", playwright: "1.64.0", browsers: ["chromium"], apt: [] as string[] };
+    const base = imageTag(spec({ toolchain: tc }));
+    expect(imageTag(spec({ toolchain: { ...tc } }))).toBe(base);
+    expect(imageTag(spec({ toolchain: { ...tc, packageManager: "pnpm@12.10.2" } }))).not.toBe(base);
+    expect(imageTag(spec({ toolchain: { ...tc, browsers: ["chromium", "firefox"] } }))).not.toBe(base);
+    expect(imageTag(spec({ toolchain: { ...tc, apt: ["make"] } }))).not.toBe(base);
+    expect(imageTag(spec())).not.toBe(base);
+  });
+
+  it("gatherImageSpec carries the toolchain read from the project", () => {
+    const root = tmp();
+    const home = tmp();
+    write(root, "package.json", JSON.stringify({ packageManager: "pnpm@9.0.0" }));
+    const { spec: s } = gatherImageSpec(root, {
+      home,
+      uid: 1,
+      gid: 1,
+      claudeVersion: "2.0.0",
+      verifyCommand: "make test",
+    });
+    expect(s.toolchain).toMatchObject({ packageManager: "pnpm@9.0.0", apt: ["make"] });
+  });
+
+  it("git identity is passed at launch as environment, never written into the build context", () => {
+    const args = workerRunArgs({
+      tag: "t",
+      name: "n",
+      taskRel: "r",
+      repoRoot: "/r",
+      mounts: [],
+      gitIdentity: { name: "Ada L", email: "ada@example.com" },
+    });
+    for (const k of [
+      "GIT_AUTHOR_NAME=Ada L",
+      "GIT_COMMITTER_NAME=Ada L",
+      "GIT_AUTHOR_EMAIL=ada@example.com",
+      "GIT_COMMITTER_EMAIL=ada@example.com",
+    ])
+      expect(args).toContain(k);
+    const none = workerRunArgs({ tag: "t", name: "n", taskRel: "r", repoRoot: "/r", mounts: [] });
+    expect(none.join(" ")).not.toContain("GIT_");
+    const ctx = tmp();
+    writeBuildContext(ctx, spec(), { copyDir: () => undefined });
+    for (const f of fs.readdirSync(ctx))
+      if (fs.statSync(path.join(ctx, f)).isFile())
+        expect(fs.readFileSync(path.join(ctx, f), "utf8")).not.toMatch(/ada@example\.com|GIT_AUTHOR/);
+  });
+
+  it("refreshRuntimeWords tells a container worker to run it on the host; host wording is unchanged", () => {
+    const container = refreshRuntimeWords({ MAESTRO_WORKER_RUNTIME: "docker" });
+    expect(container).toContain("on the HOST");
+    expect(container).toContain("read-only");
+    expect(container).not.toContain("sandboxed agent");
+    const host = refreshRuntimeWords({});
+    expect(host).toBe("run `pnpm refresh:runtime` (a sandboxed agent hands the user `! pnpm refresh:runtime`)");
+    expect(refreshRuntimeWords({ MAESTRO_WORKER_RUNTIME: "host" })).toBe(host);
   });
 });

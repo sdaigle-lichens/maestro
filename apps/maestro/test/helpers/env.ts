@@ -6,5 +6,7 @@
 export function pinnedEnv(home: string, extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env, HOME: home, ...extra };
   if (!("CLAUDE_CODE_SESSION_ID" in extra)) delete env.CLAUDE_CODE_SESSION_ID;
+  // `179`: a containerized worker runs with MAESTRO_WORKER_RUNTIME=docker; a test must not inherit it.
+  if (!("MAESTRO_WORKER_RUNTIME" in extra)) delete env.MAESTRO_WORKER_RUNTIME;
   return env;
 }

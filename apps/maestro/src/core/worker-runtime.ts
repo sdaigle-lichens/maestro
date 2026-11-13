@@ -58,6 +58,19 @@ export function isContainerWorker(env: Record<string, string | undefined> = proc
   return env[WORKER_RUNTIME_ENV]?.trim().toLowerCase() === "docker";
 }
 
+/**
+ * `179`: the instruction for a refresh of the tracked runtime (`pnpm refresh:runtime`). In a
+ * containerized worker `.claude/scripts` and `.claude/settings.json` are mounted read-only by design,
+ * so the command cannot run there: the user runs it on the host, in the same folder. A host worker
+ * keeps the original wording (a sandboxed one still hands the user `! pnpm refresh:runtime`).
+ */
+export function refreshRuntimeWords(env: Record<string, string | undefined> = process.env): string {
+  return isContainerWorker(env)
+    ? "run `pnpm refresh:runtime` on the HOST, not in this container: `.claude/scripts` and `.claude/settings.json` are read-only here by design. " +
+        "Ask the user to run exactly `pnpm refresh:runtime` in their own terminal in this repository (the container's repo is the same folder), then continue"
+    : "run `pnpm refresh:runtime` (a sandboxed agent hands the user `! pnpm refresh:runtime`)";
+}
+
 /** POSIX single-quote a value. */
 export function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
@@ -235,6 +248,114 @@ export interface MarketplacePin {
   dir: string | null;
 }
 
+/**
+ * `179`: what the project's own verify command and hooks need in the image, read from the project
+ * (package.json, its vitest configs, maestro.json), never hard-coded to one repo.
+ */
+export interface Toolchain {
+  /** package.json `packageManager` with any `+sha` suffix dropped (`pnpm@12.10.1`), or null. */
+  packageManager: string | null;
+  /** The `playwright` version the project pins, when a vitest config needs a browser. */
+  playwright: string | null;
+  /** Browsers named by the project's vitest config (`chromium`, `firefox`, `webkit`). */
+  browsers: string[];
+  /** Extra apt packages the `verify_command` names (`make`). Python3 is always installed. */
+  apt: string[];
+}
+
+export const EMPTY_TOOLCHAIN: Toolchain = { packageManager: null, playwright: null, browsers: [], apt: [] };
+
+/** apt packages for a command word in `verify_command`. */
+const VERIFY_APT: Readonly<Record<string, string>> = { make: "make" };
+const BROWSERS = ["chromium", "firefox", "webkit"];
+
+/** `name@version` from a package.json `packageManager` value; null for anything else. */
+export function parsePackageManager(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const m = /^(npm|pnpm|yarn|bun)@(\d+\.\d+\.\d+[A-Za-z0-9.-]*)(?:\+.*)?$/.exec(value.trim());
+  return m ? `${m[1]}@${m[2]}` : null;
+}
+
+function pinnedVersion(range: unknown): string | null {
+  return typeof range === "string" && /^[\^~]?\d+\.\d+\.\d+[A-Za-z0-9.-]*$/.test(range.trim())
+    ? range.trim().replace(/^[\^~]/, "")
+    : null;
+}
+
+function projectPackageDirs(root: string): string[] {
+  const dirs = [root];
+  for (const group of ["apps", "packages"]) {
+    try {
+      for (const e of fs.readdirSync(path.join(root, group), { withFileTypes: true }))
+        if (e.isDirectory() && e.name !== "node_modules") dirs.push(path.join(root, group, e.name));
+    } catch {
+      // no such group
+    }
+  }
+  return dirs;
+}
+
+/**
+ * The toolchain a project's verify run needs. `verifyCommand` is `verify_command` from maestro.json.
+ * Browsers are read from `vitest.config.*`/`vitest.workspace.*` files that use playwright (at the
+ * root and one level under `apps/` and `packages/`); the playwright version comes from the
+ * package.json beside that config.
+ */
+export function detectToolchain(projectRoot: string, verifyCommand?: string | null): Toolchain {
+  const rootPkg = readJsonFile(path.join(projectRoot, "package.json")) as Record<string, unknown> | null;
+  const packageManager = parsePackageManager(rootPkg?.packageManager);
+  let playwright: string | null = null;
+  const browsers = new Set<string>();
+  for (const dir of projectPackageDirs(projectRoot)) {
+    const pkg = readJsonFile(path.join(dir, "package.json")) as Record<string, Record<string, unknown>> | null;
+    const version = pinnedVersion(pkg?.devDependencies?.playwright ?? pkg?.dependencies?.playwright);
+    let entries: string[];
+    try {
+      entries = fs.readdirSync(dir).filter((n) => /^vitest\.(config|workspace)\./.test(n));
+    } catch {
+      continue;
+    }
+    for (const n of entries) {
+      let text: string;
+      try {
+        text = fs.readFileSync(path.join(dir, n), "utf8");
+      } catch {
+        continue;
+      }
+      if (!/playwright/i.test(text)) continue;
+      for (const m of text.matchAll(/browser\s*:\s*["'`](chromium|firefox|webkit)["'`]/g)) browsers.add(m[1]!);
+      if (version && !playwright) playwright = version;
+    }
+  }
+  const apt = new Set<string>();
+  for (const word of (verifyCommand ?? "").split(/[\s;&|()]+/)) {
+    const pkg = VERIFY_APT[word];
+    if (pkg) apt.add(pkg);
+  }
+  const usable = playwright !== null && browsers.size > 0;
+  return {
+    packageManager,
+    playwright: usable ? playwright : null,
+    browsers: usable ? BROWSERS.filter((b) => browsers.has(b)) : [],
+    apt: [...apt].sort(),
+  };
+}
+
+/** The Dockerfile lines that install the project's package manager at its pinned version. */
+export function packageManagerInstall(pm: string | null): string[] {
+  if (!pm) return [];
+  const [name, version] = pm.split("@");
+  if (name === "pnpm" || name === "yarn")
+    return [
+      "ENV COREPACK_HOME=/usr/local/share/corepack COREPACK_ENABLE_DOWNLOAD_PROMPT=0",
+      // `prepare` can cache only a shim (pnpm 12 fetches its native binary on first run), so run the
+      // manager once as root at build time to force every download, then make the home writable for
+      // the non-root worker in case a later run still wants to write there.
+      `RUN corepack enable && corepack prepare ${name}@${version} --activate && ${name} --version && chmod -R a+rwX /usr/local/share/corepack`,
+    ];
+  return [`RUN npm install -g ${name}@${version} && npm cache clean --force`];
+}
+
 export interface ImageSpec {
   projectRoot: string;
   uid: number;
@@ -250,6 +371,8 @@ export interface ImageSpec {
   userPlugins?: string[];
   npmPackages: Record<string, string>;
   baseImage?: string;
+  /** `179`: the project's toolchain (package manager, browsers, extra apt packages). */
+  toolchain?: Toolchain;
 }
 
 /** Plugin ids a settings file enables. */
@@ -343,10 +466,16 @@ export function hookPackagesFor(roots: string[], extra: Record<string, string> =
  * plugin version bump, a new hook dependency or a Claude Code upgrade changes the tag (rebuild),
  * and an unchanged set reuses the image. Nothing secret is an input.
  */
+function toolchainOf(spec: ImageSpec): Toolchain {
+  const t = spec.toolchain ?? EMPTY_TOOLCHAIN;
+  return { ...t, browsers: [...t.browsers].sort(), apt: [...t.apt].sort() };
+}
+
 export function imageTagInputs(spec: ImageSpec): Record<string, unknown> {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 4,
+    layout: 6,
+    toolchain: toolchainOf(spec),
     userPlugins: [...(spec.userPlugins ?? [])].sort(),
     base: spec.baseImage ?? BASE_IMAGE,
     claude: spec.claudeVersion,
@@ -464,6 +593,8 @@ export interface GatherInput {
   claudeVersion: string;
   /** `name@version` strings from the caller, merged over the known hook dependencies. */
   extraPackages?: string[];
+  /** `verify_command` from maestro.json; its command words can name extra apt packages. */
+  verifyCommand?: string | null;
 }
 
 /**
@@ -508,6 +639,7 @@ export function gatherImageSpec(projectRoot: string, g: GatherInput): { spec: Im
       plugins: pins,
       marketplaces,
       userPlugins: userPlugins.filter((id) => pins.some((p) => p.id === id)),
+      toolchain: detectToolchain(projectRoot, g.verifyCommand),
       npmPackages: hookPackagesFor(
         [
           ...pins.flatMap((p) => [path.join(p.installPath, "hooks"), path.join(p.installPath, "scripts")]),
@@ -527,14 +659,27 @@ export function dockerfileFor(spec: ImageSpec): string {
     .map(([n, v]) => ` ${n}@${v}`)
     .join("");
   const own = `${spec.uid}:${spec.gid}`;
+  const tc = toolchainOf(spec);
+  const apt = ["git", "ca-certificates", "bash", "python3", ...tc.apt].join(" ");
+  // The browser the project's vitest config names, at the playwright version the project pins.
+  const browsers =
+    tc.playwright && tc.browsers.length
+      ? [
+          "ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright",
+          `RUN npm exec --yes playwright@${tc.playwright} -- install --with-deps ${tc.browsers.join(" ")} \\`,
+          " && chmod -R a+rX /ms-playwright && rm -rf /var/lib/apt/lists/* && npm cache clean --force",
+        ]
+      : [];
   return [
     `FROM ${spec.baseImage ?? BASE_IMAGE}`,
     "RUN apt-get update \\",
-    " && apt-get install -y --no-install-recommends git ca-certificates bash \\",
+    ` && apt-get install -y --no-install-recommends ${apt} \\`,
     " && rm -rf /var/lib/apt/lists/* \\",
     ` && npm install -g @anthropic-ai/claude-code@${spec.claudeVersion}${pkgs} \\`,
     " && npm cache clean --force",
     "ENV NODE_PATH=/usr/local/lib/node_modules",
+    ...packageManagerInstall(tc.packageManager),
+    ...browsers,
     "# The container user takes the host user's uid/gid so files written in the repo stay theirs.",
     `RUN (userdel -r node || true) \\`,
     ` && (getent group ${spec.gid} >/dev/null || groupadd -g ${spec.gid} ${CONTAINER_USER}) \\`,

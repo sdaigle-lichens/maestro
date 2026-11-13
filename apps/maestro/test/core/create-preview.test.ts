@@ -277,7 +277,12 @@ describe("a request the app will not run", () => {
 describe("with no CLI installed", () => {
   it("still hands back the whole prompt, and nothing runnable", async () => {
     const nothing = fs.mkdtempSync(path.join(tmp, "empty-bin-"));
-    const preview = await previewClaudeRun(project, skill, { env: { PATH: nothing }, home, platform: "linux" });
+    const preview = await previewClaudeRun(project, skill, {
+      env: { PATH: nothing },
+      home,
+      platform: "linux",
+      systemDirs: [],
+    });
 
     expect(preview.available).toBe(false);
     expect(preview.token).toBeNull();
@@ -385,6 +390,7 @@ describe("what the run will be able to read", () => {
       env: { PATH: nothing },
       home,
       platform: "linux",
+      systemDirs: [],
       settings: port(empty),
     });
 

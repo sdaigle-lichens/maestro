@@ -78,8 +78,19 @@ function imageExists(tag) {
   return spawnSync("docker", ["image", "inspect", tag], { stdio: "ignore" }).status === 0;
 }
 
+// `179`: the project's own verify command, so the image can carry what it needs.
+function verifyCommandOf(root) {
+  try {
+    const v = JSON.parse(fs.readFileSync(path.join(root, ".claude", "maestro.json"), "utf8")).verify_command;
+    return typeof v === "string" && v.trim() ? v.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 function specFor(root, extraPackages) {
   const { spec, missing } = rt.gatherImageSpec(root, {
+    verifyCommand: verifyCommandOf(root),
     home: os.homedir(),
     uid: process.getuid(),
     gid: process.getgid(),

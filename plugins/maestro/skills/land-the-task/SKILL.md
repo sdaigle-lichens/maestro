@@ -67,6 +67,9 @@ component to bump. No rule: skip this step.
 If the project documents a generation step for files this task touched (a build of committed
 bundles, a refresh of mirrored copies), run it now from `<WT>`, then `git -C <WT> status --short`
 again. When the step writes a path the sandbox blocks, hand the user the `!` command (step 0).
+In a containerized worker (`MAESTRO_WORKER_RUNTIME` is `docker`), `.claude/scripts` and
+`.claude/settings.json` are read-only by design: a `pnpm refresh:runtime` step is never run there. Ask
+the user to run it on the host, in the same repository folder, and continue once they have.
 
 If steps 3 to 5 changed anything, commit it on `<BRANCH>` with the user's approval and take the new
 SHA.
