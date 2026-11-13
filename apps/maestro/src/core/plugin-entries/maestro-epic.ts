@@ -18,6 +18,7 @@ export {
   listEpicSummaries,
   setManager,
   addWorker,
+  finishWorker,
   removeWorker,
   linkTasks,
   unlinkTasks,

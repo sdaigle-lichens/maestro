@@ -26,6 +26,7 @@ This needs code in the worker-runtime TypeScript source and its plugin script (t
 
 - (from r006, approved by the user) Every containerized worker the launcher starts runs with `--init`, so an init process reaps orphaned processes and they don't linger as zombies (two of 179's tests hung on them in the container). This goes in the launcher's own `docker run` arguments, so it is the default for every worker the manager starts, with nothing for the manager to add. Update the test that asserts the argument positions, and add one that asserts `--init` is present. Host workers are unchanged.
 - (from r006, approved by the user) The plugin marketplace copy baked into the worker image leaves out the repository's epic data (`.claude/epics/`, including every `inbox/`). It holds reports and decisions, not plugin files, and a worker reads the live epic through the bind-mounted repo anyway. A test asserts the copy excludes it, and the image tag changes so existing images rebuild.
+- (m005, on-track) Prune never removes an image it cannot prove is this project's. An unlabelled image from before the project label is listed as skipped, with the exact `docker rmi` the user can run, and is never removed automatically. The start boundary counting finished workers as "the epic already has workers" is correct (the epic has started), not a gap. `readyTasks` ignoring a finished worker's task is fine.
 
 ## Touched surfaces
 
@@ -38,3 +39,12 @@ This needs code in the worker-runtime TypeScript source and its plugin script (t
 ## Blocked by
 
 - `179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md`
+
+## Post-Mortem
+
+- **Problem:** Prune was built on the happy path. @test then found, in four loop-backs, that it reported misleadingly or silently: failed `docker rm` / `image rm` dropped, "nothing needed removing" printed next to failures, next to skipped images and on an unreachable daemon, and a failed `docker ps` / `image inspect` read as an empty list. Each round needed a `pnpm refresh:runtime` by the user.
+  **Fix:** none
+- **Problem:** A prune that decides what to delete needs a rule that any failed query or unprovable ownership means "remove nothing and say so". It was only reached after review rounds; the ticket did not state it.
+  **Fix:** none
+- **Problem:** The scribe may not edit `plugins/`, so the manager-skill wording fixes ended in `HANDOFF: partial` with no route in the Backend workflow and needed a user decision.
+  **Fix:** none

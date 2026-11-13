@@ -50,6 +50,13 @@ export {
   dockerfileFor,
   gatherImageSpec,
   writeBuildContext,
+  isMarketplaceExcluded,
+  WORKER_IMAGE_PREFIX,
+  PROJECT_LABEL,
+  projectLabelFor,
+  planPrune,
+  formatBytes,
+  formatPrune,
 } from "../worker-runtime.js";
 
 // `177`: the launcher mounts the approvals directory only when `manager_approval` is on.

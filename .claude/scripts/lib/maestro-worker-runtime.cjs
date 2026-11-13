@@ -36,7 +36,9 @@ __export(maestro_worker_runtime_exports, {
   CONTAINER_APPROVALS_DIR: () => CONTAINER_APPROVALS_DIR,
   EMPTY_TOOLCHAIN: () => EMPTY_TOOLCHAIN,
   KNOWN_HOOK_PACKAGES: () => KNOWN_HOOK_PACKAGES,
+  PROJECT_LABEL: () => PROJECT_LABEL,
   READONLY_PATHS: () => READONLY_PATHS,
+  WORKER_IMAGE_PREFIX: () => WORKER_IMAGE_PREFIX,
   WORKER_RUNTIME_ENV: () => WORKER_RUNTIME_ENV,
   WORKER_RUNTIME_SCRIPT: () => WORKER_RUNTIME_SCRIPT,
   WORKER_TOKEN_REL: () => WORKER_TOKEN_REL,
@@ -50,6 +52,8 @@ __export(maestro_worker_runtime_exports, {
   dockerignoreText: () => dockerignoreText,
   enabledPluginIds: () => enabledPluginIds,
   filterSettingsLocal: () => filterSettingsLocal,
+  formatBytes: () => formatBytes,
+  formatPrune: () => formatPrune,
   gatherImageSpec: () => gatherImageSpec,
   hookPackagesFor: () => hookPackagesFor,
   imagePluginProbe: () => imagePluginProbe,
@@ -59,6 +63,7 @@ __export(maestro_worker_runtime_exports, {
   isContainerWorker: () => isContainerWorker,
   isExcludedName: () => isExcludedName,
   isExcludedPath: () => isExcludedPath,
+  isMarketplaceExcluded: () => isMarketplaceExcluded,
   knownMarketplacesJsonFor: () => knownMarketplacesJsonFor,
   managedSettingsJson: () => managedSettingsJson,
   missingPluginMessage: () => missingPluginMessage,
@@ -68,6 +73,8 @@ __export(maestro_worker_runtime_exports, {
   parsePackageSpecs: () => parsePackageSpecs,
   parseProbeOutput: () => parseProbeOutput,
   pinPlugins: () => pinPlugins,
+  planPrune: () => planPrune,
+  projectLabelFor: () => projectLabelFor,
   readWorkerToken: () => readWorkerToken,
   refreshRuntimeWords: () => refreshRuntimeWords,
   resolveManagerApproval: () => resolveManagerApproval,
@@ -185,7 +192,7 @@ function containerNameFor(name) {
   return `maestro-worker-${name.replace(/[^A-Za-z0-9_.-]/g, "-")}`;
 }
 function workerRunArgs(o) {
-  const args = ["run", "-it", "--rm", "--name", containerNameFor(o.name)];
+  const args = ["run", "-it", "--rm", "--init", "--name", containerNameFor(o.name)];
   args.push("-e", "CLAUDE_CODE_OAUTH_TOKEN", "-e", `${WORKER_RUNTIME_ENV}=docker`);
   if (o.mounts.some((m) => m.target === CONTAINER_APPROVALS_DIR))
     args.push("-e", `${APPROVALS_DIR_ENV}=${CONTAINER_APPROVALS_DIR}`);
@@ -372,7 +379,7 @@ function toolchainOf(spec) {
 function imageTagInputs(spec) {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 6,
+    layout: 7,
     toolchain: toolchainOf(spec),
     userPlugins: [...spec.userPlugins ?? []].sort(),
     base: spec.baseImage ?? BASE_IMAGE,
@@ -561,6 +568,12 @@ function dockerignoreText() {
   return `${["**/.git", "**/node_modules", "**/.env*", "**/.credentials.json", "**/*.pem", "**/id_rsa*", "**/.npmrc"].join("\n")}
 `;
 }
+function isMarketplaceExcluded(rel) {
+  if (isExcludedPath(rel)) return true;
+  const segs = rel.split(/[\\/]/).filter(Boolean);
+  for (let i = 0; i + 1 < segs.length; i += 1) if (segs[i] === ".claude" && segs[i + 1] === "epics") return true;
+  return false;
+}
 function writeBuildContext(dir, spec, overrides = {}) {
   const io = { ...defaultContextIO, ...overrides };
   import_node_fs3.default.mkdirSync(dir, { recursive: true });
@@ -575,20 +588,20 @@ function writeBuildContext(dir, spec, overrides = {}) {
   import_node_fs3.default.mkdirSync(import_node_path3.default.join(dir, "plugins"), { recursive: true });
   import_node_fs3.default.mkdirSync(import_node_path3.default.join(dir, "marketplaces"), { recursive: true });
   put(".dockerignore", dockerignoreText());
-  const copy = (from, to) => io.copyDir(from, to, io.trackedFiles?.(from) ?? null);
-  for (const m of marketplaces) if (m.dir) copy(m.dir, import_node_path3.default.join(dir, "marketplaces", m.name));
+  const copy = (from, to, excluded) => io.copyDir(from, to, io.trackedFiles?.(from) ?? null, excluded);
+  for (const m of marketplaces) if (m.dir) copy(m.dir, import_node_path3.default.join(dir, "marketplaces", m.name), isMarketplaceExcluded);
   for (const p of spec.plugins) {
     const { name, marketplace } = pluginParts(p.id);
     copy(p.installPath, import_node_path3.default.join(dir, "plugins", marketplace, name, p.version));
   }
 }
 var defaultContextIO = {
-  copyDir: (from, to, tracked) => {
+  copyDir: (from, to, tracked, excluded = isExcludedPath) => {
     if (tracked) {
       import_node_fs3.default.mkdirSync(to, { recursive: true });
       for (const rel of tracked) {
         const src = import_node_path3.default.join(from, rel);
-        if (isExcludedPath(rel) || !import_node_fs3.default.existsSync(src)) continue;
+        if (excluded(rel) || !import_node_fs3.default.existsSync(src)) continue;
         import_node_fs3.default.mkdirSync(import_node_path3.default.dirname(import_node_path3.default.join(to, rel)), { recursive: true });
         import_node_fs3.default.cpSync(src, import_node_path3.default.join(to, rel));
       }
@@ -596,16 +609,111 @@ var defaultContextIO = {
     }
     import_node_fs3.default.cpSync(from, to, {
       recursive: true,
-      filter: (src) => !isExcludedPath(import_node_path3.default.relative(from, src))
+      filter: (src) => !excluded(import_node_path3.default.relative(from, src))
     });
   }
 };
+var WORKER_IMAGE_PREFIX = "maestro-worker-";
+var PROJECT_LABEL = "maestro.worker.project";
+function projectLabelFor(projectRoot) {
+  return import_node_crypto.default.createHash("sha256").update(projectRoot).digest("hex").slice(0, 12);
+}
+function repositoryOf(ref) {
+  const slash = ref.lastIndexOf("/");
+  const colon = ref.lastIndexOf(":");
+  return colon > slash ? ref.slice(0, colon) : ref;
+}
+function sameImage(ref, img) {
+  if (ref === img.ref) return true;
+  const bare = (s) => s.replace(/^sha256:/, "");
+  const a = bare(ref);
+  const b = bare(img.id);
+  return a.length >= 6 && /^[0-9a-f]+$/.test(a) && b.startsWith(a);
+}
+function planPrune(input) {
+  const kept = [];
+  const skipped = [];
+  const repo = input.currentTag ? repositoryOf(input.currentTag) : null;
+  const sameRepo = (i) => repo !== null && repositoryOf(i.ref) === repo;
+  const projectImages = input.images.filter((i) => sameRepo(i) && i.label === input.projectLabel);
+  const current = input.currentTag ? input.images.find((i) => i.ref === input.currentTag) : void 0;
+  const running = input.containers.filter((c) => c.running);
+  for (const img of input.images) {
+    if (!sameRepo(img) || img.label !== null) continue;
+    if (img.ref === input.currentTag || current && img.id && img.id === current.id) continue;
+    if (running.some((c) => sameImage(c.image, img))) continue;
+    skipped.push({ ref: img.ref, bytes: img.bytes, command: `docker rmi ${img.ref}` });
+  }
+  const removeContainers = input.containers.filter(
+    (c) => !c.running && c.name.startsWith(WORKER_IMAGE_PREFIX) && projectImages.some((i) => sameImage(c.image, i))
+  );
+  const removeImages = [];
+  const doomedIds = /* @__PURE__ */ new Set();
+  for (const img of projectImages) {
+    if (img.ref === input.currentTag || current && img.id && img.id === current.id) {
+      kept.push({ ref: img.ref, reason: "current tag" });
+    } else if (running.some((c) => sameImage(c.image, img))) {
+      kept.push({ ref: img.ref, reason: "in use by a running container" });
+    } else {
+      removeImages.push(img);
+      doomedIds.add(img.id || img.ref);
+    }
+  }
+  const sizeById = /* @__PURE__ */ new Map();
+  for (const img of removeImages) sizeById.set(img.id || img.ref, img.bytes);
+  let bytes = 0;
+  for (const id of doomedIds) bytes += sizeById.get(id) ?? 0;
+  return { removeContainers, removeImages, bytes, kept, skipped };
+}
+function formatBytes(n) {
+  if (n < 1024) return `${n} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let v = n / 1024;
+  let i = 0;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i += 1;
+  }
+  return `${v.toFixed(1)} ${units[i]}`;
+}
+function formatPrune(plan, dryRun, note) {
+  const lines = [];
+  if (note) lines.push(note);
+  const removed = plan.removeContainers.length + plan.removeImages.length;
+  if (!removed) {
+    if (!plan.failed?.length && !plan.queryFailures?.length)
+      lines.push(
+        plan.skipped.length || note ? "maestro worker prune: nothing was removed" : "maestro worker prune: nothing needed removing"
+      );
+  } else {
+    const verb = dryRun ? "would remove" : "removed";
+    for (const c of plan.removeContainers) lines.push(`${verb} stopped container ${c.name}`);
+    for (const i of plan.removeImages) lines.push(`${verb} image ${i.ref} (${formatBytes(i.bytes)})`);
+    lines.push(
+      `${dryRun ? "would free" : "freed"} ${formatBytes(plan.bytes)}${dryRun ? " (dry run: nothing was removed)" : ""}`
+    );
+  }
+  for (const f of plan.failed ?? [])
+    lines.push(
+      `could not remove ${f.kind === "image" ? "image" : "stopped container"} ${f.name}${f.reason ? `: ${f.reason}` : ""}`
+    );
+  for (const q of plan.queryFailures ?? []) lines.push(q);
+  for (const k of plan.kept) lines.push(`kept ${k.ref} (${k.reason})`);
+  for (const s of plan.skipped)
+    lines.push(
+      `skipped ${s.ref} (${formatBytes(s.bytes)}): not labelled for this project, so not proven to be its image; to remove it yourself run: ${s.command}`
+    );
+  return `${lines.join("\n")}
+`;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CONTAINER_APPROVALS_DIR,
   EMPTY_TOOLCHAIN,
   KNOWN_HOOK_PACKAGES,
+  PROJECT_LABEL,
   READONLY_PATHS,
+  WORKER_IMAGE_PREFIX,
   WORKER_RUNTIME_ENV,
   WORKER_RUNTIME_SCRIPT,
   WORKER_TOKEN_REL,
@@ -619,6 +727,8 @@ var defaultContextIO = {
   dockerignoreText,
   enabledPluginIds,
   filterSettingsLocal,
+  formatBytes,
+  formatPrune,
   gatherImageSpec,
   hookPackagesFor,
   imagePluginProbe,
@@ -628,6 +738,7 @@ var defaultContextIO = {
   isContainerWorker,
   isExcludedName,
   isExcludedPath,
+  isMarketplaceExcluded,
   knownMarketplacesJsonFor,
   managedSettingsJson,
   missingPluginMessage,
@@ -637,6 +748,8 @@ var defaultContextIO = {
   parsePackageSpecs,
   parseProbeOutput,
   pinPlugins,
+  planPrune,
+  projectLabelFor,
   readWorkerToken,
   refreshRuntimeWords,
   resolveManagerApproval,

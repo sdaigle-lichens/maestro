@@ -242,7 +242,17 @@ For each worker message ("report r003 for 087-... is in <file>", or the same lin
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>` again and, when a task is
    marked `[spawn]`, offer to start it through **Spawning workers** (steps 2 to 5). Only `[spawn]`
    tasks, so the cap still holds; offer, never spawn without the user's yes.
-6. **Check the end boundary.** Run the end step of **Epic boundaries**. It comes last because step 3 may have added tickets. The last acknowledgement normally lands before the last merge, so also run it whenever you learn a merge landed; until then it reports not due.
+6. **Clean up after a verified merge.** Once the merge is verified on the merged result (step 3, **A merge**), run **Cleaning up after a finished worker** for that worker.
+7. **Check the end boundary.** Run the end step of **Epic boundaries**. It comes last because step 3 may have added tickets. The last acknowledgement normally lands before the last merge, so also run it whenever you learn a merge landed; until then it reports not due. Run the prune of **Cleaning up after a finished worker** again at that boundary.
+
+## Cleaning up after a finished worker
+
+A worker that merged leaves its session open, its pane on the epic, and (for a containerized worker) superseded images on disk. Clear them, in this order:
+
+1. **Ask the user once to stop the worker's session**, after its merge is verified on the merged result, naming its herdr tab (the worker's name, `<name>`, and its pane from `show`). Example: "Task 177 is merged and verified. Please stop the session in herdr tab `<name>` (pane `<pane>`)." Ask once per worker, not on every resume. **Never close the session, kill its pane or type into it yourself**, not even `exit`; stopping it is the user's step.
+2. **After the user confirms**, record it: `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" finish-worker <slug> "<worker name>"`. `show` then no longer lists that worker or its pane as active. Without a confirmation, record nothing.
+3. **Then prune:** `node .claude/scripts/maestro-worker-runtime.cjs prune`. It removes this project's worker images except the current tag and stopped worker containers, never an image a running container uses, another project's image or a non-worker image, and prints what it removed and the space freed. It only removes an image it can prove is this project's (labelled at build time); an older unlabelled image is listed as `skipped` with the exact `docker rmi <image>`: show that line to the user, who runs it if they want it gone. Never run it yourself. `prune --dry-run` only lists. Its outcomes: no Docker or host workers prints `nothing needed removing` and exits 0; an unreachable Docker daemon prints `nothing was checked or removed (docker could not be reached)` and exits 0; a refused removal or a failed docker query names each one and exits 1, and nothing is retried blindly. On exit 1, show the printed reason lines to the user and do not retry blindly.
+4. **Prune again at the epic's end boundary** (step 7 above), when the last worker is stopped, to catch images built since.
 
 ## Manager review requests
 

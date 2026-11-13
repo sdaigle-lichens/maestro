@@ -20,6 +20,12 @@
 //       missing. The herdr socket is never mounted.
 //       `177`: with manager_approval true in maestro.json, ~/.config/maestro/approvals is also mounted
 //       read-only (and named in MAESTRO_APPROVALS_DIR), so a worker can read approvals, never write one.
+//   node maestro-worker-runtime.cjs prune [--dry-run]
+//       `180`: removes this project's worker images except the current tag, and stopped worker
+//       containers. Only an image labelled for this project is removed; an unlabelled one (built before
+//       the label) is listed as skipped with its `docker rmi`, in dry-run mode too. Never an image a running container uses, another project's worker image or an
+//       image that is not a Maestro worker image. Prints what it removed and the space freed;
+//       --dry-run only lists. With no docker, or nothing to remove (host workers), it says so and exits 0.
 //       `176`: the image carries every plugin the host session has enabled, user scope included, and
 //       `run` checks that (a shell probe in the image) and refuses an image missing one, naming it.
 
@@ -41,6 +47,7 @@ function parse(args) {
   const packages = [];
   for (let i = 0; i < args.length; i += 1) {
     if (args[i] === "--print-tag") flags["print-tag"] = true;
+    else if (args[i] === "--dry-run") flags["dry-run"] = true;
     else if (args[i] === "--with-package" && i + 1 < args.length) packages.push(args[(i += 1)]);
     else if (args[i].startsWith("--") && i + 1 < args.length) flags[args[i].slice(2)] = args[(i += 1)];
     else positional.push(args[i]);
@@ -102,6 +109,161 @@ function specFor(root, extraPackages) {
   return spec;
 }
 
+function dockerAvailable() {
+  const r = spawnSync("docker", ["--version"], { stdio: "ignore" });
+  return !r.error && r.status === 0;
+}
+
+// One mechanism for every docker query: { lines } on success, { lines: null, reason } on failure,
+// so a failed query is never mistaken for an empty result.
+function dockerQuery(args) {
+  const r = spawnSync("docker", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  if (r.error || r.status !== 0) {
+    const reason = String((r.error && r.error.message) || r.stderr || `exit ${r.status}`)
+      .trim()
+      .split("\n")[0];
+    return { lines: null, reason };
+  }
+  return {
+    lines: String(r.stdout)
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean),
+  };
+}
+
+function dockerLines(args) {
+  return dockerQuery(args).lines;
+}
+
+// The current image tag, or null when it cannot be computed (no claude, a plugin with no install):
+// then prune removes no image, since it cannot tell which one is current.
+function currentTagOrNull() {
+  try {
+    const out = capture("claude", ["--version"]);
+    const m = out && /(\d+\.\d+\.\d+[^\s]*)/.exec(out);
+    if (!m) return null;
+    const { spec, missing } = rt.gatherImageSpec(root, {
+      verifyCommand: verifyCommandOf(root),
+      home: os.homedir(),
+      uid: process.getuid(),
+      gid: process.getgid(),
+      claudeVersion: m[1],
+      extraPackages: [],
+    });
+    return missing.length ? null : rt.imageTag(spec);
+  } catch {
+    return null;
+  }
+}
+
+// `180`: remove this project's superseded worker images and stopped worker containers. Never an
+// image a running container uses, another project's worker image, or a non-worker image. Always exits 0
+// when there is nothing to do (no docker, host workers only).
+function pruneCommand(dryRun) {
+  if (!dockerAvailable()) {
+    process.stdout.write("maestro worker prune: nothing needed removing (docker is not available)\n");
+    return;
+  }
+  const listed = dockerLines(["image", "ls", "--format", "{{.Repository}}:{{.Tag}}"]);
+  if (listed === null) {
+    // The daemon did not answer: nothing was checked, so never claim nothing needed removing. Exit 0.
+    process.stdout.write("maestro worker prune: nothing was checked or removed (docker could not be reached)\n");
+    return;
+  }
+  const refs = listed.filter((r) => r.startsWith(rt.WORKER_IMAGE_PREFIX) && !r.endsWith(":<none>"));
+  const images = [];
+  const queryFailures = [];
+  const currentTag = currentTagOrNull();
+  let currentUninspected = false;
+  for (const ref of refs) {
+    const q = dockerQuery([
+      "image",
+      "inspect",
+      "--format",
+      // Read the whole Config as json and take Labels in JS: an image built without labels has no Labels
+      // key, and any template that names `.Config.Labels` beside other fields errors on it in real docker.
+      "{{.Id}}|{{.Size}}|{{json .Config}}",
+      ref,
+    ]);
+    const line = q.lines && q.lines[0];
+    // Never dropped silently: a failed or unreadable inspect is named, the image is never removed, exit 1.
+    const unreadable = (why) => {
+      queryFailures.push(`could not inspect image ${ref}: ${why}`);
+      if (ref === currentTag) currentUninspected = true;
+    };
+    if (!line) {
+      unreadable(q.reason || "no output");
+      continue;
+    }
+    const first = line.indexOf("|");
+    const second = first < 0 ? -1 : line.indexOf("|", first + 1);
+    let config = null;
+    if (second > 0) {
+      try {
+        config = JSON.parse(line.slice(second + 1));
+      } catch {
+        config = null;
+      }
+    }
+    const id = second > 0 ? line.slice(0, first) : "";
+    if (!id || !config || typeof config !== "object" || Array.isArray(config)) {
+      unreadable("unreadable inspect output");
+      continue;
+    }
+    const size = line.slice(first + 1, second);
+    // A valid Config with no Labels key is an unlabelled image, not an error.
+    const labels = config.Labels && typeof config.Labels === "object" ? config.Labels : null;
+    const label = labels && typeof labels[rt.PROJECT_LABEL] === "string" ? labels[rt.PROJECT_LABEL] : "";
+    images.push({ ref, id, bytes: Number(size) || 0, label: label || null });
+  }
+  const ps = dockerQuery(["ps", "-a", "--format", "{{.Names}}|{{.Image}}|{{.State}}"]);
+  const containers = (ps.lines || []).map((l) => {
+    const [name, image, state] = l.split("|");
+    return { name, image, running: state === "running" };
+  });
+  // Without the container list, or without the current image's id (aliases of it could look removable),
+  // nothing can be proven safe: plan over no images, so nothing is removed.
+  const blind = ps.lines === null || currentUninspected;
+  if (ps.lines === null)
+    queryFailures.push(`docker ps failed: ${ps.reason}; could not list containers, so no image removed`);
+  if (currentUninspected) queryFailures.push("the current image could not be inspected; no image removed");
+  const plan = rt.planPrune({
+    currentTag,
+    projectLabel: rt.projectLabelFor(root),
+    images: blind ? [] : images,
+    containers: blind ? [] : containers,
+  });
+  plan.queryFailures = queryFailures;
+  if (queryFailures.length) process.exitCode = 1;
+  const note =
+    currentTag === null && images.length
+      ? "no image removed: this project's current image tag could not be computed"
+      : undefined;
+  if (!dryRun) {
+    const failed = [];
+    const tryRemove = (kind, name, args) => {
+      const r = spawnSync("docker", args, { encoding: "utf8", stdio: ["ignore", "ignore", "pipe"] });
+      if (!r.error && r.status === 0) return true;
+      const reason = String((r.error && r.error.message) || r.stderr || "")
+        .trim()
+        .split("\n")[0];
+      failed.push({ kind, name, reason });
+      return false;
+    };
+    const goneContainers = plan.removeContainers.filter((c) => tryRemove("container", c.name, ["rm", c.name]));
+    const goneImages = plan.removeImages.filter((i) => tryRemove("image", i.ref, ["image", "rm", i.ref]));
+    const byId = new Map(goneImages.map((i) => [i.id, i.bytes]));
+    plan.removeContainers = goneContainers;
+    plan.removeImages = goneImages;
+    plan.bytes = [...byId.values()].reduce((n, b) => n + b, 0);
+    plan.failed = failed;
+    // A removal docker refused is a partial failure: exit 1. No docker and nothing to remove stay 0.
+    if (failed.length) process.exitCode = 1;
+  }
+  process.stdout.write(rt.formatPrune(plan, dryRun, note));
+}
+
 const argv = process.argv.slice(2);
 const command = argv[0];
 const { positional, flags, packages } = parse(argv.slice(1));
@@ -130,7 +292,11 @@ try {
       try {
         rt.writeBuildContext(ctx, spec, { trackedFiles: gitTrackedFiles });
         process.stdout.write(`building maestro worker image ${tag}\n`);
-        const b = spawnSync("docker", ["build", "-t", tag, ctx], { stdio: "inherit" });
+        const b = spawnSync(
+          "docker",
+          ["build", "-t", tag, "--label", `${rt.PROJECT_LABEL}=${rt.projectLabelFor(root)}`, ctx],
+          { stdio: "inherit" }
+        );
         if (b.status !== 0) fail(`docker build failed (exit ${b.status})`);
       } finally {
         fs.rmSync(ctx, { recursive: true, force: true });
@@ -227,8 +393,14 @@ try {
       }
       break;
     }
+    case "prune": {
+      pruneCommand(flags["dry-run"] === true);
+      break;
+    }
     default:
-      fail("usage: image [--with-package <name@version>]... [--print-tag] | run --name <name> [--model <m>] <task.md>");
+      fail(
+        "usage: image [--with-package <name@version>]... [--print-tag] | run --name <name> [--model <m>] <task.md> | prune [--dry-run]"
+      );
   }
 } catch (err) {
   fail(err && err.message ? err.message : String(err));

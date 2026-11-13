@@ -180,7 +180,8 @@ export function containerNameFor(name: string): string {
  * argv, log or image. The `claude` invocation is the host launch verbatim.
  */
 export function workerRunArgs(o: RunArgsInput): string[] {
-  const args = ["run", "-it", "--rm", "--name", containerNameFor(o.name)];
+  // `180`: `--init` puts a reaping init process at pid 1, so orphaned children do not linger as zombies.
+  const args = ["run", "-it", "--rm", "--init", "--name", containerNameFor(o.name)];
   args.push("-e", "CLAUDE_CODE_OAUTH_TOKEN", "-e", `${WORKER_RUNTIME_ENV}=docker`);
   // `177`: the worker reads approval records from the read-only mount, wherever the host keeps them.
   if (o.mounts.some((m) => m.target === CONTAINER_APPROVALS_DIR))
@@ -474,7 +475,7 @@ function toolchainOf(spec: ImageSpec): Toolchain {
 export function imageTagInputs(spec: ImageSpec): Record<string, unknown> {
   return {
     // Bump when the image's layout changes without any other input changing.
-    layout: 6,
+    layout: 7,
     toolchain: toolchainOf(spec),
     userPlugins: [...(spec.userPlugins ?? [])].sort(),
     base: spec.baseImage ?? BASE_IMAGE,
@@ -760,9 +761,24 @@ export function dockerignoreText(): string {
   return `${["**/.git", "**/node_modules", "**/.env*", "**/.credentials.json", "**/*.pem", "**/id_rsa*", "**/.npmrc"].join("\n")}\n`;
 }
 
+/**
+ * `180`: a path left out of the plugin marketplace copy baked into the image, on top of
+ * `isExcludedPath`: the repository's epic data (`.claude/epics/`, every `inbox/` included). It holds
+ * reports and decisions, not plugin files, and a worker reads the live epic through the bind-mounted repo.
+ */
+export function isMarketplaceExcluded(rel: string): boolean {
+  if (isExcludedPath(rel)) return true;
+  const segs = rel.split(/[\\/]/).filter(Boolean);
+  for (let i = 0; i + 1 < segs.length; i += 1) if (segs[i] === ".claude" && segs[i + 1] === "epics") return true;
+  return false;
+}
+
 export interface ContextIO {
-  /** Copy `from` into `to`, never an excluded path; when `tracked` is given, copy only those files (relative to `from`). */
-  copyDir: (from: string, to: string, tracked?: string[] | null) => void;
+  /**
+   * Copy `from` into `to`, never an excluded path; when `tracked` is given, copy only those files
+   * (relative to `from`). `excluded` replaces `isExcludedPath` as the test for what to leave out.
+   */
+  copyDir: (from: string, to: string, tracked?: string[] | null, excluded?: (rel: string) => boolean) => void;
   /** The git-tracked files of `dir` when it is a git repo, else null. Needs a spawn, so the CLI supplies it. */
   trackedFiles?: (dir: string) => string[] | null;
 }
@@ -786,8 +802,9 @@ export function writeBuildContext(dir: string, spec: ImageSpec, overrides: Parti
   fs.mkdirSync(path.join(dir, "plugins"), { recursive: true });
   fs.mkdirSync(path.join(dir, "marketplaces"), { recursive: true });
   put(".dockerignore", dockerignoreText());
-  const copy = (from: string, to: string) => io.copyDir(from, to, io.trackedFiles?.(from) ?? null);
-  for (const m of marketplaces) if (m.dir) copy(m.dir, path.join(dir, "marketplaces", m.name));
+  const copy = (from: string, to: string, excluded?: (rel: string) => boolean) =>
+    io.copyDir(from, to, io.trackedFiles?.(from) ?? null, excluded);
+  for (const m of marketplaces) if (m.dir) copy(m.dir, path.join(dir, "marketplaces", m.name), isMarketplaceExcluded);
   for (const p of spec.plugins) {
     const { name, marketplace } = pluginParts(p.id);
     copy(p.installPath, path.join(dir, "plugins", marketplace, name, p.version));
@@ -795,12 +812,12 @@ export function writeBuildContext(dir: string, spec: ImageSpec, overrides: Parti
 }
 
 const defaultContextIO: ContextIO = {
-  copyDir: (from, to, tracked) => {
+  copyDir: (from, to, tracked, excluded = isExcludedPath) => {
     if (tracked) {
       fs.mkdirSync(to, { recursive: true });
       for (const rel of tracked) {
         const src = path.join(from, rel);
-        if (isExcludedPath(rel) || !fs.existsSync(src)) continue;
+        if (excluded(rel) || !fs.existsSync(src)) continue;
         fs.mkdirSync(path.dirname(path.join(to, rel)), { recursive: true });
         fs.cpSync(src, path.join(to, rel));
       }
@@ -808,7 +825,168 @@ const defaultContextIO: ContextIO = {
     }
     fs.cpSync(from, to, {
       recursive: true,
-      filter: (src) => !isExcludedPath(path.relative(from, src)),
+      filter: (src) => !excluded(path.relative(from, src)),
     });
   },
 };
+
+// ------------------------------------------------------------------------------------ prune (`180`)
+
+/** Repository prefix every worker image carries (`imageTag`). */
+export const WORKER_IMAGE_PREFIX = "maestro-worker-";
+/** Image label naming the project a worker image was built for (set by the launcher's build). */
+export const PROJECT_LABEL = "maestro.worker.project";
+
+/** A short stable id for a project root, used as the image label's value. */
+export function projectLabelFor(projectRoot: string): string {
+  return crypto.createHash("sha256").update(projectRoot).digest("hex").slice(0, 12);
+}
+
+export interface PruneImage {
+  /** `repository:tag`. */
+  ref: string;
+  /** Full image id (`sha256:...`), when known. */
+  id: string;
+  bytes: number;
+  /** The PROJECT_LABEL value, or null for an image built before labels. */
+  label: string | null;
+}
+
+export interface PruneContainer {
+  name: string;
+  /** The image the container was created from: a ref or an id (docker reports either). */
+  image: string;
+  running: boolean;
+}
+
+export interface PruneInput {
+  /** The current tag from `imageTag`, or null when it could not be computed (then no image is removed). */
+  currentTag: string | null;
+  projectLabel: string;
+  images: PruneImage[];
+  containers: PruneContainer[];
+}
+
+export interface PrunePlan {
+  removeContainers: PruneContainer[];
+  removeImages: PruneImage[];
+  /** Bytes freed by removing `removeImages` (an image id shared by two refs counts once). */
+  bytes: number;
+  /** Why an image of this project's worker repository was left: in use, the current tag, or tag unknown. */
+  kept: Array<{ ref: string; reason: string }>;
+  /** Unlabelled images of this repository: not provably this project's, never removed; the user may run `command`. */
+  skipped: Array<{ ref: string; bytes: number; command: string }>;
+  /** Removals docker refused, filled in by the launcher after it ran them; never counted as freed. */
+  failed?: Array<{ kind: "image" | "container"; name: string; reason: string }>;
+  /** Docker queries that failed (ps, inspect), each a full sentence: a failed query is never an empty result. */
+  queryFailures?: string[];
+}
+
+function repositoryOf(ref: string): string {
+  const slash = ref.lastIndexOf("/");
+  const colon = ref.lastIndexOf(":");
+  return colon > slash ? ref.slice(0, colon) : ref;
+}
+
+function sameImage(ref: string, img: PruneImage): boolean {
+  if (ref === img.ref) return true;
+  const bare = (s: string) => s.replace(/^sha256:/, "");
+  const a = bare(ref);
+  const b = bare(img.id);
+  return a.length >= 6 && /^[0-9a-f]+$/.test(a) && b.startsWith(a);
+}
+
+/**
+ * Which worker images and containers prune removes. With no current tag nothing is "this project's",
+ * so nothing is removed. Only an image of THIS project's worker
+ * repository (`maestro-worker-<slug>`, the current tag's repository) that carries this project's
+ * label is a candidate; an unlabelled one is reported as skipped, never removed; other projects' worker images and any other image are never touched. An
+ * image used by a running container (any container) and the current tag are kept. A worker
+ * container is one named `maestro-worker-*`; only a stopped one whose image is this project's goes.
+ */
+export function planPrune(input: PruneInput): PrunePlan {
+  const kept: PrunePlan["kept"] = [];
+  const skipped: PrunePlan["skipped"] = [];
+  const repo = input.currentTag ? repositoryOf(input.currentTag) : null;
+  const sameRepo = (i: PruneImage) => repo !== null && repositoryOf(i.ref) === repo;
+  // `180` (m005): only an image PROVEN to be this project's (its label matches) is ever removed. An
+  // unlabelled image of the same repository predates the label: it is listed as skipped instead.
+  const projectImages = input.images.filter((i) => sameRepo(i) && i.label === input.projectLabel);
+  const current = input.currentTag ? input.images.find((i) => i.ref === input.currentTag) : undefined;
+  const running = input.containers.filter((c) => c.running);
+  for (const img of input.images) {
+    if (!sameRepo(img) || img.label !== null) continue;
+    if (img.ref === input.currentTag || (current && img.id && img.id === current.id)) continue;
+    if (running.some((c) => sameImage(c.image, img))) continue;
+    skipped.push({ ref: img.ref, bytes: img.bytes, command: `docker rmi ${img.ref}` });
+  }
+
+  const removeContainers = input.containers.filter(
+    (c) => !c.running && c.name.startsWith(WORKER_IMAGE_PREFIX) && projectImages.some((i) => sameImage(c.image, i))
+  );
+  const removeImages: PruneImage[] = [];
+  const doomedIds = new Set<string>();
+  for (const img of projectImages) {
+    if (img.ref === input.currentTag || (current && img.id && img.id === current.id)) {
+      kept.push({ ref: img.ref, reason: "current tag" });
+    } else if (running.some((c) => sameImage(c.image, img))) {
+      kept.push({ ref: img.ref, reason: "in use by a running container" });
+    } else {
+      removeImages.push(img);
+      doomedIds.add(img.id || img.ref);
+    }
+  }
+  const sizeById = new Map<string, number>();
+  for (const img of removeImages) sizeById.set(img.id || img.ref, img.bytes);
+  let bytes = 0;
+  for (const id of doomedIds) bytes += sizeById.get(id) ?? 0;
+  return { removeContainers, removeImages, bytes, kept, skipped };
+}
+
+/** `1.5 GB` style size. */
+export function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let v = n / 1024;
+  let i = 0;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i += 1;
+  }
+  return `${v.toFixed(1)} ${units[i]}`;
+}
+
+/** The report prune prints. `dryRun` words it as "would remove" and removes nothing. */
+export function formatPrune(plan: PrunePlan, dryRun: boolean, note?: string): string {
+  const lines: string[] = [];
+  if (note) lines.push(note);
+  const removed = plan.removeContainers.length + plan.removeImages.length;
+  if (!removed) {
+    // Only when nothing was attempted: a refused removal is reported below, never as "nothing needed".
+    // "Needed" claims prune looked and found nothing; with a skipped image or a note it did not mean that.
+    if (!plan.failed?.length && !plan.queryFailures?.length)
+      lines.push(
+        plan.skipped.length || note
+          ? "maestro worker prune: nothing was removed"
+          : "maestro worker prune: nothing needed removing"
+      );
+  } else {
+    const verb = dryRun ? "would remove" : "removed";
+    for (const c of plan.removeContainers) lines.push(`${verb} stopped container ${c.name}`);
+    for (const i of plan.removeImages) lines.push(`${verb} image ${i.ref} (${formatBytes(i.bytes)})`);
+    lines.push(
+      `${dryRun ? "would free" : "freed"} ${formatBytes(plan.bytes)}${dryRun ? " (dry run: nothing was removed)" : ""}`
+    );
+  }
+  for (const f of plan.failed ?? [])
+    lines.push(
+      `could not remove ${f.kind === "image" ? "image" : "stopped container"} ${f.name}${f.reason ? `: ${f.reason}` : ""}`
+    );
+  for (const q of plan.queryFailures ?? []) lines.push(q);
+  for (const k of plan.kept) lines.push(`kept ${k.ref} (${k.reason})`);
+  for (const s of plan.skipped)
+    lines.push(
+      `skipped ${s.ref} (${formatBytes(s.bytes)}): not labelled for this project, so not proven to be its image; to remove it yourself run: ${s.command}`
+    );
+  return `${lines.join("\n")}\n`;
+}

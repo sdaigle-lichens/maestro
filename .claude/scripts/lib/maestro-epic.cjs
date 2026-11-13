@@ -63,6 +63,7 @@ __export(maestro_epic_exports, {
   escalateStop: () => escalateStop,
   escalationMarker: () => escalationMarker,
   findApproval: () => findApproval,
+  finishWorker: () => finishWorker,
   formatBoundary: () => formatBoundary,
   formatEpic: () => formatEpic,
   formatInboxEntry: () => formatInboxEntry,
@@ -975,6 +976,17 @@ function addWorker(projectRoot, slug, name, task, pane) {
     }
   });
 }
+function finishWorker(projectRoot, slug, name) {
+  const state = readEpicState(projectRoot, slug);
+  if (!state) throw new Error(`no epic "${slug}"`);
+  if (!state.workers.some((w) => w.name === name)) throw new Error(`epic "${slug}" has no worker "${name}"`);
+  updateState(projectRoot, slug, (s) => {
+    const w = s.workers.find((x) => x.name === name);
+    if (!w) return;
+    delete w.pane;
+    w.finished_at ??= now();
+  });
+}
 function removeWorker(projectRoot, slug, name) {
   updateState(projectRoot, slug, (s) => {
     s.workers = s.workers.filter((w) => w.name !== name);
@@ -1350,7 +1362,8 @@ function showEpic(projectRoot, slug) {
     dir,
     goalFile: import_node_path10.default.join(dir, EPIC_FILE),
     manager: state.manager?.name ?? null,
-    workers: state.workers,
+    workers: state.workers.filter((w) => !w.finished_at),
+    finishedWorkers: state.workers.filter((w) => w.finished_at),
     tasks,
     unacknowledged: pendingInboxViews(state, dir, root),
     crossEpic: crossEpicEdges(tracker, slug)
@@ -1434,7 +1447,7 @@ function readyTasks(projectRoot, slug, cap = DEFAULT_SPAWN_CAP) {
   const model = resolveWorkerModel(config);
   const runtime = resolveWorkerRuntime(config);
   const workerOf = /* @__PURE__ */ new Map();
-  for (const w of state.workers) if (w.task) workerOf.set(import_node_path10.default.basename(w.task), w.name);
+  for (const w of state.workers) if (w.task && !w.finished_at) workerOf.set(import_node_path10.default.basename(w.task), w.name);
   const view = {
     slug,
     cwd: root,
@@ -1515,6 +1528,7 @@ function formatEpic(view) {
     `  goal file: ${view.goalFile}`,
     `  manager:   ${view.manager ?? "(none recorded)"}`,
     `  workers:   ${view.workers.length ? view.workers.map((w) => w.pane ? `${w.name} (pane ${w.pane})` : w.name).join(", ") : "(none recorded)"}`,
+    ...view.finishedWorkers.length ? [`  finished:  ${view.finishedWorkers.map((w) => w.name).join(", ")} (session stopped)`] : [],
     `  tasks (${view.tasks.length}):`
   ];
   for (const t of view.tasks) {
@@ -1823,6 +1837,7 @@ function checkReportCommit(git2, root, input) {
   escalateStop,
   escalationMarker,
   findApproval,
+  finishWorker,
   formatBoundary,
   formatEpic,
   formatInboxEntry,

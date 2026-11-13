@@ -39,6 +39,9 @@
 //       manager runs FOR a worker, prefers the name recorded on the --task claim instead (and the
 //       caller's own stored name only when the caller is a worker that is not the epic's manager).
 //   node maestro-epic.cjs remove-worker <slug> <session name>
+//   node maestro-epic.cjs finish-worker <slug> <session name>
+//       `180`: run after the USER confirmed the worker's session was stopped. Marks the worker
+//       finished and drops its pane id, so `show` no longer lists it or its pane as active.
 //   node maestro-epic.cjs of <NNN-task.md>
 //       Prints the slug of the epic the task belongs to, or nothing (exit 0) when it belongs to none.
 //       The orchestrator runs it once, when it builds the task list, to word the last node.
@@ -289,6 +292,14 @@ try {
       );
       break;
     }
+    case "finish-worker": {
+      // `180`: the user confirmed this worker's session was stopped; its pane is no longer active.
+      const slug = need(positional[0], "finish-worker <slug> <name>");
+      const name = need(positional[1], "finish-worker <slug> <name>");
+      epics.finishWorker(projectDir, slug, name);
+      process.stdout.write(`Maestro epic: worker "${name}" on "${slug}" is finished; its pane is no longer active\n`);
+      break;
+    }
     case "remove-worker": {
       epics.removeWorker(
         projectDir,
@@ -529,7 +540,7 @@ try {
     default:
       fail(
         "unknown command. Usage:\n  create <slug>\n  list [--json]\n  link <slug> <task.md>...\n  unlink <task.md>...\n  show <slug> [--json]\n  ready <slug> [--cap <n>] [--json]\n" +
-          "  set-manager <slug> <name>\n  add-worker <slug> <name>\n  remove-worker <slug> <name>\n  report --task <task.md> [--file <path>|-]\n" +
+          "  set-manager <slug> <name>\n  add-worker <slug> <name>\n  remove-worker <slug> <name>\n  finish-worker <slug> <name>\n  report --task <task.md> [--file <path>|-]\n" +
           "  note <to-slug> --from-epic <slug> [--from <name>] [--subject <text>] --file <path>|-\n" +
           "  review-request --task <task.md> --file <review file> [--from <name>]\n" +
           "  review-verdict --task <task.md> <on-track|redirect|escalate> [--by <name>]\n  reports <slug>\n  watch <slug> [--for <seconds>] [--interval <seconds>]\n  ack <slug> <id>...\n" +
