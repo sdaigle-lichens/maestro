@@ -230,6 +230,21 @@
       "file": "inbox/r007-180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
       "at": "2026-11-13T20:10:06.872Z",
       "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "report",
+      "id": "r008",
+      "task": "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
+      "file": "inbox/r008-180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
+      "at": "2026-11-13T20:32:49.195Z",
+      "from": "containerized-workers-180"
+    },
+    {
+      "kind": "ack",
+      "id": "r008",
+      "file": "inbox/r008-180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
+      "at": "2026-11-13T20:33:10.740Z",
+      "by": "maestro-mgr-6c076e03"
     }
   ]
 }
