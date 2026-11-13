@@ -9,30 +9,32 @@
     {
       "name": "containerized-workers-175",
       "task": "175-run-maestro-workers-in-a-per-project-docker-container.md",
-      "added_at": "2026-11-12T15:40:51.727Z"
+      "added_at": "2026-11-12T15:40:51.727Z",
+      "finished_at": "2026-11-13T21:23:03.747Z"
     },
     {
       "name": "containerized-workers-176",
       "task": "176-containerized-workers-report-to-the-manager-through-the-epic-inbox-and-herdr-pane-input.md",
-      "added_at": "2026-11-12T19:53:26.624Z"
+      "added_at": "2026-11-12T19:53:26.624Z",
+      "finished_at": "2026-11-13T21:23:03.413Z"
     },
     {
       "name": "containerized-workers-177",
       "task": "177-the-epic-manager-approves-containerized-workers-stops-on-the-user-s-behalf-escalating-only-what-needs-the-user.md",
-      "pane": "w9:p1G",
-      "added_at": "2026-11-12T23:06:01.267Z"
+      "added_at": "2026-11-12T23:06:01.267Z",
+      "finished_at": "2026-11-13T21:23:03.012Z"
     },
     {
       "name": "containerized-workers-179",
       "task": "179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md",
-      "pane": "w9:p1H",
-      "added_at": "2026-11-13T01:26:13.686Z"
+      "added_at": "2026-11-13T01:26:13.686Z",
+      "finished_at": "2026-11-13T21:23:02.421Z"
     },
     {
       "name": "containerized-workers-180",
       "task": "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
-      "pane": "w9:p1J",
-      "added_at": "2026-11-13T17:08:24.805Z"
+      "added_at": "2026-11-13T17:08:24.805Z",
+      "finished_at": "2026-11-13T21:23:01.944Z"
     }
   ],
   "log": [
