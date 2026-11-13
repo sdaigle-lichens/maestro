@@ -119,7 +119,9 @@ function dockerAvailable() {
 function dockerQuery(args) {
   const r = spawnSync("docker", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   if (r.error || r.status !== 0) {
-    const reason = String((r.error && r.error.message) || r.stderr || `exit ${r.status}`).trim().split("\n")[0];
+    const reason = String((r.error && r.error.message) || r.stderr || `exit ${r.status}`)
+      .trim()
+      .split("\n")[0];
     return { lines: null, reason };
   }
   return {
@@ -200,7 +202,8 @@ function pruneCommand(dryRun) {
   // Without the container list, or without the current image's id (aliases of it could look removable),
   // nothing can be proven safe: plan over no images, so nothing is removed.
   const blind = ps.lines === null || currentUninspected;
-  if (ps.lines === null) queryFailures.push(`docker ps failed: ${ps.reason}; could not list containers, so no image removed`);
+  if (ps.lines === null)
+    queryFailures.push(`docker ps failed: ${ps.reason}; could not list containers, so no image removed`);
   if (currentUninspected) queryFailures.push("the current image could not be inspected; no image removed");
   const plan = rt.planPrune({
     currentTag,
@@ -211,13 +214,17 @@ function pruneCommand(dryRun) {
   plan.queryFailures = queryFailures;
   if (queryFailures.length) process.exitCode = 1;
   const note =
-    currentTag === null && images.length ? "no image removed: this project's current image tag could not be computed" : undefined;
+    currentTag === null && images.length
+      ? "no image removed: this project's current image tag could not be computed"
+      : undefined;
   if (!dryRun) {
     const failed = [];
     const tryRemove = (kind, name, args) => {
       const r = spawnSync("docker", args, { encoding: "utf8", stdio: ["ignore", "ignore", "pipe"] });
       if (!r.error && r.status === 0) return true;
-      const reason = String((r.error && r.error.message) || r.stderr || "").trim().split("\n")[0];
+      const reason = String((r.error && r.error.message) || r.stderr || "")
+        .trim()
+        .split("\n")[0];
       failed.push({ kind, name, reason });
       return false;
     };
@@ -262,7 +269,11 @@ try {
       try {
         rt.writeBuildContext(ctx, spec, { trackedFiles: gitTrackedFiles });
         process.stdout.write(`building maestro worker image ${tag}\n`);
-        const b = spawnSync("docker", ["build", "-t", tag, "--label", `${rt.PROJECT_LABEL}=${rt.projectLabelFor(root)}`, ctx], { stdio: "inherit" });
+        const b = spawnSync(
+          "docker",
+          ["build", "-t", tag, "--label", `${rt.PROJECT_LABEL}=${rt.projectLabelFor(root)}`, ctx],
+          { stdio: "inherit" }
+        );
         if (b.status !== 0) fail(`docker build failed (exit ${b.status})`);
       } finally {
         fs.rmSync(ctx, { recursive: true, force: true });
