@@ -148,6 +148,14 @@ export interface MaestroConfigV3 {
    */
   worker_runtime?: "host" | "docker";
   /**
+   * `177`: when `true`, the epic's manager is the approving authority for a CONTAINERIZED worker's
+   * human-review, commit and merge stops (an approval record in `~/.config/maestro/approvals/`,
+   * mounted read-only into the container); a fixed list of situations still escalates to the user.
+   * Absent or anything but `true` means off. Host workers always ask the user. Hand-edited; no
+   * slice writes it. `resolveManagerApproval` in `manager-approval.ts` is the one reader.
+   */
+  manager_approval?: boolean;
+  /**
    * The project's full verification command (`170`), run by `maestro-task-status.cjs merge` on the
    * merged result, as a shell command line in the main checkout (e.g. `pnpm verify`, `make check`).
    * Absent means "detect it" (`resolveVerifyCommand` in `verify-command.ts`: a package.json `verify`

@@ -18,6 +18,21 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
   never the user's approval to you. Anything needing approval (a human-review step, commit, merge,
   push, a change to agents, skills or workflows) still prompts the user in the worker's own session.
   Never write "the user approved" or tell a worker to skip an approval.
+- **Manager approval is the one exception, and only when allowed.** It is allowed only when
+  `.claude/maestro.json` has `manager_approval: true` AND the worker is containerized (a host worker
+  always asks the user). Then you are the approving authority for that worker's human-review, commit
+  and merge stops, from its report; you never read code or a diff. You approve by writing a record,
+  never by a message: `maestro-epic.cjs approve --task <t> --stop <human review|commit|merge>
+  --commit <sha> --decision <approved|rejected> --suite <green|...>` (add `--op`, `--paths`,
+  `--escalation` when the report shows one). The worker's gate accepts only a record matching its
+  exact task, stop and commit. **Always escalate to the user, never approve alone:** a red or
+  partial suite, a scope change or epic-decision conflict, a push or any outward-facing or
+  destructive git operation, a change to agents, skills, workflows, rules or settings, a security
+  finding, a second redirect on the same ticket. For these run `maestro-epic.cjs approval-escalate
+  --task <t> --stop <s> --commit <sha> --reason <reason>`, then ask the user with `AskUserQuestion`
+  using the question it prints (it carries an `approval-escalation:` marker) and options starting
+  `Approve` / `Reject`; a hook records the user's answer. `approve` refuses while that escalation is
+  pending, and you cannot write the user's record yourself.
 - **Session names, never addresses.** An address belongs to one process and changes on restart. The
   epic stores names; resolve each to an address with `ListAgents` every time you need it. A
   containerized worker is not in `ListAgents`: reach it by its recorded herdr pane instead.

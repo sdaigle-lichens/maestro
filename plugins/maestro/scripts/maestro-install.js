@@ -429,6 +429,8 @@ const HOOK_REGISTRATIONS = [
   // `130`: denies AskUserQuestion at a human review until that round's review file exists; `132`:
   // at a manager review, a SendMessage to the epic's manager too.
   nodeHook("PreToolUse", "AskUserQuestion|SendMessage", "maestro-human-review-gate.cjs"),
+  // `177`: the same script records the user's answer to a manager's escalation question.
+  nodeHook("PostToolUse", "AskUserQuestion", "maestro-human-review-gate.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 

@@ -2008,7 +2008,13 @@ function checkHumanReview(input) {
   const { round } = stop;
   const name = reviewFileName(state.active_task, round);
   const file = `${input.tasksDir.replace(/[\\/]+$/, "")}/${name}`;
-  if (input.exists(file)) return { allow: true };
+  const reviewFileExists = input.exists(file);
+  if (reviewFileExists && input.toolName === "AskUserQuestion" && stop.label === HUMAN_REVIEW_LABEL && input.managerApproval?.active)
+    return {
+      allow: false,
+      reason: `Human review round ${stop.round}: manager approval is on. ${input.managerApproval.message}`
+    };
+  if (reviewFileExists) return { allow: true };
   if (stop.label === MANAGER_REVIEW_LABEL) {
     return {
       allow: false,

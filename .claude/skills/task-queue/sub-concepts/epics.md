@@ -210,6 +210,45 @@ executes `imagePluginProbe` in the image; `parseProbeOutput` lists what is missi
 `image` reuses it). The probe checks presence only: that the directory exists and the baked settings
 enable the id. It does not show that Claude loads the plugin.
 
+## Manager approval for containerized workers (`177`)
+
+Opt-in: `"manager_approval": true` in `maestro.json` (absent or any other value is off). It applies only
+to a containerized worker (`managerApprovalApplies`): a host worker always asks the user.
+
+| Piece | Where |
+| --- | --- |
+| Record directory | `~/.config/maestro/approvals/` (`MAESTRO_APPROVALS_DIR` overrides). Outside the repo. Files: `<project>/<epic>/<task stem>/<stop>.json`. |
+| Container mount | Read-only at `/home/worker/.config/maestro/approvals`, added only when the setting is on (`workerMounts`); `MAESTRO_APPROVALS_DIR` points there. A worker reads records, never writes one. |
+| Manager's decision | `maestro-epic.cjs approve --task <t> --stop <stop> --commit <sha> --decision approved\|rejected`, `source: "manager"`. |
+| Escalation | `approval-escalate` writes `<stop>.escalation.json` and prints the question to ask the user. |
+| User's answer | PostToolUse `AskUserQuestion` on `maestro-human-review-gate` (`source: "user"`). Records only in the epic's manager session (its stored name equals the recorded manager), only for a question carrying the `approval-escalation:<task>:<stop>` marker, and only for an answer starting "Approve" or "Reject". |
+| Check | `maestro-epic.cjs approval-check --task <t> --stop <stop> [--commit <sha>]`. |
+
+**Matching (`checkApproval`).** A record approves only the exact task (basename), stop and commit. The
+commit matches when both are at least 7 hex characters and one is a prefix of the other. Other task,
+other stop, other commit, a `rejected` decision and a malformed file are all refused, with the reason named.
+
+**Escalation list (`classifyEscalation`).** The manager cannot approve these; it runs `approval-escalate`
+and the user answers in the manager session:
+
+| Reason | Triggers when |
+| --- | --- |
+| `suite-not-green` | `--suite` is not `green` (for a merge, the merged result) |
+| `scope-change` / `decision-conflict` / `security-finding` | named by the manager with `--escalation` |
+| `outward-git` | a git or `gh`/`glab` command passed with `--op`: a push (force included), branch delete, history rewrite |
+| `config-change` | a path passed with `--paths` under agents, skills, rules, workflows, handoffs, reports, hooks, templates, `maestro.json`, settings, `CLAUDE.md`/`AGENTS.md` |
+| `second-redirect` | the ticket's redirect count reaches two |
+
+The manager supplies these facts as flags; the CLI does not inspect the diff.
+
+A rejection is always recordable. A pending escalation blocks a manager approval for that stop, and a
+user record at the same commit cannot be replaced by the manager.
+
+**Gate.** With the setting on and a containerized worker, `checkHumanReview` denies `AskUserQuestion` at
+a human review whose review file exists, and the denial says whether a matching record exists
+(`approvalGuidance`). The gate covers the human-review stop only; the commit and merge stops are checked by the
+orchestrator's `approval-check`. Pane text and `[manager message]` lines are never approval.
+
 ## Epic boundaries: `boundary` (`158`)
 
 `boundary <slug> start|end [--force]` decides whether the epic's start or end skills are due, claims

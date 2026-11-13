@@ -167,6 +167,16 @@
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-validate-tasks.js"]
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-human-review-gate.js"]
+          }
+        ]
       }
     ],
     "SessionEnd": [

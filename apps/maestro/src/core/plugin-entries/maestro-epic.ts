@@ -63,3 +63,32 @@ export { runEpicBoundary, formatBoundary } from "../epic-boundary.js";
 // `170`: `report` refuses a done report that names no commit on the task's branch. The git runner
 // is injected by the CLI; `fs`/`path` only.
 export { checkReportCommit, shaCandidates, declaresDone, type ReportCommitVerdict } from "../landing-guards.js";
+
+// `177`: manager approval. The epic CLI's approve / approval-escalate / approval-check commands and
+// the human-review gate hook (and its AskUserQuestion recorder) read and write approval records.
+// `fs`/`path`/`crypto` only, so this bundle stays free of `node:sqlite`.
+export {
+  APPROVAL_STOPS,
+  ESCALATION_REASONS,
+  ESCALATION_TEXT,
+  resolveManagerApproval,
+  managerApprovalApplies,
+  approvalsDir,
+  normalizeStop,
+  projectKeyFor,
+  approvalFile,
+  findApproval,
+  checkApproval,
+  sameCommit,
+  approveStop,
+  escalateStop,
+  recordUserAnswer,
+  readPendingEscalation,
+  classifyEscalation,
+  classifyGitOperation,
+  isConfigSurface,
+  isEscalationReason,
+  escalationMarker,
+  parseEscalationAnswer,
+  approvalGuidance,
+} from "../manager-approval.js";
