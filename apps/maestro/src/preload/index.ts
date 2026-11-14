@@ -41,6 +41,13 @@ const api: MaestroApi = {
     workerModel: {
       set: (value) => ipcRenderer.invoke(IPC.workerModelSet, value),
     },
+    workerRuntime: {
+      set: (value) => ipcRenderer.invoke(IPC.workerRuntimeSet, value),
+    },
+    workerImage: {
+      rebuild: () => ipcRenderer.invoke(IPC.workerImageRebuild),
+      pruneDryRun: () => ipcRenderer.invoke(IPC.workerImagePruneDryRun),
+    },
   },
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
@@ -63,6 +70,8 @@ const api: MaestroApi = {
     skillLists: () => ipcRenderer.invoke(IPC.skillListsData),
     taskRouting: () => ipcRenderer.invoke(IPC.taskRoutingData),
     workerModel: () => ipcRenderer.invoke(IPC.workerModelData),
+    workerRuntime: () => ipcRenderer.invoke(IPC.workerRuntimeData),
+    workerReadiness: () => ipcRenderer.invoke(IPC.workerReadiness),
   },
   config: {
     save: (input: SaveInput) => ipcRenderer.invoke(IPC.configSave, input),

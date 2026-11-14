@@ -26,6 +26,10 @@
 //       the label) is listed as skipped with its `docker rmi`, in dry-run mode too. Never an image a running container uses, another project's worker image or an
 //       image that is not a Maestro worker image. Prints what it removed and the space freed;
 //       --dry-run only lists. With no docker, or nothing to remove (host workers), it says so and exits 0.
+//       `181`: `image` and a real `prune` take a per-project lock (~/.config/maestro/locks, outside the repo and
+//       every container mount): a second build waits and then reuses the first one's image, a prune and a build
+//       wait for each other, and a lock left by a dead process is taken over. `prune --dry-run` takes no lock.
+//       `run` records the worker's runtime and manager_approval in its epic's worker record before starting.
 //       `176`: the image carries every plugin the host session has enabled, user scope included, and
 //       `run` checks that (a shell probe in the image) and refuses an image missing one, naming it.
 
@@ -107,6 +111,25 @@ function specFor(root, extraPackages) {
   if (missing.length)
     fail(`these enabled plugins have no install on this host: ${missing.join(", ")}. Install them with /plugin first.`);
   return spec;
+}
+
+// `181`: run `fn` holding the project's worker-image lock (outside the repository and every container
+// mount: ~/.config/maestro/locks). Waits for a live holder, takes over one left by a dead process.
+function withWorkerLock(kind, fn) {
+  const lock = rt.acquireWorkerLock(rt.workerLockDir(os.homedir(), root), {
+    kind,
+    onWait: (owner) =>
+      process.stdout.write(`waiting for ${rt.describeLockHolder(owner)} to finish before the ${kind} starts\n`),
+    onRecovered: () => process.stdout.write("recovered a worker image lock left by a process that is gone\n"),
+  });
+  if (!lock.ok) fail(lock.message);
+  // `fail` exits the process, which skips `finally`: the exit hook releases in that case too.
+  process.once("exit", lock.release);
+  try {
+    return fn(lock);
+  } finally {
+    lock.release();
+  }
 }
 
 function dockerAvailable() {
@@ -284,24 +307,33 @@ try {
         break;
       }
       requireDocker();
-      if (imageExists(tag)) {
-        process.stdout.write(`maestro worker image ${tag} is up to date; reusing it\n`);
-        break;
-      }
-      const ctx = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-worker-image-"));
-      try {
-        rt.writeBuildContext(ctx, spec, { trackedFiles: gitTrackedFiles });
-        process.stdout.write(`building maestro worker image ${tag}\n`);
-        const b = spawnSync(
-          "docker",
-          ["build", "-t", tag, "--label", `${rt.PROJECT_LABEL}=${rt.projectLabelFor(root)}`, ctx],
-          { stdio: "inherit" }
-        );
-        if (b.status !== 0) fail(`docker build failed (exit ${b.status})`);
-      } finally {
-        fs.rmSync(ctx, { recursive: true, force: true });
-      }
-      process.stdout.write(`built ${tag}\n`);
+      // `181`: one build or prune of a project's image at a time. The image is looked for AFTER the
+      // lock is held, so a second build started at once waits, then finds the first one's image and
+      // reuses it instead of building the same tag again.
+      withWorkerLock("build", (lock) => {
+        if (imageExists(tag)) {
+          process.stdout.write(
+            lock.waited
+              ? `maestro worker image ${tag} was built by another build of this project while waiting; reusing it\n`
+              : `maestro worker image ${tag} is up to date; reusing it\n`
+          );
+          return;
+        }
+        const ctx = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-worker-image-"));
+        try {
+          rt.writeBuildContext(ctx, spec, { trackedFiles: gitTrackedFiles });
+          process.stdout.write(`building maestro worker image ${tag}\n`);
+          const b = spawnSync(
+            "docker",
+            ["build", "-t", tag, "--label", `${rt.PROJECT_LABEL}=${rt.projectLabelFor(root)}`, ctx],
+            { stdio: "inherit" }
+          );
+          if (b.status !== 0) fail(`docker build failed (exit ${b.status})`);
+        } finally {
+          fs.rmSync(ctx, { recursive: true, force: true });
+        }
+        process.stdout.write(`built ${tag}\n`);
+      });
       break;
     }
     case "run": {
@@ -383,6 +415,20 @@ try {
             email: capture("git", ["-C", root, "config", "user.email"]) || undefined,
           },
         });
+        // `181`: record the worker's runtime and manager_approval in its epic's worker record NOW, from
+        // the settings in force at this launch. The record is first-write-wins, so the manager's later
+        // add-worker keeps it, and a later edit of maestro.json never changes this worker.
+        try {
+          const epics = require("./lib/maestro-epic.cjs");
+          const slug = epics.epicOfTask(root, taskRel);
+          if (slug)
+            epics.addWorker(root, slug, name, taskRel, undefined, {
+              runtime: "docker",
+              manager_approval: approvals !== null,
+            });
+        } catch {
+          // best effort: add-worker records the same settings afterwards
+        }
         const r = spawnSync("docker", args, {
           stdio: "inherit",
           env: { ...process.env, CLAUDE_CODE_OAUTH_TOKEN: token.token },
@@ -394,7 +440,10 @@ try {
       break;
     }
     case "prune": {
-      pruneCommand(flags["dry-run"] === true);
+      // `181`: a real prune waits for a build in progress (and a build waits for it). A dry run removes
+      // nothing, so it never waits and never blocks a build.
+      if (flags["dry-run"] === true) pruneCommand(true);
+      else withWorkerLock("prune", () => pruneCommand(false));
       break;
     }
     default:

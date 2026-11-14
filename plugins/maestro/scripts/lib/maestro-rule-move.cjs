@@ -113,6 +113,13 @@ function mergeSlice(current, input) {
     const model = resolveWorkerModel({ version: 3, worker_model: input.slice.worker_model });
     if (model === void 0) delete next.worker_model;
     else next.worker_model = model;
+  } else if (input.sliceType === "worker-runtime") {
+    const runtime = input.slice.worker_runtime;
+    if (typeof runtime === "string" && runtime.trim().toLowerCase() === "docker") next.worker_runtime = "docker";
+    else delete next.worker_runtime;
+    if (next.worker_runtime === "docker" && input.slice.manager_approval === true)
+      next.manager_approval = true;
+    else delete next.manager_approval;
   }
   return next;
 }

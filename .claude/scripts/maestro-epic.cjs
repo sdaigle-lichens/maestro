@@ -458,7 +458,8 @@ try {
       const project = epics.projectKeyFor(projectDir);
       const root = epics.approvalsDir(os.homedir());
       if (command === "approval-check") {
-        if (!epic || !epics.managerApprovalApplies(cfg, epics.isContainerWorker())) {
+        // `181`: the value recorded for this worker at launch decides, not the live maestro.json.
+        if (!epic || !epics.managerApprovalForTask(projectDir, task, cfg, epics.isContainerWorker())) {
           process.stdout.write(
             `NOT-APPLICABLE: ${!epic ? "this task belongs to no epic" : "manager approval is off, or this is not a containerized worker"}; ask the user as before.\n`
           );
@@ -477,8 +478,10 @@ try {
       // approve / approval-escalate write: the manager's session on the host, never a worker container.
       if (epics.isContainerWorker())
         fail("approval records are written by the manager on the host, never from a worker container");
-      if (!epics.resolveManagerApproval(cfg))
-        fail("manager_approval is not enabled in .claude/maestro.json: the user approves these stops");
+      if (!epics.managerApprovalForTask(projectDir, task, cfg, true))
+        fail(
+          "manager_approval is not enabled for this task's worker (the value in .claude/maestro.json when the worker was launched): the user approves these stops"
+        );
       if (!epic) fail(`"${path.basename(task)}" belongs to no epic: there is no manager to approve it`);
       if (command === "approval-escalate") {
         const r = epics.escalateStop(root, { project, epic, task, stop, commit: flags.commit, reason: flags.reason });

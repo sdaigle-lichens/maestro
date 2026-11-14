@@ -25,7 +25,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { mainCheckoutRoot } from "./worktree.js";
-import { isReviewFile } from "./human-review-gate.js";
+import { gateManagerApproval, isReviewFile } from "./human-review-gate.js";
+import { resolveManagerApproval } from "./manager-approval.js";
 import { readTaskTracker, setTaskEpic, tasksDirFor, type SetEpicResult, type TrackerEntry } from "./tasks.js";
 import { claimSessionName, readClaims } from "./claims.js";
 import { readConfig, resolveWorkerModel } from "./config.js";
@@ -55,6 +56,23 @@ export interface EpicWorker {
    * record (name, task) but its pane id is dropped, so it is no longer listed as active.
    */
   finished_at?: string;
+  /**
+   * `181`: the project's `worker_runtime` when this worker was launched. Recorded once (the first
+   * record wins) and never changed by a later edit of maestro.json. Absent on a worker recorded
+   * before this existed.
+   */
+  runtime?: WorkerRuntime;
+  /**
+   * `181`: the project's `manager_approval` when this worker was launched. The approval gate and the
+   * approval commands use this value for this worker, not the live maestro.json.
+   */
+  manager_approval?: boolean;
+}
+
+/** The two settings recorded for a worker at launch (`181`). */
+export interface WorkerLaunchSettings {
+  runtime: WorkerRuntime;
+  manager_approval: boolean;
 }
 
 /**
@@ -355,18 +373,85 @@ export function setManager(projectRoot: string, slug: string, name: string): voi
   });
 }
 
-/** Record (or refresh) a worker session by name. Never stores an address. */
-export function addWorker(projectRoot: string, slug: string, name: string, task?: string, pane?: string): void {
+/**
+ * `181`: the project's CURRENT `worker_runtime` and `manager_approval`, read from the main
+ * checkout's maestro.json. What a worker record takes when it is created.
+ */
+export function currentLaunchSettings(projectRoot: string): WorkerLaunchSettings {
+  const config = readConfig(mainCheckoutRoot(projectRoot));
+  return { runtime: resolveWorkerRuntime(config), manager_approval: resolveManagerApproval(config) };
+}
+
+/**
+ * Record (or refresh) a worker session by name. Never stores an address.
+ *
+ * `181`: a worker's `runtime` and `manager_approval` are recorded the first time it is recorded
+ * (`settings`, default the project's current values) and are never overwritten by a later call, so
+ * the launcher's record at launch and the manager's later `add-worker` agree, and editing
+ * maestro.json afterwards changes nothing for a worker already on record.
+ */
+export function addWorker(
+  projectRoot: string,
+  slug: string,
+  name: string,
+  task?: string,
+  pane?: string,
+  settings?: WorkerLaunchSettings
+): void {
   const paneId = pane?.trim() || undefined;
   if (paneId && !isValidPaneId(paneId)) throw new Error(`"${paneId}" is not a herdr pane id`);
+  const launch = settings ?? currentLaunchSettings(projectRoot);
   updateState(projectRoot, slug, (s) => {
     const existing = s.workers.find((w) => w.name === name);
     if (existing) {
       if (task) existing.task = task;
       if (paneId) existing.pane = paneId;
+      existing.runtime ??= launch.runtime;
+      existing.manager_approval ??= launch.manager_approval;
     } else {
-      s.workers.push({ name, ...(task ? { task } : {}), ...(paneId ? { pane: paneId } : {}), added_at: now() });
+      s.workers.push({
+        name,
+        ...(task ? { task } : {}),
+        ...(paneId ? { pane: paneId } : {}),
+        added_at: now(),
+        runtime: launch.runtime,
+        manager_approval: launch.manager_approval,
+      });
     }
+  });
+}
+
+/**
+ * `181`: the `manager_approval` recorded for the worker on `task`, or null when no worker of the
+ * task's epic is on record for it with a recorded value. A task worked twice (a finished worker, then
+ * a new one) takes the active record, else the latest.
+ */
+export function recordedManagerApproval(projectRoot: string, task: string): boolean | null {
+  const slug = epicOfTask(projectRoot, task);
+  if (!slug) return null;
+  const state = readEpicState(projectRoot, slug);
+  if (!state) return null;
+  const base = path.basename(task);
+  const mine = state.workers.filter((w) => w.task && path.basename(w.task) === base);
+  const pick = [...mine].reverse().find((w) => !w.finished_at) ?? mine[mine.length - 1];
+  return typeof pick?.manager_approval === "boolean" ? pick.manager_approval : null;
+}
+
+/**
+ * `181`: does manager approval cover the worker on `task`? The recorded value for that worker, else
+ * the live config's (see `gateManagerApproval`). `containerWorker` is whether the worker runs in a
+ * container (the hook knows from its environment; the manager passes true for a docker worker).
+ */
+export function managerApprovalForTask(
+  projectRoot: string,
+  task: string,
+  cfg: Parameters<typeof resolveManagerApproval>[0],
+  containerWorker: boolean
+): boolean {
+  return gateManagerApproval({
+    containerWorker,
+    recorded: recordedManagerApproval(projectRoot, task),
+    live: resolveManagerApproval(cfg),
   });
 }
 

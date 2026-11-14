@@ -56,6 +56,7 @@ __export(maestro_epic_exports, {
   classifyEscalation: () => classifyEscalation,
   classifyGitOperation: () => classifyGitOperation,
   createEpic: () => createEpic,
+  currentLaunchSettings: () => currentLaunchSettings,
   declaresDone: () => declaresDone,
   deliveryWords: () => deliveryWords,
   epicDirFor: () => epicDirFor,
@@ -68,6 +69,7 @@ __export(maestro_epic_exports, {
   formatEpic: () => formatEpic,
   formatInboxEntry: () => formatInboxEntry,
   formatReady: () => formatReady,
+  gateManagerApproval: () => gateManagerApproval,
   inboxPointer: () => inboxPointer,
   isConfigSurface: () => isConfigSurface,
   isContainerWorker: () => isContainerWorker,
@@ -80,6 +82,7 @@ __export(maestro_epic_exports, {
   listEpicSummaries: () => listEpicSummaries,
   listEpics: () => listEpics,
   managerApprovalApplies: () => managerApprovalApplies,
+  managerApprovalForTask: () => managerApprovalForTask,
   newInboxAnnouncements: () => newInboxAnnouncements,
   normalizeStop: () => normalizeStop,
   parseEscalationAnswer: () => parseEscalationAnswer,
@@ -89,6 +92,7 @@ __export(maestro_epic_exports, {
   readyTasks: () => readyTasks,
   recordReviewVerdict: () => recordReviewVerdict,
   recordUserAnswer: () => recordUserAnswer,
+  recordedManagerApproval: () => recordedManagerApproval,
   refreshRuntimeWords: () => refreshRuntimeWords,
   removeWorker: () => removeWorker,
   reportCommandFor: () => reportCommandFor,
@@ -148,321 +152,18 @@ var REVIEW_FILE_PATTERN = /\.review(-\d+)?\.md$/;
 function isReviewFile(filename) {
   return REVIEW_FILE_PATTERN.test(filename);
 }
-
-// src/core/tasks.ts
-var import_node_fs8 = __toESM(require("node:fs"), 1);
-var import_node_path6 = __toESM(require("node:path"), 1);
-
-// src/core/claims.ts
-var import_node_fs7 = __toESM(require("node:fs"), 1);
-var import_node_path5 = __toESM(require("node:path"), 1);
-
-// src/core/session-paths.ts
-var import_node_fs2 = __toESM(require("node:fs"), 1);
-var import_node_path2 = __toESM(require("node:path"), 1);
-var SESSIONS_DIR_NAME = "maestro_sessions";
-var SESSION_LOG_NAME = "log.jsonl";
-var SESSION_STATE_NAME = "session.json";
-var SESSION_TASKS_NAME = "tasks.json";
-var SESSION_WORKTREE_NAME = "worktree.json";
-var SESSION_HEARTBEAT_NAME = "heartbeat";
-var SESSION_ID_RE = /^[A-Za-z0-9_-]{1,128}$/;
-function isValidSessionId(id) {
-  return typeof id === "string" && SESSION_ID_RE.test(id);
+function gateManagerApproval(input) {
+  if (!input.containerWorker) return false;
+  return typeof input.recorded === "boolean" ? input.recorded : input.live;
 }
-function sessionsRoot(claudeDir) {
-  return import_node_path2.default.join(claudeDir, SESSIONS_DIR_NAME);
-}
-function readWorktreePointer(claudeDir, id) {
-  if (!claudeDir || !isValidSessionId(id)) return null;
-  try {
-    const raw = JSON.parse(
-      import_node_fs2.default.readFileSync(import_node_path2.default.join(sessionsRoot(claudeDir), id, SESSION_WORKTREE_NAME), "utf8")
-    );
-    const p = raw;
-    if (!p || typeof p.path !== "string" || !import_node_path2.default.isAbsolute(p.path)) return null;
-    if (!import_node_fs2.default.statSync(p.path).isDirectory()) return null;
-    return p;
-  } catch {
-    return null;
-  }
-}
-function effectiveClaudeDir(claudeDir, id) {
-  const pointer = readWorktreePointer(claudeDir, id);
-  return pointer ? import_node_path2.default.join(pointer.path, ".claude") : claudeDir;
-}
-function sessionPathsFor(claudeDir, id) {
-  if (!claudeDir || !isValidSessionId(id)) return null;
-  const dir = import_node_path2.default.join(sessionsRoot(effectiveClaudeDir(claudeDir, id)), id);
-  return {
-    id,
-    dir,
-    log: import_node_path2.default.join(dir, SESSION_LOG_NAME),
-    state: import_node_path2.default.join(dir, SESSION_STATE_NAME),
-    tasks: import_node_path2.default.join(dir, SESSION_TASKS_NAME)
-  };
-}
-
-// src/core/handoff-channels.ts
-var import_node_fs5 = __toESM(require("node:fs"), 1);
-var import_node_path3 = __toESM(require("node:path"), 1);
-
-// src/core/session-runtime.ts
-var import_node_fs4 = __toESM(require("node:fs"), 1);
-
-// src/core/session-usage.ts
-var import_node_fs3 = __toESM(require("node:fs"), 1);
-var TAIL_CHUNK_BYTES = 64 * 1024;
-var MAX_TAIL_BYTES = 4 * 1024 * 1024;
-
-// src/core/handoff-channels.ts
-var CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1e3;
-var CLAIM_IDLE_CAP_MS = 15 * 60 * 1e3;
-var HEARTBEAT_INTERVAL_MS = 60 * 1e3;
-var HEARTBEAT_STALE_MS = 3 * 60 * 1e3;
-var EMPTY_DIR_GRACE_MS = 60 * 60 * 1e3;
-
-// src/core/session-heartbeat.ts
-var import_node_fs6 = __toESM(require("node:fs"), 1);
-var import_node_path4 = __toESM(require("node:path"), 1);
-function heartbeatVerdict(dir, now2 = Date.now()) {
-  let mtimeMs;
-  try {
-    mtimeMs = import_node_fs6.default.statSync(import_node_path4.default.join(dir, SESSION_HEARTBEAT_NAME)).mtimeMs;
-  } catch {
-    return null;
-  }
-  return now2 - mtimeMs <= HEARTBEAT_STALE_MS;
-}
-
-// src/core/claims.ts
-var CLAIMS_DIR_NAME = "claims";
-function claimsDirFor(tasksDir) {
-  return import_node_path5.default.join(tasksDir, CLAIMS_DIR_NAME);
-}
-function claimPathFor(tasksDir, filename) {
-  return import_node_path5.default.join(claimsDirFor(tasksDir), `${import_node_path5.default.basename(filename)}.json`);
-}
-function nameOf(claim) {
-  return typeof claim.session_name === "string" && claim.session_name ? { sessionName: claim.session_name } : {};
-}
-function readClaimFile(filePath) {
-  try {
-    const data = JSON.parse(import_node_fs7.default.readFileSync(filePath, "utf8"));
-    if (data && typeof data === "object" && typeof data.session_id === "string" && typeof data.claimed_at === "string") {
-      return data;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-function claimSessionName(tasksDir, filename) {
-  const claim = readClaimFile(claimPathFor(tasksDir, filename));
-  return claim && typeof claim.session_name === "string" && claim.session_name ? claim.session_name : null;
-}
-function isSessionLive(claudeDir, sessionId, now2 = Date.now()) {
-  const paths = sessionPathsFor(claudeDir, sessionId);
-  if (!paths) return false;
-  if (!import_node_fs7.default.existsSync(paths.dir)) return false;
-  const heartbeat = heartbeatVerdict(paths.dir, now2);
-  if (heartbeat !== null) return heartbeat;
-  try {
-    const stat = import_node_fs7.default.statSync(paths.log);
-    return now2 - stat.mtimeMs <= CLAIM_IDLE_CAP_MS;
-  } catch {
-    return false;
-  }
-}
-function listClaimFiles(dir) {
-  try {
-    return import_node_fs7.default.readdirSync(dir).filter((f) => f.endsWith(".json"));
-  } catch {
-    return [];
-  }
-}
-function readClaims(projectRoot, tasksDir, now2 = Date.now()) {
-  const claudeDir = import_node_path5.default.join(projectRoot, ".claude");
-  const dir = claimsDirFor(tasksDir);
-  const out = /* @__PURE__ */ new Map();
-  for (const fileName of listClaimFiles(dir)) {
-    const filePath = import_node_path5.default.join(dir, fileName);
-    const claim = readClaimFile(filePath);
-    if (!claim) continue;
-    const filename = fileName.slice(0, -".json".length);
-    const live = isSessionLive(claudeDir, claim.session_id, now2);
-    out.set(filename, { sessionId: claim.session_id, claimedAt: claim.claimed_at, live, ...nameOf(claim) });
-    if (!live) {
-      try {
-        import_node_fs7.default.rmSync(filePath, { force: true });
-      } catch {
-      }
-    }
-  }
-  return out;
-}
-
-// src/core/tasks.ts
-var TASKS_SUBDIR = import_node_path6.default.join(".claude", "maestro-tasks");
-var STATUS_FILE = "status.json";
-function tasksDirFor(projectRoot) {
-  return import_node_path6.default.join(mainCheckoutRoot(projectRoot), TASKS_SUBDIR);
-}
-function sectionOf(content, headingPattern) {
-  const start = content.search(headingPattern);
-  if (start === -1) return null;
-  const rest = content.slice(start);
-  const nextHeading = rest.slice(1).search(/^##\s/m);
-  return nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
-}
-function parseBlockedBy(content) {
-  const body = sectionOf(content, /^##\s+Blocked by\s*$/m);
-  if (body === null) return [];
-  const refs = body.match(/`(\d{3}-[\w-]+\.md)`/g) ?? [];
-  return Array.from(new Set(refs.map((r) => r.replace(/`/g, ""))));
-}
-function readStatusMap(dir) {
-  try {
-    const data = JSON.parse(import_node_fs8.default.readFileSync(import_node_path6.default.join(dir, STATUS_FILE), "utf8"));
-    return data && typeof data === "object" ? data : {};
-  } catch {
-    return {};
-  }
-}
-function writeStatusMap(dir, statusMap) {
-  import_node_fs8.default.mkdirSync(dir, { recursive: true });
-  const ordered = {};
-  for (const k of Object.keys(statusMap).sort((a, b) => a.localeCompare(b))) {
-    ordered[k] = statusMap[k];
-  }
-  const target = import_node_path6.default.join(dir, STATUS_FILE);
-  const tmp = `${target}.${process.pid}.tmp`;
-  import_node_fs8.default.writeFileSync(tmp, `${JSON.stringify(ordered, null, 2)}
-`);
-  import_node_fs8.default.renameSync(tmp, target);
-}
-function listTaskFiles(dir) {
-  try {
-    return import_node_fs8.default.readdirSync(dir).filter((f) => f.endsWith(".md") && !/\.review(-\d+)?\.md$/.test(f)).sort((a, b) => a.localeCompare(b));
-  } catch {
-    return [];
-  }
-}
-function readFileSafe(dir, filename) {
-  try {
-    return import_node_fs8.default.readFileSync(import_node_path6.default.join(dir, filename), "utf8");
-  } catch {
-    return "";
-  }
-}
-function buildStatusMap(dir, files, doneSet, previous = {}) {
-  const fileSet = new Set(files);
-  const unmerged = unmergedSetFrom(previous, doneSet);
-  const out = {};
-  for (const filename of files) {
-    const blockedBy = parseBlockedBy(readFileSafe(dir, filename));
-    const epic = previous[filename]?.epic;
-    out[filename] = {
-      status: doneSet.has(filename) ? "done" : blockersSatisfied(blockedBy, epic, doneSet, fileSet, unmerged) ? "ready" : "blocked",
-      blockedBy,
-      // `084`: the tracker owns `epic`, the markdown never does, so a rebuild keeps what was linked.
-      ...epic ? { epic } : {},
-      // `146`: a done task stays unmerged until `merge` / `mark-merged` clears it.
-      ...doneSet.has(filename) && unmerged.has(filename) ? { unmerged: true } : {}
-    };
-  }
-  return out;
-}
-function blockersSatisfied(blockedBy, epic, doneSet, fileSet, unmerged) {
-  return blockedBy.every((b) => !fileSet.has(b) || doneSet.has(b) && !(epic && unmerged.has(b)));
-}
-function unmergedSetFrom(statusMap, doneSet) {
-  return new Set(Object.keys(statusMap).filter((k) => doneSet.has(k) && statusMap[k]?.unmerged === true));
-}
-function setTaskEpic(projectRoot, filenames, epic) {
-  const dir = tasksDirFor(projectRoot);
-  const files = new Set(listTaskFiles(dir));
-  const map = readStatusMap(dir);
-  const changed = [];
-  const missing = [];
-  for (const raw of filenames) {
-    const name = import_node_path6.default.basename(raw);
-    if (!files.has(name)) {
-      missing.push(name);
-      continue;
-    }
-    const entry = map[name] ?? buildStatusMap(dir, [name], /* @__PURE__ */ new Set())[name];
-    if (epic) entry.epic = epic;
-    else delete entry.epic;
-    map[name] = entry;
-    changed.push(name);
-  }
-  if (missing.length) return { changed: [], missing };
-  if (changed.length) writeStatusMap(dir, map);
-  return { changed, missing };
-}
-function readTaskTracker(projectRoot) {
-  const map = readStatusMap(tasksDirFor(projectRoot));
-  const out = {};
-  for (const [name, entry] of Object.entries(map))
-    out[name] = {
-      status: entry?.status,
-      epic: entry?.epic,
-      unmerged: entry?.unmerged === true,
-      blockedBy: Array.isArray(entry?.blockedBy) ? entry.blockedBy : []
-    };
-  return out;
-}
-
-// src/core/config.ts
-var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path7 = __toESM(require("node:path"), 1);
-function maestroJsonPath(projectRoot) {
-  return import_node_path7.default.join(projectRoot, ".claude", "maestro.json");
-}
-function blankConfig() {
-  return {
-    version: 3,
-    agents_available: [],
-    skills_available: [],
-    workflow_instances: [],
-    workflows: [],
-    rules: []
-  };
-}
-function readJsonSafe(p) {
-  try {
-    return JSON.parse(import_node_fs9.default.readFileSync(p, "utf8"));
-  } catch {
-    return null;
-  }
-}
-function readConfig(projectRoot) {
-  const p = maestroJsonPath(projectRoot);
-  if (!import_node_fs9.default.existsSync(p)) return null;
-  const parsed = readJsonSafe(p);
-  if (!parsed) return blankConfig();
-  return parsed.version === 3 ? parsed : blankConfig();
-}
-function resolveWorkerModel(cfg) {
-  if (!cfg || cfg.version !== 3) return void 0;
-  const v = cfg.worker_model;
-  if (typeof v !== "string") return void 0;
-  const t = v.trim();
-  return t === "" ? void 0 : t;
-}
-
-// src/core/worker-runtime.ts
-var import_node_fs11 = __toESM(require("node:fs"), 1);
-var import_node_path9 = __toESM(require("node:path"), 1);
 
 // src/core/manager-approval.ts
 var import_node_crypto = __toESM(require("node:crypto"), 1);
-var import_node_fs10 = __toESM(require("node:fs"), 1);
-var import_node_path8 = __toESM(require("node:path"), 1);
+var import_node_fs2 = __toESM(require("node:fs"), 1);
+var import_node_path2 = __toESM(require("node:path"), 1);
 var APPROVAL_STOPS = ["human review", "commit", "merge"];
 var APPROVALS_DIR_ENV = "MAESTRO_APPROVALS_DIR";
-var APPROVALS_REL = import_node_path8.default.join(".config", "maestro", "approvals");
+var APPROVALS_REL = import_node_path2.default.join(".config", "maestro", "approvals");
 function resolveManagerApproval(cfg) {
   if (!cfg || cfg.version !== 3) return false;
   const v = cfg.manager_approval;
@@ -473,7 +174,7 @@ function managerApprovalApplies(cfg, containerWorker) {
 }
 function approvalsDir(home, env = process.env) {
   const override = env[APPROVALS_DIR_ENV]?.trim();
-  return override ? override : import_node_path8.default.join(home, APPROVALS_REL);
+  return override ? override : import_node_path2.default.join(home, APPROVALS_REL);
 }
 function normalizeStop(stop) {
   if (typeof stop !== "string") return null;
@@ -484,32 +185,32 @@ function stopSlug(stop) {
   return stop.replace(/ /g, "-");
 }
 function taskStem(task) {
-  return import_node_path8.default.basename(task).replace(/\.md$/, "");
+  return import_node_path2.default.basename(task).replace(/\.md$/, "");
 }
 function projectKeyFor(projectRoot) {
-  const root = import_node_path8.default.resolve(mainCheckoutRoot(import_node_path8.default.resolve(projectRoot)));
-  const slug = import_node_path8.default.basename(root).toLowerCase().replace(/[^a-z0-9_.-]/g, "-").replace(/^[-.]+/, "") || "project";
+  const root = import_node_path2.default.resolve(mainCheckoutRoot(import_node_path2.default.resolve(projectRoot)));
+  const slug = import_node_path2.default.basename(root).toLowerCase().replace(/[^a-z0-9_.-]/g, "-").replace(/^[-.]+/, "") || "project";
   return `${slug}-${import_node_crypto.default.createHash("sha256").update(root).digest("hex").slice(0, 10)}`;
 }
 function keyDir(root, key) {
-  return import_node_path8.default.join(root, key.project, key.epic, taskStem(key.task));
+  return import_node_path2.default.join(root, key.project, key.epic, taskStem(key.task));
 }
 function approvalFile(root, key) {
-  return import_node_path8.default.join(keyDir(root, key), `${stopSlug(key.stop)}.json`);
+  return import_node_path2.default.join(keyDir(root, key), `${stopSlug(key.stop)}.json`);
 }
 function escalationFile(root, key) {
-  return import_node_path8.default.join(keyDir(root, key), `${stopSlug(key.stop)}.escalation.json`);
+  return import_node_path2.default.join(keyDir(root, key), `${stopSlug(key.stop)}.escalation.json`);
 }
 function writeJson(file, value) {
-  import_node_fs10.default.mkdirSync(import_node_path8.default.dirname(file), { recursive: true });
+  import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.tmp`;
-  import_node_fs10.default.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}
+  import_node_fs2.default.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}
 `);
-  import_node_fs10.default.renameSync(tmp, file);
+  import_node_fs2.default.renameSync(tmp, file);
 }
 function readJson(file) {
   try {
-    return JSON.parse(import_node_fs10.default.readFileSync(file, "utf8"));
+    return JSON.parse(import_node_fs2.default.readFileSync(file, "utf8"));
   } catch {
     return null;
   }
@@ -519,7 +220,7 @@ function writeApproval(root, input) {
     version: 1,
     project: input.project,
     epic: input.epic,
-    task: import_node_path8.default.basename(input.task),
+    task: import_node_path2.default.basename(input.task),
     stop: input.stop,
     commit: input.commit.trim(),
     decision: input.decision,
@@ -531,7 +232,7 @@ function writeApproval(root, input) {
   };
   const file = approvalFile(root, input);
   writeJson(file, record);
-  if (input.source === "user") import_node_fs10.default.rmSync(escalationFile(root, input), { force: true });
+  if (input.source === "user") import_node_fs2.default.rmSync(escalationFile(root, input), { force: true });
   return { file, record };
 }
 function readApproval(root, key) {
@@ -543,7 +244,7 @@ function writePendingEscalation(root, key, commit, reason) {
     version: 1,
     project: key.project,
     epic: key.epic,
-    task: import_node_path8.default.basename(key.task),
+    task: import_node_path2.default.basename(key.task),
     stop: key.stop,
     commit: commit.trim(),
     reason,
@@ -568,11 +269,11 @@ function checkApproval(record, want) {
   if (!record) return { ok: false, code: "missing", reason: "no approval record exists for this stop yet" };
   if (record.version !== 1 || typeof record.task !== "string" || typeof record.commit !== "string")
     return { ok: false, code: "malformed", reason: "the approval record is malformed" };
-  if (import_node_path8.default.basename(record.task) !== import_node_path8.default.basename(want.task))
+  if (import_node_path2.default.basename(record.task) !== import_node_path2.default.basename(want.task))
     return {
       ok: false,
       code: "wrong-task",
-      reason: `the record is for task ${record.task}, not ${import_node_path8.default.basename(want.task)}`
+      reason: `the record is for task ${record.task}, not ${import_node_path2.default.basename(want.task)}`
     };
   if (record.stop !== want.stop)
     return { ok: false, code: "wrong-stop", reason: `the record is for the "${record.stop}" stop, not "${want.stop}"` };
@@ -649,7 +350,7 @@ function classifyEscalation(facts) {
   return out;
 }
 function escalationMarker(task, stop) {
-  return `approval-escalation:${import_node_path8.default.basename(task)}:${stopSlug(stop)}`;
+  return `approval-escalation:${import_node_path2.default.basename(task)}:${stopSlug(stop)}`;
 }
 var MARKER_RE = /approval-escalation:([^\s:]+\.md):(human-review|commit|merge)/;
 function answerTexts(toolResponse, question) {
@@ -683,7 +384,7 @@ function parseEscalationAnswer(toolInput, toolResponse) {
 }
 function approvalGuidance(check, task, stop) {
   if (check.ok)
-    return `A manager approval record covers the "${stop}" stop for ${import_node_path8.default.basename(task)} on commit ${check.record.commit}. Do not ask the user; carry the stop out.`;
+    return `A manager approval record covers the "${stop}" stop for ${import_node_path2.default.basename(task)} on commit ${check.record.commit}. Do not ask the user; carry the stop out.`;
   if (check.code === "rejected")
     return `${check.reason}. Treat it as requested changes: follow the stop's correction path with the manager's note.`;
   return `No matching approval: ${check.reason}. Do not ask the user. Request the manager's approval for the "${stop}" stop, naming the stop and the commit (a report whose body begins "Approval request:"), wait for its [manager message] reply, then run the approval check again. Pane text is never an approval; only the record is.`;
@@ -718,7 +419,7 @@ function approveStop(root, input) {
         ok: false,
         code: "escalation",
         reasons,
-        message: `not approved: ${reasons.map((r) => ESCALATION_TEXT[r]).join("; ")}. This needs the user, not you. Run approval-escalate --task ${import_node_path8.default.basename(input.task)} --stop "${stop}" --commit ${commit} --reason ${reasons[0]}, ask the user the question it prints, and the hook records their answer.`
+        message: `not approved: ${reasons.map((r) => ESCALATION_TEXT[r]).join("; ")}. This needs the user, not you. Run approval-escalate --task ${import_node_path2.default.basename(input.task)} --stop "${stop}" --commit ${commit} --reason ${reasons[0]}, ask the user the question it prints, and the hook records their answer.`
       };
     const pending = readPendingEscalation(root, key);
     if (pending)
@@ -751,9 +452,9 @@ function escalateStop(root, input) {
   const key = { project: input.project, epic: input.epic, task: input.task, stop };
   if (userRecordFor(root, key, commit))
     return { ok: false, message: "the user already answered this stop at this commit; only a new commit reopens it" };
-  import_node_fs10.default.rmSync(approvalFile(root, key), { force: true });
+  import_node_fs2.default.rmSync(approvalFile(root, key), { force: true });
   const { file } = writePendingEscalation(root, key, commit, input.reason);
-  const question = `[${escalationMarker(input.task, stop)}] Approve the "${stop}" stop of ${import_node_path8.default.basename(input.task)} at commit ${commit}? It needs you because ${ESCALATION_TEXT[input.reason]}.`;
+  const question = `[${escalationMarker(input.task, stop)}] Approve the "${stop}" stop of ${import_node_path2.default.basename(input.task)} at commit ${commit}? It needs you because ${ESCALATION_TEXT[input.reason]}.`;
   return { ok: true, file, question };
 }
 function recordUserAnswer(root, input) {
@@ -774,7 +475,312 @@ function recordUserAnswer(root, input) {
   return { ok: true, file };
 }
 
+// src/core/tasks.ts
+var import_node_fs9 = __toESM(require("node:fs"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
+
+// src/core/claims.ts
+var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_path6 = __toESM(require("node:path"), 1);
+
+// src/core/session-paths.ts
+var import_node_fs3 = __toESM(require("node:fs"), 1);
+var import_node_path3 = __toESM(require("node:path"), 1);
+var SESSIONS_DIR_NAME = "maestro_sessions";
+var SESSION_LOG_NAME = "log.jsonl";
+var SESSION_STATE_NAME = "session.json";
+var SESSION_TASKS_NAME = "tasks.json";
+var SESSION_WORKTREE_NAME = "worktree.json";
+var SESSION_HEARTBEAT_NAME = "heartbeat";
+var SESSION_ID_RE = /^[A-Za-z0-9_-]{1,128}$/;
+function isValidSessionId(id) {
+  return typeof id === "string" && SESSION_ID_RE.test(id);
+}
+function sessionsRoot(claudeDir) {
+  return import_node_path3.default.join(claudeDir, SESSIONS_DIR_NAME);
+}
+function readWorktreePointer(claudeDir, id) {
+  if (!claudeDir || !isValidSessionId(id)) return null;
+  try {
+    const raw = JSON.parse(
+      import_node_fs3.default.readFileSync(import_node_path3.default.join(sessionsRoot(claudeDir), id, SESSION_WORKTREE_NAME), "utf8")
+    );
+    const p = raw;
+    if (!p || typeof p.path !== "string" || !import_node_path3.default.isAbsolute(p.path)) return null;
+    if (!import_node_fs3.default.statSync(p.path).isDirectory()) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+function effectiveClaudeDir(claudeDir, id) {
+  const pointer = readWorktreePointer(claudeDir, id);
+  return pointer ? import_node_path3.default.join(pointer.path, ".claude") : claudeDir;
+}
+function sessionPathsFor(claudeDir, id) {
+  if (!claudeDir || !isValidSessionId(id)) return null;
+  const dir = import_node_path3.default.join(sessionsRoot(effectiveClaudeDir(claudeDir, id)), id);
+  return {
+    id,
+    dir,
+    log: import_node_path3.default.join(dir, SESSION_LOG_NAME),
+    state: import_node_path3.default.join(dir, SESSION_STATE_NAME),
+    tasks: import_node_path3.default.join(dir, SESSION_TASKS_NAME)
+  };
+}
+
+// src/core/handoff-channels.ts
+var import_node_fs6 = __toESM(require("node:fs"), 1);
+var import_node_path4 = __toESM(require("node:path"), 1);
+
+// src/core/session-runtime.ts
+var import_node_fs5 = __toESM(require("node:fs"), 1);
+
+// src/core/session-usage.ts
+var import_node_fs4 = __toESM(require("node:fs"), 1);
+var TAIL_CHUNK_BYTES = 64 * 1024;
+var MAX_TAIL_BYTES = 4 * 1024 * 1024;
+
+// src/core/handoff-channels.ts
+var CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1e3;
+var CLAIM_IDLE_CAP_MS = 15 * 60 * 1e3;
+var HEARTBEAT_INTERVAL_MS = 60 * 1e3;
+var HEARTBEAT_STALE_MS = 3 * 60 * 1e3;
+var EMPTY_DIR_GRACE_MS = 60 * 60 * 1e3;
+
+// src/core/session-heartbeat.ts
+var import_node_fs7 = __toESM(require("node:fs"), 1);
+var import_node_path5 = __toESM(require("node:path"), 1);
+function heartbeatVerdict(dir, now2 = Date.now()) {
+  let mtimeMs;
+  try {
+    mtimeMs = import_node_fs7.default.statSync(import_node_path5.default.join(dir, SESSION_HEARTBEAT_NAME)).mtimeMs;
+  } catch {
+    return null;
+  }
+  return now2 - mtimeMs <= HEARTBEAT_STALE_MS;
+}
+
+// src/core/claims.ts
+var CLAIMS_DIR_NAME = "claims";
+function claimsDirFor(tasksDir) {
+  return import_node_path6.default.join(tasksDir, CLAIMS_DIR_NAME);
+}
+function claimPathFor(tasksDir, filename) {
+  return import_node_path6.default.join(claimsDirFor(tasksDir), `${import_node_path6.default.basename(filename)}.json`);
+}
+function nameOf(claim) {
+  return typeof claim.session_name === "string" && claim.session_name ? { sessionName: claim.session_name } : {};
+}
+function readClaimFile(filePath) {
+  try {
+    const data = JSON.parse(import_node_fs8.default.readFileSync(filePath, "utf8"));
+    if (data && typeof data === "object" && typeof data.session_id === "string" && typeof data.claimed_at === "string") {
+      return data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+function claimSessionName(tasksDir, filename) {
+  const claim = readClaimFile(claimPathFor(tasksDir, filename));
+  return claim && typeof claim.session_name === "string" && claim.session_name ? claim.session_name : null;
+}
+function isSessionLive(claudeDir, sessionId, now2 = Date.now()) {
+  const paths = sessionPathsFor(claudeDir, sessionId);
+  if (!paths) return false;
+  if (!import_node_fs8.default.existsSync(paths.dir)) return false;
+  const heartbeat = heartbeatVerdict(paths.dir, now2);
+  if (heartbeat !== null) return heartbeat;
+  try {
+    const stat = import_node_fs8.default.statSync(paths.log);
+    return now2 - stat.mtimeMs <= CLAIM_IDLE_CAP_MS;
+  } catch {
+    return false;
+  }
+}
+function listClaimFiles(dir) {
+  try {
+    return import_node_fs8.default.readdirSync(dir).filter((f) => f.endsWith(".json"));
+  } catch {
+    return [];
+  }
+}
+function readClaims(projectRoot, tasksDir, now2 = Date.now()) {
+  const claudeDir = import_node_path6.default.join(projectRoot, ".claude");
+  const dir = claimsDirFor(tasksDir);
+  const out = /* @__PURE__ */ new Map();
+  for (const fileName of listClaimFiles(dir)) {
+    const filePath = import_node_path6.default.join(dir, fileName);
+    const claim = readClaimFile(filePath);
+    if (!claim) continue;
+    const filename = fileName.slice(0, -".json".length);
+    const live = isSessionLive(claudeDir, claim.session_id, now2);
+    out.set(filename, { sessionId: claim.session_id, claimedAt: claim.claimed_at, live, ...nameOf(claim) });
+    if (!live) {
+      try {
+        import_node_fs8.default.rmSync(filePath, { force: true });
+      } catch {
+      }
+    }
+  }
+  return out;
+}
+
+// src/core/tasks.ts
+var TASKS_SUBDIR = import_node_path7.default.join(".claude", "maestro-tasks");
+var STATUS_FILE = "status.json";
+function tasksDirFor(projectRoot) {
+  return import_node_path7.default.join(mainCheckoutRoot(projectRoot), TASKS_SUBDIR);
+}
+function sectionOf(content, headingPattern) {
+  const start = content.search(headingPattern);
+  if (start === -1) return null;
+  const rest = content.slice(start);
+  const nextHeading = rest.slice(1).search(/^##\s/m);
+  return nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
+}
+function parseBlockedBy(content) {
+  const body = sectionOf(content, /^##\s+Blocked by\s*$/m);
+  if (body === null) return [];
+  const refs = body.match(/`(\d{3}-[\w-]+\.md)`/g) ?? [];
+  return Array.from(new Set(refs.map((r) => r.replace(/`/g, ""))));
+}
+function readStatusMap(dir) {
+  try {
+    const data = JSON.parse(import_node_fs9.default.readFileSync(import_node_path7.default.join(dir, STATUS_FILE), "utf8"));
+    return data && typeof data === "object" ? data : {};
+  } catch {
+    return {};
+  }
+}
+function writeStatusMap(dir, statusMap) {
+  import_node_fs9.default.mkdirSync(dir, { recursive: true });
+  const ordered = {};
+  for (const k of Object.keys(statusMap).sort((a, b) => a.localeCompare(b))) {
+    ordered[k] = statusMap[k];
+  }
+  const target = import_node_path7.default.join(dir, STATUS_FILE);
+  const tmp = `${target}.${process.pid}.tmp`;
+  import_node_fs9.default.writeFileSync(tmp, `${JSON.stringify(ordered, null, 2)}
+`);
+  import_node_fs9.default.renameSync(tmp, target);
+}
+function listTaskFiles(dir) {
+  try {
+    return import_node_fs9.default.readdirSync(dir).filter((f) => f.endsWith(".md") && !/\.review(-\d+)?\.md$/.test(f)).sort((a, b) => a.localeCompare(b));
+  } catch {
+    return [];
+  }
+}
+function readFileSafe(dir, filename) {
+  try {
+    return import_node_fs9.default.readFileSync(import_node_path7.default.join(dir, filename), "utf8");
+  } catch {
+    return "";
+  }
+}
+function buildStatusMap(dir, files, doneSet, previous = {}) {
+  const fileSet = new Set(files);
+  const unmerged = unmergedSetFrom(previous, doneSet);
+  const out = {};
+  for (const filename of files) {
+    const blockedBy = parseBlockedBy(readFileSafe(dir, filename));
+    const epic = previous[filename]?.epic;
+    out[filename] = {
+      status: doneSet.has(filename) ? "done" : blockersSatisfied(blockedBy, epic, doneSet, fileSet, unmerged) ? "ready" : "blocked",
+      blockedBy,
+      // `084`: the tracker owns `epic`, the markdown never does, so a rebuild keeps what was linked.
+      ...epic ? { epic } : {},
+      // `146`: a done task stays unmerged until `merge` / `mark-merged` clears it.
+      ...doneSet.has(filename) && unmerged.has(filename) ? { unmerged: true } : {}
+    };
+  }
+  return out;
+}
+function blockersSatisfied(blockedBy, epic, doneSet, fileSet, unmerged) {
+  return blockedBy.every((b) => !fileSet.has(b) || doneSet.has(b) && !(epic && unmerged.has(b)));
+}
+function unmergedSetFrom(statusMap, doneSet) {
+  return new Set(Object.keys(statusMap).filter((k) => doneSet.has(k) && statusMap[k]?.unmerged === true));
+}
+function setTaskEpic(projectRoot, filenames, epic) {
+  const dir = tasksDirFor(projectRoot);
+  const files = new Set(listTaskFiles(dir));
+  const map = readStatusMap(dir);
+  const changed = [];
+  const missing = [];
+  for (const raw of filenames) {
+    const name = import_node_path7.default.basename(raw);
+    if (!files.has(name)) {
+      missing.push(name);
+      continue;
+    }
+    const entry = map[name] ?? buildStatusMap(dir, [name], /* @__PURE__ */ new Set())[name];
+    if (epic) entry.epic = epic;
+    else delete entry.epic;
+    map[name] = entry;
+    changed.push(name);
+  }
+  if (missing.length) return { changed: [], missing };
+  if (changed.length) writeStatusMap(dir, map);
+  return { changed, missing };
+}
+function readTaskTracker(projectRoot) {
+  const map = readStatusMap(tasksDirFor(projectRoot));
+  const out = {};
+  for (const [name, entry] of Object.entries(map))
+    out[name] = {
+      status: entry?.status,
+      epic: entry?.epic,
+      unmerged: entry?.unmerged === true,
+      blockedBy: Array.isArray(entry?.blockedBy) ? entry.blockedBy : []
+    };
+  return out;
+}
+
+// src/core/config.ts
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path8 = __toESM(require("node:path"), 1);
+function maestroJsonPath(projectRoot) {
+  return import_node_path8.default.join(projectRoot, ".claude", "maestro.json");
+}
+function blankConfig() {
+  return {
+    version: 3,
+    agents_available: [],
+    skills_available: [],
+    workflow_instances: [],
+    workflows: [],
+    rules: []
+  };
+}
+function readJsonSafe(p) {
+  try {
+    return JSON.parse(import_node_fs10.default.readFileSync(p, "utf8"));
+  } catch {
+    return null;
+  }
+}
+function readConfig(projectRoot) {
+  const p = maestroJsonPath(projectRoot);
+  if (!import_node_fs10.default.existsSync(p)) return null;
+  const parsed = readJsonSafe(p);
+  if (!parsed) return blankConfig();
+  return parsed.version === 3 ? parsed : blankConfig();
+}
+function resolveWorkerModel(cfg) {
+  if (!cfg || cfg.version !== 3) return void 0;
+  const v = cfg.worker_model;
+  if (typeof v !== "string") return void 0;
+  const t = v.trim();
+  return t === "" ? void 0 : t;
+}
+
 // src/core/worker-runtime.ts
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 var WORKER_RUNTIME_ENV = "MAESTRO_WORKER_RUNTIME";
 var WORKER_RUNTIME_SCRIPT = ".claude/scripts/maestro-worker-runtime.cjs";
 var WORKER_TOKEN_REL = import_node_path9.default.join(".config", "maestro", "worker-token");
@@ -963,17 +969,48 @@ function setManager(projectRoot, slug, name) {
     s.manager = { name, set_at: now() };
   });
 }
-function addWorker(projectRoot, slug, name, task, pane) {
+function currentLaunchSettings(projectRoot) {
+  const config = readConfig(mainCheckoutRoot(projectRoot));
+  return { runtime: resolveWorkerRuntime(config), manager_approval: resolveManagerApproval(config) };
+}
+function addWorker(projectRoot, slug, name, task, pane, settings) {
   const paneId = pane?.trim() || void 0;
   if (paneId && !isValidPaneId(paneId)) throw new Error(`"${paneId}" is not a herdr pane id`);
+  const launch = settings ?? currentLaunchSettings(projectRoot);
   updateState(projectRoot, slug, (s) => {
     const existing = s.workers.find((w) => w.name === name);
     if (existing) {
       if (task) existing.task = task;
       if (paneId) existing.pane = paneId;
+      existing.runtime ??= launch.runtime;
+      existing.manager_approval ??= launch.manager_approval;
     } else {
-      s.workers.push({ name, ...task ? { task } : {}, ...paneId ? { pane: paneId } : {}, added_at: now() });
+      s.workers.push({
+        name,
+        ...task ? { task } : {},
+        ...paneId ? { pane: paneId } : {},
+        added_at: now(),
+        runtime: launch.runtime,
+        manager_approval: launch.manager_approval
+      });
     }
+  });
+}
+function recordedManagerApproval(projectRoot, task) {
+  const slug = epicOfTask(projectRoot, task);
+  if (!slug) return null;
+  const state = readEpicState(projectRoot, slug);
+  if (!state) return null;
+  const base = import_node_path10.default.basename(task);
+  const mine = state.workers.filter((w) => w.task && import_node_path10.default.basename(w.task) === base);
+  const pick = [...mine].reverse().find((w) => !w.finished_at) ?? mine[mine.length - 1];
+  return typeof pick?.manager_approval === "boolean" ? pick.manager_approval : null;
+}
+function managerApprovalForTask(projectRoot, task, cfg, containerWorker) {
+  return gateManagerApproval({
+    containerWorker,
+    recorded: recordedManagerApproval(projectRoot, task),
+    live: resolveManagerApproval(cfg)
   });
 }
 function finishWorker(projectRoot, slug, name) {
@@ -1830,6 +1867,7 @@ function checkReportCommit(git2, root, input) {
   classifyEscalation,
   classifyGitOperation,
   createEpic,
+  currentLaunchSettings,
   declaresDone,
   deliveryWords,
   epicDirFor,
@@ -1842,6 +1880,7 @@ function checkReportCommit(git2, root, input) {
   formatEpic,
   formatInboxEntry,
   formatReady,
+  gateManagerApproval,
   inboxPointer,
   isConfigSurface,
   isContainerWorker,
@@ -1854,6 +1893,7 @@ function checkReportCommit(git2, root, input) {
   listEpicSummaries,
   listEpics,
   managerApprovalApplies,
+  managerApprovalForTask,
   newInboxAnnouncements,
   normalizeStop,
   parseEscalationAnswer,
@@ -1863,6 +1903,7 @@ function checkReportCommit(git2, root, input) {
   readyTasks,
   recordReviewVerdict,
   recordUserAnswer,
+  recordedManagerApproval,
   refreshRuntimeWords,
   removeWorker,
   reportCommandFor,

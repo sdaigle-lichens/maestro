@@ -75,8 +75,9 @@ function managerApprovalFor(cwd, state) {
   try {
     const epics = epicsLib();
     if (!epics || !state || typeof state.active_task !== "string" || !state.active_task) return null;
-    if (!epics.managerApprovalApplies(projectConfig(cwd), epics.isContainerWorker())) return null;
     const task = state.active_task;
+    // `181`: the value recorded for THIS worker at launch decides, not the live maestro.json.
+    if (!epics.managerApprovalForTask(cwd, task, projectConfig(cwd), epics.isContainerWorker())) return null;
     const epic = epics.epicOfTask(cwd, task);
     if (!epic) return null;
     const verdict = epics.findApproval(
@@ -103,7 +104,7 @@ function recordEscalationAnswer(p) {
     const own = storedSessionName(path.join(p.cwd, ".claude"), p.session_id || null);
     const manager = epics.readEpicState(p.cwd, epic)?.manager?.name ?? null;
     if (!own || !manager || own.name !== manager) return;
-    if (!epics.managerApprovalApplies(projectConfig(p.cwd), true)) return;
+    if (!epics.managerApprovalForTask(p.cwd, answer.task, projectConfig(p.cwd), true)) return;
     epics.recordUserAnswer(epics.approvalsDir(os.homedir()), { project: epics.projectKeyFor(p.cwd), epic, answer });
   } catch {
     // Recording is best effort; an unrecorded answer leaves the stop waiting, never approved.

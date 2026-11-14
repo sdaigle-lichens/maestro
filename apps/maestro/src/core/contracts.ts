@@ -24,6 +24,7 @@ export type {
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroWorkerModelSlice,
+  MaestroWorkerRuntimeSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
   MaestroSession,

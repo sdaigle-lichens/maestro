@@ -27,6 +27,7 @@ import type {
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroWorkerModelSlice,
+  MaestroWorkerRuntimeSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -164,6 +165,7 @@ export type {
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroWorkerModelSlice,
+  MaestroWorkerRuntimeSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -394,13 +396,57 @@ export interface WorkerModelData {
   workerModel: string;
 }
 
+/**
+ * `181`: what the /maestro page's Worker runtime control needs. Both values are RESOLVED, never raw
+ * (`resolveWorkerRuntime`, `resolveManagerApproval`): an absent, blank or unknown `worker_runtime`
+ * reads back "host", and anything but boolean `true` reads back `managerApproval: false`.
+ */
+export interface WorkerRuntimeData {
+  workerRuntime: "host" | "docker";
+  managerApproval: boolean;
+}
+
+/** `181`: the Docker daemon line of the readiness check. */
+export interface WorkerDockerReadiness {
+  reachable: boolean;
+  /** One short line to show: the server version when reachable, else why not. */
+  detail: string;
+}
+
+/**
+ * `181`: both readiness lines for Docker workers, computed in the MAIN process. The token file is
+ * checked by existence only: its contents are never read, so they cannot appear here.
+ */
+export interface WorkerReadinessData {
+  docker: WorkerDockerReadiness;
+  token: {
+    exists: boolean;
+    /** Where the launcher looks for the token file (a path, never the token), e.g. to tell the user where to save it. */
+    path: string;
+  };
+}
+
+/**
+ * `181`: the outcome of one run of the project's worker launcher (`image` or `prune --dry-run`).
+ * Never a rejection: a missing launcher, a failed build or a locked-out wait all come back here.
+ */
+export interface WorkerLauncherResult {
+  /** The launcher exited 0. */
+  ok: boolean;
+  /** Its exit code; null when it never ran (launcher not installed) or was killed (timeout). */
+  exitCode: number | null;
+  /** What it printed, stdout then stderr, only the last ~20000 characters. Show it as preformatted text. */
+  output: string;
+}
+
 export type SaveInput =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
   | { sliceType: "skill-lists"; slice: MaestroSkillListsSlice }
   | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice }
-  | { sliceType: "worker-model"; slice: MaestroWorkerModelSlice };
+  | { sliceType: "worker-model"; slice: MaestroWorkerModelSlice }
+  | { sliceType: "worker-runtime"; slice: MaestroWorkerRuntimeSlice };
 
 export const IPC = {
   projectGet: "project:get",
@@ -451,6 +497,18 @@ export const IPC = {
   // the `worker-model` slice (blank clears it) and returns the resolved value that was stored.
   workerModelData: "data:worker-model",
   workerModelSet: "project:worker-model:set",
+
+  // `181`: Docker workers and manager approval. `data:worker-runtime` reads the resolved pair;
+  // `project:worker-runtime:set` writes the `worker-runtime` slice (only `worker_runtime` and
+  // `manager_approval`) and returns the resolved pair now stored. `data:worker-readiness` computes the
+  // daemon and token-file lines in the main process. `project:worker-image:rebuild` runs the launcher's
+  // `image` for the open project and `project:worker-image:prune-dry-run` its `prune --dry-run`; both
+  // resolve a `WorkerLauncherResult` and never reject on a failed run.
+  workerRuntimeData: "data:worker-runtime",
+  workerRuntimeSet: "project:worker-runtime:set",
+  workerReadiness: "data:worker-readiness",
+  workerImageRebuild: "project:worker-image:rebuild",
+  workerImagePruneDryRun: "project:worker-image:prune-dry-run",
 
   // The /agents page. `reportGet` resolves what's in effect for one agent (project override, else
   // global default, else none) — the SAME resolution `report-resolution.ts` gives the
@@ -783,6 +841,31 @@ export interface MaestroApi {
        */
       set(value: string): Promise<string>;
     };
+    workerRuntime: {
+      /**
+       * `181`: set the OPEN project's `worker_runtime` and `manager_approval` together. Saves the
+       * `worker-runtime` slice and nothing else ("host" removes `worker_runtime`, a false
+       * `managerApproval` removes `manager_approval`). When the page has Host selected, pass the
+       * `managerApproval` it loaded so a hidden value is preserved. Returns what is now stored,
+       * resolved. Rejects when no project is open. Takes effect for workers launched afterwards only:
+       * each worker records both values at launch.
+       */
+      set(value: WorkerRuntimeData): Promise<WorkerRuntimeData>;
+    };
+    workerImage: {
+      /**
+       * `181`: build (or reuse) the open project's worker image through the project's launcher
+       * (`maestro-worker-runtime.cjs image`). Takes the per-project lock, so a build already running
+       * is waited for and its image reused. Can take minutes: show a busy state. Never rejects; with
+       * no project open it resolves `{ ok: false, exitCode: null, output: <sentence> }`.
+       */
+      rebuild(): Promise<WorkerLauncherResult>;
+      /**
+       * `181`: the launcher's `prune --dry-run` for the open project: lists what a prune would remove
+       * and removes nothing. `output` is the report text. Never rejects.
+       */
+      pruneDryRun(): Promise<WorkerLauncherResult>;
+    };
     tags: {
       /**
        * Toggle the OPEN project's `project_tags` to exactly `tags` — `/maestro`'s post-install
@@ -862,6 +945,19 @@ export interface MaestroApi {
      * unset/blank/non-string value, reads back as "".
      */
     workerModel(): Promise<WorkerModelData>;
+    /**
+     * `181`: the open project's RESOLVED `worker_runtime` and `manager_approval`. Never rejects: no
+     * project open, or absent values, read back `{ workerRuntime: "host", managerApproval: false }`.
+     */
+    workerRuntime(): Promise<WorkerRuntimeData>;
+    /**
+     * `181`: Docker readiness, computed in the main process: whether the Docker daemon answers
+     * (`docker info`) and whether the worker token file exists (existence only; the token is never
+     * read or sent). Never rejects: a failed probe is `docker.reachable: false` with the reason in
+     * `detail`. Takes up to ~8s when the daemon hangs, so call it when Docker is chosen and on a
+     * "Check again" action, not on every render.
+     */
+    workerReadiness(): Promise<WorkerReadinessData>;
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;

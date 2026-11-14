@@ -143,7 +143,7 @@ export interface MaestroConfigV3 {
   /**
    * Where epic worker sessions run (`175`): "host" (the default) or "docker". "docker" makes
    * `maestro-epic.cjs ready` print the containerized launcher's command instead of the plain
-   * `claude -n ...`. Any other value means "host". Hand-edited; no slice writes it.
+   * `claude -n ...`. Any other value means "host". Written by the `worker-runtime` slice (`181`).
    * `resolveWorkerRuntime` in `worker-runtime.ts` is the one reader.
    */
   worker_runtime?: "host" | "docker";
@@ -151,8 +151,9 @@ export interface MaestroConfigV3 {
    * `177`: when `true`, the epic's manager is the approving authority for a CONTAINERIZED worker's
    * human-review, commit and merge stops (an approval record in `~/.config/maestro/approvals/`,
    * mounted read-only into the container); a fixed list of situations still escalates to the user.
-   * Absent or anything but `true` means off. Host workers always ask the user. Hand-edited; no
-   * slice writes it. `resolveManagerApproval` in `manager-approval.ts` is the one reader.
+   * Absent or anything but `true` means off. Host workers always ask the user. Written by the
+   * `worker-runtime` slice (`181`); each worker records the value at launch and the gate uses that
+   * record, so a later change affects only workers started afterwards. `resolveManagerApproval` in `manager-approval.ts` is the one reader.
    */
   manager_approval?: boolean;
   /**
@@ -194,6 +195,17 @@ export interface MaestroTaskRoutingSlice {
 /** The `worker-model` slice: writes only `worker_model`. `undefined` or blank removes the key. */
 export interface MaestroWorkerModelSlice {
   worker_model?: string;
+}
+
+/**
+ * The `worker-runtime` slice (`181`): writes only `worker_runtime` and `manager_approval`. "host"
+ * removes `worker_runtime` (host is the default, so a host project's file stays as it was); `false`
+ * removes `manager_approval`. Anything else is read as "host" / `false`, the same strictness as the
+ * two readers.
+ */
+export interface MaestroWorkerRuntimeSlice {
+  worker_runtime: "host" | "docker";
+  manager_approval: boolean;
 }
 
 /**
