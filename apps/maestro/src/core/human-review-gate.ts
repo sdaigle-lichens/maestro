@@ -90,6 +90,24 @@ export function currentReviewRound(plan: PlanLike | null | undefined): number | 
   return currentReviewStop(plan)?.round ?? null;
 }
 
+/**
+ * `181`: does manager approval cover this worker's stops? It applies to a containerized worker only,
+ * and the answer is the value RECORDED for that worker when it was launched. Only a worker with no
+ * record (one launched before settings were recorded, or no epic) falls back to the live
+ * `maestro.json` value, which is what the gate read before. So turning `manager_approval` on or off
+ * afterwards changes only workers launched afterwards.
+ */
+export function gateManagerApproval(input: {
+  containerWorker: boolean;
+  /** The worker's recorded `manager_approval`, or null/undefined when none was recorded. */
+  recorded?: boolean | null;
+  /** The live `resolveManagerApproval(maestro.json)`. */
+  live: boolean;
+}): boolean {
+  if (!input.containerWorker) return false;
+  return typeof input.recorded === "boolean" ? input.recorded : input.live;
+}
+
 /** `worker [3fa9c1]` → `worker`: SendMessage may address a session by name plus its listing ref. */
 function bareRecipient(to: unknown): string {
   return typeof to === "string" ? to.replace(/\s*\[[^\]]*\]\s*$/, "").trim() : "";

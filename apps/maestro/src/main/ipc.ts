@@ -5,6 +5,7 @@
 // renderer is allowed to ask for.
 
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
+import os from "node:os";
 import path from "node:path";
 import {
   sweepAndRetarget,
@@ -16,6 +17,12 @@ import {
   resolveSkillLists,
   resolveUseMaestroTasks,
   resolveWorkerModel,
+  resolveWorkerRuntime,
+  resolveManagerApproval,
+  computeWorkerReadiness,
+  probeDockerDaemon,
+  rebuildWorkerImage,
+  pruneWorkerImagesDryRun,
   blankConfig,
   defaultV3Config,
   seedSkillsFor,
@@ -149,6 +156,9 @@ import type {
   MaestroSkillListsSlice,
   TaskRoutingData,
   WorkerModelData,
+  WorkerRuntimeData,
+  WorkerReadinessData,
+  WorkerLauncherResult,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -655,6 +665,33 @@ export function registerIpc(): void {
     return { workerModel: resolveWorkerModel(readConfig(projectRoot)) ?? "" };
   });
 
+  // `181`: the resolved worker runtime and manager approval. Never rejects: no project open reads
+  // back the defaults (host, off).
+  ipcMain.handle(IPC.workerRuntimeData, (): WorkerRuntimeData => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) return { workerRuntime: "host", managerApproval: false };
+    const cfg = readConfig(projectRoot);
+    return { workerRuntime: resolveWorkerRuntime(cfg), managerApproval: resolveManagerApproval(cfg) };
+  });
+
+  // `181`: Docker readiness, computed here in the main process. Never rejects (a failed probe is a
+  // "not reachable" line). The token file is stat-ed, never read.
+  ipcMain.handle(IPC.workerReadiness, (): Promise<WorkerReadinessData> =>
+    computeWorkerReadiness({ home: os.homedir(), probeDocker: probeDockerDaemon })
+  );
+
+  // `181`: the launcher's image build and prune dry-run for the open project. They never reject: the
+  // result carries the launcher's exit code and output, or a sentence when no project is open.
+  const noProjectResult: WorkerLauncherResult = { ok: false, exitCode: null, output: "No project is open." };
+  ipcMain.handle(IPC.workerImageRebuild, (): Promise<WorkerLauncherResult> => {
+    const projectRoot = currentRoot();
+    return projectRoot ? rebuildWorkerImage(projectRoot) : Promise.resolve(noProjectResult);
+  });
+  ipcMain.handle(IPC.workerImagePruneDryRun, (): Promise<WorkerLauncherResult> => {
+    const projectRoot = currentRoot();
+    return projectRoot ? pruneWorkerImagesDryRun(projectRoot) : Promise.resolve(noProjectResult);
+  });
+
   // ── the read-only surface folded in from help-server ──────────────────
   // Two loaders, four tabs and two doc views. help-server ran six server functions for the same
   // screens, two of which each re-read `installed_plugins.json` to compute their own `isInstalled`
@@ -774,6 +811,22 @@ export function registerIpc(): void {
     const resolved = resolveWorkerModel({ version: 3, worker_model: value } as MaestroConfigV3);
     await saveConfig(projectRoot, { sliceType: "worker-model", slice: { worker_model: resolved } });
     return resolved ?? "";
+  });
+
+  // `181`: worker runtime + manager approval. One slice write (only those two fields) through the
+  // same `mergeSlice` path as `worker_model`; the resolved pair now stored is returned. The payload is
+  // re-resolved here, not trusted, so a malformed renderer value is stored as host / off.
+  ipcMain.handle(IPC.workerRuntimeSet, async (_e, value: WorkerRuntimeData): Promise<WorkerRuntimeData> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    const asked = { version: 3, worker_runtime: value?.workerRuntime, manager_approval: value?.managerApproval };
+    const runtime = resolveWorkerRuntime(asked as unknown as MaestroConfigV3);
+    const approval = runtime === "docker" && resolveManagerApproval(asked as unknown as MaestroConfigV3);
+    await saveConfig(projectRoot, {
+      sliceType: "worker-runtime",
+      slice: { worker_runtime: runtime, manager_approval: approval },
+    });
+    return { workerRuntime: runtime, managerApproval: approval };
   });
 
   ipcMain.handle(IPC.projectTagsSet, async (_e, tags: string[]): Promise<string[]> => {

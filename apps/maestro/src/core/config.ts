@@ -16,6 +16,7 @@ import type {
   MaestroRulesSlice,
   MaestroTaskRoutingSlice,
   MaestroWorkerModelSlice,
+  MaestroWorkerRuntimeSlice,
   MaestroWorkflowsSlice,
 } from "./types.js";
 
@@ -93,7 +94,8 @@ export type ConfigSlice =
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
   | { sliceType: "skill-lists"; slice: MaestroSkillListsSlice }
   | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice }
-  | { sliceType: "worker-model"; slice: MaestroWorkerModelSlice };
+  | { sliceType: "worker-model"; slice: MaestroWorkerModelSlice }
+  | { sliceType: "worker-runtime"; slice: MaestroWorkerRuntimeSlice };
 
 /**
  * The one reader of `worker_model`: the trimmed string, or `undefined` when the field is absent,
@@ -177,6 +179,17 @@ export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): Maestr
     const model = resolveWorkerModel({ version: 3, worker_model: input.slice.worker_model } as MaestroConfigV3);
     if (model === undefined) delete next.worker_model;
     else next.worker_model = model;
+  } else if (input.sliceType === "worker-runtime") {
+    // `181`: only these two fields. Strict like the readers (`resolveWorkerRuntime`,
+    // `resolveManagerApproval`): "docker" and `true` are the only values written, everything else
+    // removes the key, so a host project's file never gains a `worker_runtime`.
+    const runtime: unknown = input.slice.worker_runtime;
+    if (typeof runtime === "string" && runtime.trim().toLowerCase() === "docker") next.worker_runtime = "docker";
+    else delete next.worker_runtime;
+    // manager_approval only means anything for docker workers: saving Host never keeps it.
+    if (next.worker_runtime === "docker" && (input.slice.manager_approval as unknown) === true)
+      next.manager_approval = true;
+    else delete next.manager_approval;
   }
   return next;
 }

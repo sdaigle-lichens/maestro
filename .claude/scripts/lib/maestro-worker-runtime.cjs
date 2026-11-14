@@ -39,12 +39,16 @@ __export(maestro_worker_runtime_exports, {
   PROJECT_LABEL: () => PROJECT_LABEL,
   READONLY_PATHS: () => READONLY_PATHS,
   WORKER_IMAGE_PREFIX: () => WORKER_IMAGE_PREFIX,
+  WORKER_LOCK_REL: () => WORKER_LOCK_REL,
+  WORKER_LOCK_TIMEOUT_MS: () => WORKER_LOCK_TIMEOUT_MS,
   WORKER_RUNTIME_ENV: () => WORKER_RUNTIME_ENV,
   WORKER_RUNTIME_SCRIPT: () => WORKER_RUNTIME_SCRIPT,
   WORKER_TOKEN_REL: () => WORKER_TOKEN_REL,
+  acquireWorkerLock: () => acquireWorkerLock,
   approvalsDir: () => approvalsDir,
   claudeJsonFor: () => claudeJsonFor,
   containerNameFor: () => containerNameFor,
+  describeLockHolder: () => describeLockHolder,
   detectHookPackages: () => detectHookPackages,
   detectToolchain: () => detectToolchain,
   dockerLaunchCommandFor: () => dockerLaunchCommandFor,
@@ -64,6 +68,7 @@ __export(maestro_worker_runtime_exports, {
   isExcludedName: () => isExcludedName,
   isExcludedPath: () => isExcludedPath,
   isMarketplaceExcluded: () => isMarketplaceExcluded,
+  isProcessAlive: () => isProcessAlive,
   knownMarketplacesJsonFor: () => knownMarketplacesJsonFor,
   managedSettingsJson: () => managedSettingsJson,
   missingPluginMessage: () => missingPluginMessage,
@@ -75,6 +80,7 @@ __export(maestro_worker_runtime_exports, {
   pinPlugins: () => pinPlugins,
   planPrune: () => planPrune,
   projectLabelFor: () => projectLabelFor,
+  readLockOwner: () => readLockOwner,
   readWorkerToken: () => readWorkerToken,
   refreshRuntimeWords: () => refreshRuntimeWords,
   resolveManagerApproval: () => resolveManagerApproval,
@@ -82,6 +88,7 @@ __export(maestro_worker_runtime_exports, {
   tokenSetupMessage: () => tokenSetupMessage,
   trustedPaths: () => trustedPaths,
   userSettingsJsonFor: () => userSettingsJsonFor,
+  workerLockDir: () => workerLockDir,
   workerMounts: () => workerMounts,
   workerRunArgs: () => workerRunArgs,
   worktreeMountPath: () => worktreeMountPath,
@@ -706,6 +713,140 @@ function formatPrune(plan, dryRun, note) {
   return `${lines.join("\n")}
 `;
 }
+
+// src/core/worker-lock.ts
+var import_node_crypto2 = __toESM(require("node:crypto"), 1);
+var import_node_fs4 = __toESM(require("node:fs"), 1);
+var import_node_path4 = __toESM(require("node:path"), 1);
+var WORKER_LOCK_REL = import_node_path4.default.join(".config", "maestro", "locks");
+var WORKER_LOCK_TIMEOUT_MS = 45 * 60 * 1e3;
+var WORKER_LOCK_POLL_MS = 500;
+var WORKER_LOCK_OWNERLESS_GRACE_MS = 5e3;
+function workerLockDir(home, projectRoot) {
+  return import_node_path4.default.join(home, WORKER_LOCK_REL, `worker-image-${projectLabelFor(projectRoot)}`);
+}
+function isProcessAlive(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return err.code === "EPERM";
+  }
+}
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+function ownerFile(dir) {
+  return import_node_path4.default.join(dir, "owner.json");
+}
+function readLockOwner(dir) {
+  try {
+    const o = JSON.parse(import_node_fs4.default.readFileSync(ownerFile(dir), "utf8"));
+    if (typeof o.pid !== "number" || typeof o.token !== "string") return null;
+    return {
+      pid: o.pid,
+      token: o.token,
+      kind: o.kind === "prune" ? "prune" : "build",
+      started_at: typeof o.started_at === "string" ? o.started_at : ""
+    };
+  } catch {
+    return null;
+  }
+}
+function describeLockHolder(owner) {
+  if (!owner) return "another worker image build or prune of this project";
+  return `a worker image ${owner.kind} of this project (pid ${owner.pid})`;
+}
+function tryCreate(dir, owner) {
+  import_node_fs4.default.mkdirSync(import_node_path4.default.dirname(dir), { recursive: true });
+  try {
+    import_node_fs4.default.mkdirSync(dir);
+  } catch (err) {
+    if (err.code === "EEXIST") return false;
+    throw err;
+  }
+  try {
+    import_node_fs4.default.writeFileSync(ownerFile(dir), JSON.stringify(owner));
+  } catch (err) {
+    if (err.code === "ENOENT") return false;
+    throw err;
+  }
+  return true;
+}
+function breakStale(dir, seen, graceMs, nowMs) {
+  const moved = `${dir}.stale-${import_node_crypto2.default.randomBytes(4).toString("hex")}`;
+  try {
+    import_node_fs4.default.renameSync(dir, moved);
+  } catch {
+    return false;
+  }
+  const found = readLockOwner(moved);
+  let same;
+  if (seen) same = found !== null && found.token === seen.token;
+  else {
+    try {
+      same = found === null && nowMs - import_node_fs4.default.statSync(moved).mtimeMs >= graceMs;
+    } catch {
+      same = false;
+    }
+  }
+  if (!same) {
+    try {
+      import_node_fs4.default.renameSync(moved, dir);
+      return false;
+    } catch {
+    }
+  }
+  import_node_fs4.default.rmSync(moved, { recursive: true, force: true });
+  return same;
+}
+function acquireWorkerLock(dir, opts) {
+  const now = opts.now ?? Date.now;
+  const sleep = opts.sleep ?? sleepSync;
+  const alive = opts.isAlive ?? isProcessAlive;
+  const timeoutMs = opts.timeoutMs ?? WORKER_LOCK_TIMEOUT_MS;
+  const pollMs = opts.pollMs ?? WORKER_LOCK_POLL_MS;
+  const grace = opts.ownerlessGraceMs ?? WORKER_LOCK_OWNERLESS_GRACE_MS;
+  const me = {
+    pid: opts.pid ?? process.pid,
+    kind: opts.kind,
+    token: import_node_crypto2.default.randomBytes(8).toString("hex"),
+    started_at: new Date(now()).toISOString()
+  };
+  const started = now();
+  let waited = false;
+  for (; ; ) {
+    if (tryCreate(dir, me)) {
+      const release = () => {
+        if (readLockOwner(dir)?.token === me.token) import_node_fs4.default.rmSync(dir, { recursive: true, force: true });
+      };
+      return { ok: true, waited, release };
+    }
+    const owner = readLockOwner(dir);
+    let stale = false;
+    if (owner) stale = !alive(owner.pid);
+    else {
+      try {
+        stale = now() - import_node_fs4.default.statSync(dir).mtimeMs >= grace;
+      } catch {
+        continue;
+      }
+    }
+    if (stale) {
+      if (breakStale(dir, owner, grace, now())) opts.onRecovered?.(owner);
+      continue;
+    }
+    if (now() - started >= timeoutMs)
+      return {
+        ok: false,
+        message: `timed out after ${Math.round(timeoutMs / 1e3)}s waiting for ${describeLockHolder(owner)}; try again when it finishes`
+      };
+    if (!waited) opts.onWait?.(owner);
+    waited = true;
+    sleep(pollMs);
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CONTAINER_APPROVALS_DIR,
@@ -714,12 +855,16 @@ function formatPrune(plan, dryRun, note) {
   PROJECT_LABEL,
   READONLY_PATHS,
   WORKER_IMAGE_PREFIX,
+  WORKER_LOCK_REL,
+  WORKER_LOCK_TIMEOUT_MS,
   WORKER_RUNTIME_ENV,
   WORKER_RUNTIME_SCRIPT,
   WORKER_TOKEN_REL,
+  acquireWorkerLock,
   approvalsDir,
   claudeJsonFor,
   containerNameFor,
+  describeLockHolder,
   detectHookPackages,
   detectToolchain,
   dockerLaunchCommandFor,
@@ -739,6 +884,7 @@ function formatPrune(plan, dryRun, note) {
   isExcludedName,
   isExcludedPath,
   isMarketplaceExcluded,
+  isProcessAlive,
   knownMarketplacesJsonFor,
   managedSettingsJson,
   missingPluginMessage,
@@ -750,6 +896,7 @@ function formatPrune(plan, dryRun, note) {
   pinPlugins,
   planPrune,
   projectLabelFor,
+  readLockOwner,
   readWorkerToken,
   refreshRuntimeWords,
   resolveManagerApproval,
@@ -757,6 +904,7 @@ function formatPrune(plan, dryRun, note) {
   tokenSetupMessage,
   trustedPaths,
   userSettingsJsonFor,
+  workerLockDir,
   workerMounts,
   workerRunArgs,
   worktreeMountPath,

@@ -18,6 +18,9 @@ export {
   listEpicSummaries,
   setManager,
   addWorker,
+  currentLaunchSettings,
+  recordedManagerApproval,
+  managerApprovalForTask,
   finishWorker,
   removeWorker,
   linkTasks,
@@ -55,6 +58,9 @@ export {
   WATCH_DEFAULT_SECONDS,
   WATCH_DEFAULT_INTERVAL_SECONDS,
 } from "../epics.js";
+
+// `181`: the gate's pure rule (a worker's RECORDED manager_approval wins over the live config).
+export { gateManagerApproval } from "../human-review-gate.js";
 
 // `176`: the CLI words its output for a containerized worker (see `deliveryWords`).
 export { isContainerWorker, refreshRuntimeWords } from "../worker-runtime.js";

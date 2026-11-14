@@ -650,3 +650,19 @@ export {
   type AgentSyncSummary,
   type PluginTemplateSource,
 } from "./agent-sync.js";
+
+// `181`: Docker workers on the /maestro page — the readers, the readiness checks and the launcher runs.
+export { resolveWorkerRuntime } from "./worker-runtime.js";
+export { resolveManagerApproval } from "./manager-approval.js";
+export {
+  computeWorkerReadiness,
+  workerTokenExists,
+  workerTokenPath,
+  type WorkerReadiness,
+} from "./worker-readiness.js";
+export {
+  probeDockerDaemon,
+  rebuildWorkerImage,
+  pruneWorkerImagesDryRun,
+  type WorkerLauncherResult,
+} from "./worker-launcher.js";

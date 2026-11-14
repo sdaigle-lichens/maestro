@@ -19,8 +19,9 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
   push, a change to agents, skills or workflows) still prompts the user in the worker's own session.
   Never write "the user approved" or tell a worker to skip an approval.
 - **Manager approval is the one exception, and only when allowed.** It is allowed only when
-  `.claude/maestro.json` has `manager_approval: true` AND the worker is containerized (a host worker
-  always asks the user). Then you are the approving authority for that worker's human-review, commit
+  `.claude/maestro.json` had `manager_approval: true` when that worker was launched (it is recorded
+  per worker; a later change affects only later workers) AND the worker is containerized (a host
+  worker always asks the user). Then you are the approving authority for that worker's human-review, commit
   and merge stops, from its report; you never read code or a diff. You approve by writing a record,
   never by a message: `maestro-epic.cjs approve --task <t> --stop <human review|commit|merge>
   --commit <sha> --decision <approved|rejected> --suite <green|...>` (add `--op`, `--paths`,
@@ -147,7 +148,18 @@ is a normal named `/maestro` session in its own herdr tab; you start it and reco
          nothing changed; a plugin version bump or Claude Code upgrade makes it build a new one.
       2. Run `claude setup-token` yourself, save the token to `~/.config/maestro/worker-token` and
          `chmod 600` that file. The token is read at launch and never printed or baked into an image.
-      3. Set `"worker_runtime": "docker"` in `.claude/maestro.json`.
+      3. Set `"worker_runtime": "docker"` in `.claude/maestro.json`, or choose Docker on the desktop
+         app's `/maestro` page (it also offers the manager-approval switch, the image rebuild and
+         the readiness checks for the Docker daemon and the token file).
+
+      **When a setting takes effect.** `worker_runtime` and `manager_approval` are recorded for each
+      worker when it is launched (in the epic's worker record, written by the launcher and kept by
+      `add-worker`). A worker's stops are approved by the value recorded for that worker, never the
+      live `maestro.json`: turning `manager_approval` on or off afterwards (in the app or by hand)
+      changes only workers launched afterwards, so a worker already running keeps asking whoever it
+      was started with. To change it for a task, finish that worker and launch a new one.
+      Two sessions of the project that build or prune the image share one lock, so a second build
+      waits and reuses the first one's image.
    3. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<worker name>" --task <task.md> --pane <pane id>`,
       with the pane id from step 1. Recording it is what keeps a second worker from being spawned for
       the same task before the first one claims it, and the pane is how you answer a containerized

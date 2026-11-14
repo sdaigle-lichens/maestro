@@ -37,6 +37,9 @@ import type {
   TaskRoutingData,
   UninstallPlan,
   UninstallReport,
+  WorkerLauncherResult,
+  WorkerReadinessData,
+  WorkerRuntimeData,
   DiscoveredDefinition,
   MaestroSkillListsSlice,
 } from "../../../shared/ipc";
@@ -891,6 +894,208 @@ function WorkerModelCard({ viewedRoot }: { viewedRoot: string }) {
 }
 
 /**
+ * Worker runtime (`181`): `worker_runtime` (host default, or docker) and, with docker, `manager_approval`
+ * in `maestro.json`. Saving writes only these two fields through the `worker-runtime` slice. Readiness
+ * (daemon reachable, token file exists) is computed in main and only displayed here; the token is never
+ * read. The image rebuild and the prune dry-run run the project's launcher in main and show its output.
+ */
+function WorkerRuntimeCard({ viewedRoot }: { viewedRoot: string }) {
+  const [saved, setSaved] = useState<WorkerRuntimeData | null>(null);
+  const [draft, setDraft] = useState<WorkerRuntimeData>({ workerRuntime: "host", managerApproval: false });
+  const [busy, setBusy] = useState(false);
+  const [readiness, setReadiness] = useState<WorkerReadinessData | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [readinessError, setReadinessError] = useState<string | null>(null);
+  const [imageBusy, setImageBusy] = useState<"rebuild" | "prune" | null>(null);
+  const [imageResult, setImageResult] = useState<{ label: string; result: WorkerLauncherResult } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.workerRuntime()).then((res) => {
+      if (cancelled || !res.ok) return;
+      setSaved(res.value);
+      setDraft(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  const refreshReadiness = useCallback(async () => {
+    setChecking(true);
+    setReadinessError(null);
+    try {
+      const res = await callMain(() => window.maestro.data.workerReadiness());
+      if (res.ok) {
+        setReadiness(res.value);
+      } else {
+        // Drop the previous result so a failed re-check never leaves old lines looking current.
+        setReadiness(null);
+        setReadinessError(res.error);
+      }
+    } finally {
+      setChecking(false);
+    }
+  }, []);
+
+  const docker = draft.workerRuntime === "docker";
+  useEffect(() => {
+    if (docker) void refreshReadiness();
+  }, [docker, viewedRoot, refreshReadiness]);
+
+  if (saved === null) return null;
+
+  const dirty = draft.workerRuntime !== saved.workerRuntime || draft.managerApproval !== saved.managerApproval;
+
+  const save = async () => {
+    if (!dirty || busy) return;
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.workerRuntime.set(draft));
+      if (!res.ok) {
+        toast(<>Could not save worker runtime: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setSaved(res.value);
+      setDraft(res.value);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runImage = async (kind: "rebuild" | "prune") => {
+    if (imageBusy) return;
+    setImageBusy(kind);
+    setImageResult(null);
+    try {
+      const label = kind === "rebuild" ? "Rebuild worker image" : "Prune dry run";
+      const res = await callMain(() =>
+        kind === "rebuild"
+          ? window.maestro.project.workerImage.rebuild()
+          : window.maestro.project.workerImage.pruneDryRun()
+      );
+      if (!res.ok) {
+        toast(
+          <>
+            {label} failed: {res.error}
+          </>,
+          { variant: "error" }
+        );
+        return;
+      }
+      setImageResult({ label, result: res.value });
+    } finally {
+      setImageBusy(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
+        <ShieldCheckIcon size={12} /> Worker runtime
+      </div>
+      <p className="text-[12px] text-maestro-muted m-0">
+        Where epic workers run: on the host (default) or in a Docker container. Saved to{" "}
+        <span className="font-mono">.claude/maestro.json</span>. Changing it affects only workers started afterwards.
+      </p>
+      <div className="flex items-center gap-2">
+        <select
+          aria-label="Worker runtime"
+          value={draft.workerRuntime}
+          disabled={busy}
+          onChange={(e) => setDraft({ ...draft, workerRuntime: e.target.value === "docker" ? "docker" : "host" })}
+          className="px-2 py-1 rounded border border-maestro bg-maestro text-[12px]"
+        >
+          <option value="host">Host (default)</option>
+          <option value="docker">Docker</option>
+        </select>
+        <Button variant="primary" loading={busy} disabled={busy || !dirty} onClick={() => void save()}>
+          Save
+        </Button>
+      </div>
+      {docker && (
+        <>
+          <label className="flex items-start gap-2 text-[12px] cursor-pointer">
+            <input
+              type="checkbox"
+              role="switch"
+              aria-label="Manager approval"
+              checked={draft.managerApproval}
+              disabled={busy}
+              onChange={(e) => setDraft({ ...draft, managerApproval: e.target.checked })}
+              className="mt-0.5 accent-maestro-primary cursor-pointer"
+            />
+            <span>
+              Manager approval
+              <span className="block text-maestro-muted">
+                The epic manager approves a docker worker&apos;s stops instead of you; the escalation list still reaches
+                you. Changing this affects only workers started afterwards.
+              </span>
+            </span>
+          </label>
+          <div className="flex flex-col">
+            {readiness ? (
+              <>
+                <Row ok={readiness.docker.reachable} label="Docker daemon" detail={readiness.docker.detail} />
+                <Row
+                  ok={readiness.token.exists}
+                  label="Worker token file"
+                  detail={readiness.token.exists ? "Found." : `Not found at ${readiness.token.path}`}
+                />
+              </>
+            ) : readinessError ? (
+              <div role="alert" className="text-[12px] text-maestro-danger">
+                Could not check readiness: {readinessError}
+              </div>
+            ) : (
+              <div className="text-[12px] text-maestro-muted">Checking readiness…</div>
+            )}
+            <div>
+              <Button
+                variant="secondary"
+                loading={checking}
+                disabled={checking}
+                onClick={() => void refreshReadiness()}
+              >
+                Re-check
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              loading={imageBusy === "rebuild"}
+              disabled={imageBusy !== null}
+              onClick={() => void runImage("rebuild")}
+            >
+              Rebuild worker image
+            </Button>
+            <Button
+              variant="secondary"
+              loading={imageBusy === "prune"}
+              disabled={imageBusy !== null}
+              onClick={() => void runImage("prune")}
+            >
+              Prune dry run
+            </Button>
+          </div>
+          {imageResult && (
+            <div className="flex flex-col gap-1">
+              <div className={`text-[12px] ${imageResult.result.ok ? "text-maestro-success" : "text-amber-500"}`}>
+                {imageResult.label}: {imageResult.result.ok ? "succeeded" : "failed"}
+              </div>
+              <pre className="m-0 p-2 max-h-60 overflow-auto rounded border border-maestro bg-maestro text-[11px] font-mono whitespace-pre-wrap">
+                {imageResult.result.output || "(no output)"}
+              </pre>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
  * `037`'s entry point — every `.claude/channels/<scope>/<receiver>/` lane (`144`) still holding a
  * file, right now, plus any pre-`144` unscoped `.claude/channels/<receiver>/` lane, shown as
  * `legacy` (never delivered, aged out by the sweep).
@@ -1224,6 +1429,7 @@ function InstallPage() {
 
           {status?.installed && viewedRoot && <TaskRoutingCard key={viewedRoot} viewedRoot={viewedRoot} />}
           {status?.installed && viewedRoot && <WorkerModelCard key={viewedRoot} viewedRoot={viewedRoot} />}
+          {status?.installed && viewedRoot && <WorkerRuntimeCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           <div className="flex items-center gap-2">
             <Button

@@ -200,6 +200,29 @@ the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an inte
 - **Image layout 7** (`imageTagInputs`): the marketplace copy baked into the image leaves out `.claude/epics`
   (`isMarketplaceExcluded`); a worker reads the live epic through the bind-mounted repository.
 
+## Worker image lock, readiness and recorded settings (`181`)
+
+- **Image lock.** `image` (build) and a real `prune` take one exclusive lock per project (`worker-lock.ts`,
+  used only by `maestro-worker-runtime.cjs`). The directory is `~/.config/maestro/locks/worker-image-<label>`,
+  keyed on the MAIN checkout, so a worktree and a second manager share it. It sits under the host home and in
+  no directory a container mounts, so a worker cannot see or release it.
+- **Waiting.** `mkdir` is the atomic step; `owner.json` (`pid`, `kind`, a random `token`) is the lock. A waiter
+  polls every 500 ms for up to 45 min, then exits naming the holder. Once it holds the lock it re-checks the
+  image, so a second build reuses the first one's image.
+- **Stale recovery.** A holder whose pid is gone is taken over: the directory is renamed aside (one waiter
+  wins) and put back if it turns out to be a different, live lock. A directory with no readable owner for
+  5 s is a crash between `mkdir` and the owner write.
+- **Release** removes the directory only while its `token` is still the caller's; an exit hook releases on `fail`.
+- **`prune --dry-run` takes no lock.** It only lists.
+- **Readiness on `/maestro`** (`worker-readiness.ts`, probe in `worker-launcher.ts`), computed in the main process:
+  the daemon line is `docker info` with an 8 s timeout (reachable, or the one-line reason); the token line is
+  `~/.config/maestro/worker-token` existence only, via `stat`. The file is never opened, so its contents
+  never reach a log, IPC or the page.
+- **Recorded settings.** `addWorker` records `runtime` and `manager_approval` on the `EpicWorker` at first
+  record (`??=`). `recordedManagerApproval` returns the value for the task's active worker, or null.
+  `gateManagerApproval` is false for a host worker, else the record, else the live `maestro.json` value
+  (only for a worker with no record).
+
 ## Containerized workers: inbox, `watch` and pane replies (`176`)
 
 A containerized worker is not in `ListAgents` and has no `SendMessage` route to its manager. Its

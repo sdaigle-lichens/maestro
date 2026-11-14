@@ -59,5 +59,16 @@ export {
   formatPrune,
 } from "../worker-runtime.js";
 
+// `181`: the per-project image lock, taken by `image` and by a real `prune`. `fs`/`path`/`crypto` only.
+export {
+  workerLockDir,
+  acquireWorkerLock,
+  describeLockHolder,
+  readLockOwner,
+  isProcessAlive,
+  WORKER_LOCK_REL,
+  WORKER_LOCK_TIMEOUT_MS,
+} from "../worker-lock.js";
+
 // `177`: the launcher mounts the approvals directory only when `manager_approval` is on.
 export { resolveManagerApproval, approvalsDir } from "../manager-approval.js";
