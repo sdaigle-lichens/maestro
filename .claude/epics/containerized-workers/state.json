@@ -35,6 +35,12 @@
       "task": "180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
       "added_at": "2026-11-13T17:08:24.805Z",
       "finished_at": "2026-11-13T21:23:01.944Z"
+    },
+    {
+      "name": "containerized-workers-181",
+      "task": "181-choose-docker-workers-and-manager-approval-from-the-app-s-maestro-page-with-a-per-project-image-lock-so-parallel-sessions-don-t-clash.md",
+      "added_at": "2026-11-13T22:16:20.243Z",
+      "finished_at": "2026-11-14T02:34:43.311Z"
     }
   ],
   "log": [
@@ -246,6 +252,39 @@
       "id": "r008",
       "file": "inbox/r008-180-the-epic-manager-cleans-up-after-a-finished-worker-it-asks-the-user-to-stop-the-session-then-removes-the-worker-s-leftovers.md",
       "at": "2026-11-13T20:33:10.740Z",
+      "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "review",
+      "id": "m006",
+      "task": "181-choose-docker-workers-and-manager-approval-from-the-app-s-maestro-page-with-a-per-project-image-lock-so-parallel-sessions-don-t-clash.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/181-choose-docker-workers-and-manager-approval-from-the-app-s-maestro-page-with-a-per-project-image-lock-so-parallel-sessions-don-t-clash.review.md",
+      "at": "2026-11-13T22:43:17.844Z",
+      "from": "containerized-workers-181"
+    },
+    {
+      "kind": "verdict",
+      "id": "m006",
+      "task": "181-choose-docker-workers-and-manager-approval-from-the-app-s-maestro-page-with-a-per-project-image-lock-so-parallel-sessions-don-t-clash.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-13T22:43:34.671Z",
+      "by": "maestro-mgr-6c076e03"
+    },
+    {
+      "kind": "report",
+      "id": "r009",
+      "task": "181-choose-docker-workers-and-manager-approval-from-the-app-s-maestro-page-with-a-per-project-image-lock-so-parallel-sessions-don-t-clash.md",
+      "file": "inbox/r009-181-choose-docker-workers-and-manager-approval-from-the-app-s-maestro-page-with-a-per-project-image-lock-so-parallel-sessions-don-t-clash.md",
+      "at": "2026-11-14T02:31:10.935Z",
+      "from": "containerized-workers-181"
+    },
+    {
+      "kind": "ack",
+      "id": "r009",
+      "file": "inbox/r009-181-choose-docker-workers-and-manager-approval-from-the-app-s-maestro-page-with-a-per-project-image-lock-so-parallel-sessions-don-t-clash.md",
+      "at": "2026-11-14T02:31:26.646Z",
       "by": "maestro-mgr-6c076e03"
     }
   ]
