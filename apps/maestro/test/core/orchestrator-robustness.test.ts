@@ -138,6 +138,7 @@ async function installed(): Promise<string> {
   writeTask(root, "002-b.md", "Make the thing work");
   git(root, "add", "-A");
   git(root, "commit", "-q", "-m", "init");
+  git(root, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   return root;
 }
 

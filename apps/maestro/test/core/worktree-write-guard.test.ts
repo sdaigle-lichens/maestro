@@ -70,6 +70,7 @@ async function worktreeRun(): Promise<{ root: string; wt: string }> {
   }
   git(root, "add", "-A");
   git(root, "commit", "-q", "-m", "init");
+  git(root, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   for (const id of [SESSION_A, SESSION_B]) {
     fs.mkdirSync(sessionDir(root, id), { recursive: true });
     fs.writeFileSync(path.join(sessionDir(root, id), "log.jsonl"), '{"kind":"tool_call"}\n');

@@ -102,6 +102,11 @@ session, below), the orchestrator runs
 - The command is a no-op (prints "no worktree needed") when no other live session is active, and
   **refuses, rather than reuses or overwrites,** a worktree path or branch that already exists —
   it tells the user and the orchestrator must not fall back to the main checkout.
+- **Start point (`182`).** The branch starts from the default branch, which is what `origin/HEAD`
+  points at and nothing else (`defaultBranch` in `landing-guards.ts`), never from whatever the main
+  checkout has checked out and never a guessed `main`/`master`. With `origin/HEAD` unset, `worktree`
+  refuses, creating nothing, and names `git remote set-head origin --auto` or
+  `git remote set-head origin <branch>`.
 - A worktree and its branch are **never auto-removed or merged by themselves**; `done` just reports
   branch + path to the user.
 - **Dependencies (`135`).** A fresh worktree has no `node_modules`, and the agent sandbox cannot
@@ -163,7 +168,7 @@ in the main checkout — so the merge is one `git merge --no-ff` in the main che
   the worktree, unless `--accept-ignored` (`163`, below); or git itself refusing because the merge
   would overwrite local changes.
 - **Target guard first (`170`, `checkTargetCheckout` in `landing-guards.ts`).** The main checkout must
-  be on the default branch (not detached, not mid-merge), with no tracked changes outside
+  be on the default branch (`origin/HEAD`; unset, it refuses with the `git remote set-head` commands; not detached, not mid-merge), with no tracked changes outside
   `.claude/maestro-tasks/` and `.claude/epics/`. Untracked files do not refuse; the verify notice names
   them. A refusal on the wrong branch prints the `switch-back` command (below).
 - **Branch-only merge (`170`).** A task committed on `task-NNN` in the main checkout has no worktree.
@@ -209,7 +214,7 @@ in the main checkout — so the merge is one `git merge --no-ff` in the main che
   `.claude/maestro.json`, else a `verify` then `test` script in `package.json` run through the lockfile's
   package manager (see `maestro-architecture`'s `step-gates.md`). The script never hardcodes a command.
 - **`switch-back` (`170`).** `maestro-task-status.cjs switch-back` returns the main checkout to the
-  default branch. It refuses, changing nothing, while tracked changes remain (the user decides what to
+  default branch (`origin/HEAD`; unset, it refuses with the same `git remote set-head` commands). It refuses, changing nothing, while tracked changes remain (the user decides what to
   do with them). Before switching it checks that this process can write every path the switch rewrites
   (`unwritablePaths`), because the sandbox's read-only mounts would otherwise stop git halfway. Then:
   - `SANDBOX-BLOCKED` (a path is unwritable, nothing attempted) or `FAILED` (git refused, checkout

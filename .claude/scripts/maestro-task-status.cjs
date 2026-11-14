@@ -95,8 +95,8 @@
 //       (`082`), names the mechanical resolution: rebuild the libs, copy each over its mirror.
 //       Never pushes. No pull-request mode: the branch is an ordinary local branch the user
 //       can `git push` themselves (see .claude/skills/task-queue, "Finishing a worktree task").
-//       `170`: FIRST it refuses unless the main checkout is on the DEFAULT branch (origin/HEAD, else
-//       main, else master) with no tracked changes outside .claude/maestro-tasks/ and .claude/epics/
+//       `170`: FIRST it refuses unless the main checkout is on the DEFAULT branch (what origin/HEAD
+//       points at, and only that: unset origin/HEAD refuses with `git remote set-head`, never main) with no tracked changes outside .claude/maestro-tasks/ and .claude/epics/
 //       (untracked files are only noted). A task branch with NO worktree (committed on task-NNN in the
 //       main checkout, then switched back) merges the same way, minus the worktree checks and removal.
 //       After the merge it runs the project's verify command (`verify_command` in .claude/maestro.json,
@@ -178,6 +178,7 @@ const {
   resolveSearchList,
   readGlobalHandoff,
   defaultBranch,
+  originHeadUnsetMessage,
   currentBranch,
   dirtyTrackedPaths,
   checkTargetCheckout,
@@ -538,8 +539,19 @@ function provisionWorktree({ sessionId, foreign, branch, wtPath, subject, pointe
     return;
   }
 
+  // `182`: the branch starts from the default branch (what origin/HEAD points at), never from
+  // whatever the main checkout has checked out, and never from a guessed main. Unset: refuse.
+  const def = defaultBranch(gitTry, projectDir);
+  if (!def) {
+    process.stdout.write(
+      `Maestro tasks: worktree for ${subject} REFUSED — ${originHeadUnsetMessage(projectDir)}. Nothing was created. Tell the user; do not start the work in the main checkout while another session is active.\n`
+    );
+    return;
+  }
+  const startPoint = branchExists(def) ? def : `origin/${def}`;
+
   try {
-    git(projectDir, ["worktree", "add", "-b", branch, wtPath]);
+    git(projectDir, ["worktree", "add", "-b", branch, wtPath, startPoint]);
   } catch (err) {
     const detail = String(err.stderr || err.message || "")
       .trim()
@@ -602,7 +614,7 @@ function provisionWorktree({ sessionId, foreign, branch, wtPath, subject, pointe
 
   process.stdout.write(
     `Maestro tasks: another live session (${foreign.sessionId}) is active, so ${subject} runs in its own worktree.\n` +
-      `  worktree: ${wtPath}\n  branch:   ${branch}\n` +
+      `  worktree: ${wtPath}\n  branch:   ${branch} (started from ${def}, the default branch from origin/HEAD)\n` +
       "Do ALL of this session's work there: tell every subagent to use that directory as its working directory and absolute paths under it, " +
       `and never edit the main checkout (${projectDir}). The task queue and this task's .claude/channels/<scope>/ lanes stay in the main checkout (${projectDir}/.claude/...). ` +
       "If edits there are denied, ask the user to allow the worktree directory (/add-dir).\n"
@@ -1069,7 +1081,7 @@ function mergeWorktreeTask(arg) {
     }
     if (conflicts.length) {
       process.stdout.write(
-        `Maestro tasks: merge CONFLICT merging ${branch} into ${base.out}. The merge was aborted; ${base.out} is unchanged, and ${wtPath ? `the worktree (${wtPath}) and ` : ""}branch ${branch} ${wtPath ? "are" : "is"} intact.\n` +
+        `Maestro tasks: merge CONFLICT merging ${branch} into ${base.out} (origin/HEAD). The merge was aborted; ${base.out} is unchanged, and ${wtPath ? `the worktree (${wtPath}) and ` : ""}branch ${branch} ${wtPath ? "are" : "is"} intact.\n` +
           `Conflicting files:\n${conflicts.map((f) => `  ${f}`).join("\n")}\n` +
           (wtPath
             ? `To resolve: in ${wtPath} run \`git merge ${base.out}\`, fix those files, commit, then ask for the merge again.`
@@ -1079,7 +1091,7 @@ function mergeWorktreeTask(arg) {
       );
     } else {
       process.stdout.write(
-        `Maestro tasks: merge of ${branch} into ${base.out} did not complete (${merged.err.split("\n")[0] || "git refused"}); nothing changed, ${wtPath ? "worktree and " : ""}branch intact.\n`
+        `Maestro tasks: merge of ${branch} into ${base.out} (origin/HEAD) did not complete (${merged.err.split("\n")[0] || "git refused"}); nothing changed, ${wtPath ? "worktree and " : ""}branch intact.\n`
       );
     }
     process.exit(1);
@@ -1127,7 +1139,7 @@ function mergeWorktreeTask(arg) {
     }
   }
   process.stdout.write(
-    `Maestro tasks: merged ${branch} into ${base.out}` +
+    `Maestro tasks: merged ${branch} into ${base.out} (origin/HEAD)` +
       (wtPath && rm.ok
         ? `; removed worktree ${wtPath} and branch ${branch}.`
         : rm.ok
@@ -1174,7 +1186,7 @@ function targetCheckoutHint(target) {
       ? `If ${target.branch} holds a task's work, commit it there first (the user approves the commit). `
       : "";
     return (
-      `${committed}Then switch the main checkout back to ${target.defaultBranch}:\n` +
+      `${committed}Then switch the main checkout back to ${target.defaultBranch} (origin/HEAD):\n` +
       `  ${selfCommand("switch-back")}\n` +
       `It checks first that every path the switch rewrites is writable, and prints the exact \`!\` command for the user when it is not. Then ask for the merge again.`
     );
@@ -1185,7 +1197,7 @@ function targetCheckoutHint(target) {
     return `${shown.join("\n")}\nThese belong to whoever changed them: ask the user before committing, stashing or discarding any of them.`;
   }
   if (target.kind === "no-default")
-    return "Set origin/HEAD (`git remote set-head origin --auto`) or create the default branch, then ask again.";
+    return "Fix origin/HEAD with `git remote set-head origin --auto` (or `git remote set-head origin <branch>`), then ask again.";
   return "";
 }
 
@@ -1204,11 +1216,10 @@ function switchBack() {
     say(`switch-back REFUSED — ${s}. Nothing was changed.${extra ? `\n${extra}` : ""}`);
     return 1;
   };
-  if (!def)
-    return no(`the default branch of ${projectDir} cannot be determined (no origin/HEAD, no local main or master)`);
+  if (!def) return no(originHeadUnsetMessage(projectDir));
   const cur = currentBranch(gitTry, projectDir);
   if (cur === def) {
-    say(`the main checkout (${projectDir}) is already on ${def}; nothing to do.`);
+    say(`the main checkout (${projectDir}) is already on ${def} (the default branch, origin/HEAD); nothing to do.`);
     return 0;
   }
   if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok)
@@ -1229,18 +1240,18 @@ function switchBack() {
   // `173`: repo paths (relative to the git top level), so the write check joins them onto the top
   // level, not onto the project directory, which may sit below it.
   const changed = pathsChangedBetween(gitTry, projectDir, "HEAD", def);
-  if (changed === null) return no(`could not compare HEAD with ${def}`);
+  if (changed === null) return no(`could not compare HEAD with ${def} (origin/HEAD)`);
   const blocked = unwritablePaths(gitTopLevel(gitTry, projectDir), changed);
   if (blocked.length) {
     say(
-      `switch-back SANDBOX-BLOCKED — the switch to ${def} rewrites ${blocked.length} path(s) this session cannot write (e.g. ${blocked[0]}). ` +
+      `switch-back SANDBOX-BLOCKED — the switch to ${def} (origin/HEAD) rewrites ${blocked.length} path(s) this session cannot write (e.g. ${blocked[0]}). ` +
         `Nothing was changed and the switch was not attempted. Do NOT retry it from this session; ask the user to run:\n  ${manual}`
     );
     return 1;
   }
   const r = gitTry(projectDir, ["switch", def]);
   if (r.ok) {
-    say(`switched the main checkout (${projectDir}) from ${cur || "a detached HEAD"} to ${def}.`);
+    say(`switched the main checkout (${projectDir}) from ${cur || "a detached HEAD"} to ${def} (origin/HEAD).`);
     return 0;
   }
   const reason = (r.err || "").split("\n")[0] || "git refused";
@@ -1248,16 +1259,16 @@ function switchBack() {
   const after = dirtyTrackedPaths(gitTry, projectDir) || [];
   if (now === cur && after.length === 0) {
     say(
-      `switch-back FAILED — \`git switch ${def}\` refused (${reason}); the main checkout is unchanged on ${cur || "a detached HEAD"}. ` +
+      `switch-back FAILED — \`git switch ${def}\` (origin/HEAD) refused (${reason}); the main checkout is unchanged on ${cur || "a detached HEAD"}. ` +
         `Do NOT retry it from this session; ask the user to run:\n  ${manual}`
     );
     return 1;
   }
   say(
-    `switch-back STOPPED PARTWAY — \`git switch ${def}\` failed (${reason}). HEAD is now ${now || "detached"} and ${after.length} tracked path(s) were left half-switched (e.g. ${after[0] || "?"}). ` +
+    `switch-back STOPPED PARTWAY — \`git switch ${def}\` (origin/HEAD) failed (${reason}). HEAD is now ${now || "detached"} and ${after.length} tracked path(s) were left half-switched (e.g. ${after[0] || "?"}). ` +
       `The tree had no tracked changes before the switch, so these should be only the failed switch's. Do not commit, merge, discard or switch from this session. Ask the user to look first:\n` +
       `  ! git -C ${shellQuote(projectDir)} status\n` +
-      `Only if every listed change is one the switch left (nothing the user wants to keep), finishing the switch is \`git -C ${shellQuote(projectDir)} switch --discard-changes ${shellQuote(def)}\`, which DISCARDS uncommitted changes to tracked files: the user decides and runs it.`
+      `Only if every listed change is one the switch left (nothing the user wants to keep), finishing the switch to ${def} (origin/HEAD) is \`git -C ${shellQuote(projectDir)} switch --discard-changes ${shellQuote(def)}\`, which DISCARDS uncommitted changes to tracked files: the user decides and runs it.`
   );
   return 1;
 }
@@ -1707,7 +1718,7 @@ try {
         const cur = currentBranch(gitTry, projectDir);
         if (def && cur && cur !== def) {
           process.stdout.write(
-            `  The main checkout (${projectDir}) is on ${cur}, not the default branch ${def}. Commit the task's work on ${cur} (the user approves the commit), then switch back:\n` +
+            `  The main checkout (${projectDir}) is on ${cur}, not the default branch ${def} (origin/HEAD). Commit the task's work on ${cur} (the user approves the commit), then switch back:\n` +
               `    ${selfCommand("switch-back")}\n`
           );
         }

@@ -65,7 +65,9 @@ const inboxNames = (root: string) => fs.readdirSync(path.join(epicDir(root), "in
 async function project(...tasks: string[]): Promise<string> {
   const root = path.join(tmp, "p");
   fs.mkdirSync(root, { recursive: true });
-  execFileSync("git", ["init", "-q"], { cwd: root });
+  execFileSync("git", ["init", "-q", "-b", "main"], { cwd: root });
+  // `182`: the default branch comes only from origin/HEAD
+  execFileSync("git", ["symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"], { cwd: root });
   writeConfig(root, {
     ...defaultish,
     start_skills: { maestro: [], to_maestro_tasks: [], maestro_manager: [] },

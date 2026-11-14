@@ -136,6 +136,7 @@ async function setup(): Promise<{ root: string; wt: string }> {
     fs.writeFileSync(path.join(root, ".claude", "maestro-tasks", f), `# ${f}\n\n## Blocked by\n\nNone\n`);
   git(root, "add", "-A");
   git(root, "commit", "-q", "-m", "init");
+  git(root, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   liveSession(root, SA);
   liveSession(root, SB);
   ok(script(root, SA, "maestro-task-status.cjs", ["claim", A_TASK]));

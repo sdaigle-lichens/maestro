@@ -223,6 +223,8 @@ describe("the real commands: done / mark-merged / merge", () => {
     const p = path.join(tmp, "proj");
     fs.mkdirSync(p, { recursive: true });
     execFileSync("git", ["init", "-q", "-b", "main"], { cwd: p });
+    // `182`: the default branch comes only from origin/HEAD
+    execFileSync("git", ["symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"], { cwd: p });
     writeConfig(p, defaultish);
     await installRuntime(
       p,

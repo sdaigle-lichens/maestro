@@ -108,6 +108,7 @@ async function nestedProject(opts: { tasks?: string[]; epic?: boolean } = {}): P
   }
   git(repo, "add", "-A");
   git(repo, "commit", "-q", "-m", "init");
+  git(repo, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   return { repo, root };
 }
 
@@ -277,6 +278,7 @@ describe("nested layout: merge lands and names files relative to the git top (17
     fs.writeFileSync(path.join(repo, "app.txt"), "main\n");
     git(repo, "add", "-A");
     git(repo, "commit", "-q", "-m", "init");
+    git(repo, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`
     git(repo, "switch", "-q", "-c", "task-001");
     fs.mkdirSync(path.join(repo, "ro"));
     fs.writeFileSync(path.join(repo, "ro", "x.txt"), "branch\n");

@@ -21,7 +21,7 @@ absolute paths. Resolve them once:
 | `<WT>` | where the task's work is: the worktree path `worktree` printed, or `<ROOT>` when there is none |
 | `<TASK>` | the task file name, e.g. `170-some-task.md` (this session's `active_task`) |
 | `<BRANCH>` | `task-NNN`, NNN being `<TASK>`'s number |
-| `<DEFAULT>` | `git -C <ROOT> symbolic-ref --short refs/remotes/origin/HEAD` minus `origin/`, else `main`, else `master` |
+| `<DEFAULT>` | `git -C <ROOT> symbolic-ref --short refs/remotes/origin/HEAD` minus `origin/`. Nothing else: with origin/HEAD unset, never fall back to `main` or `master`. Stop and tell the user to run `git remote set-head origin --auto`, or `git remote set-head origin <branch>` when the team integrates into a branch other than the remote's default |
 | `<STATUS>` | `CLAUDE_PROJECT_DIR=<ROOT> node <ROOT>/.claude/scripts/maestro-task-status.cjs` |
 | `<EPIC>` | `CLAUDE_PROJECT_DIR=<ROOT> node <ROOT>/.claude/scripts/maestro-epic.cjs` |
 

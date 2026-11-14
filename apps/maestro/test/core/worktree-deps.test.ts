@@ -156,6 +156,7 @@ describe("worktree CLI with missing dependencies", () => {
     }
     git(root, "add", "-A");
     git(root, "commit", "-q", "-m", "init");
+    git(root, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
     expect(cli(root, ["claim", "001-a.md"], SESSION_A).stdout).toContain("claimed");
     return root;
   }

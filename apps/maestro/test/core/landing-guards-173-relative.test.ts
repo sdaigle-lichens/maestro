@@ -93,6 +93,7 @@ async function project(layout: "top" | "nested"): Promise<{ repo: string; root: 
   expect(run(root, "maestro-task-status.cjs", ["sync"]).code).toBe(0);
   git(repo, "add", "-A");
   git(repo, "commit", "-q", "-m", "init");
+  git(repo, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   git(repo, "config", "diff.relative", "true");
   return { repo, root };
 }

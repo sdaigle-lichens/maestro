@@ -1757,9 +1757,6 @@ function defaultBranch(git2, root) {
     const name = remote.out.trim().replace(/^origin\//, "");
     if (name) return name;
   }
-  for (const name of ["main", "master"]) {
-    if (git2(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${name}`]).ok) return name;
-  }
   return null;
 }
 var SHA_CANDIDATE = /(?<![0-9A-Za-z_])[0-9a-fA-F]{7,40}(?![0-9A-Za-z_])/g;
@@ -1827,7 +1824,7 @@ function checkReportCommit(git2, root, input) {
   if (onDefaultOnly)
     return refuse(
       "not-on-branch",
-      `commit ${onDefaultOnly} is already on ${def}, so it is what ${branch} started from, not a commit with the task's work`
+      `commit ${onDefaultOnly} is already on ${def} (origin/HEAD), so it is what ${branch} started from, not a commit with the task's work`
     );
   if (ownCommits) return refuse("not-on-branch", `commit ${named} is not on the task branch ${branch}`);
   if (def === null)
@@ -1835,11 +1832,11 @@ function checkReportCommit(git2, root, input) {
       "not-on-branch",
       `there is no task branch ${branch ?? "(the task has no number)"} and no default branch to look on`
     );
-  const where = hasBranch ? `the task branch ${branch} has no commits of its own beyond ${def}` : `there is no task branch ${branch ?? "(the task has no number)"}`;
+  const where = hasBranch ? `the task branch ${branch} has no commits of its own beyond ${def} (origin/HEAD)` : `there is no task branch ${branch ?? "(the task has no number)"}`;
   const proof = branch ? `the \`Merge ${branch}\` commit or a commit whose message names ${branch} or ${base}` : `a commit whose message names ${base}`;
   return refuse(
     "not-on-branch",
-    `${where}, and commit ${named} is not ${proof} on ${def} (it could be the commit the task started from)`
+    `${where}, and commit ${named} is not ${proof} on ${def} (origin/HEAD; it could be the commit the task started from)`
   );
 }
 // Annotate the CommonJS export names for ESM import in node:
