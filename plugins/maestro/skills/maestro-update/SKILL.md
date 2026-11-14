@@ -32,16 +32,27 @@ place the refresh procedure is written down.
    re-deriving it.
 
    - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
-   - **herdr opt-in, whenever `herdr.inUse` is `true` or `herdr.binary` is non-null** and the
-     session is interactive. `herdr.present` is `true` when every herdr entry is already in place
-     (a hand-written `~` form counts): then don't ask, whatever `upToDate` says. Otherwise ask
+   - **herdr opt-in: ask only when `herdr.ask` is `true`** and the session is interactive. The
+     script already folds in everything that rules the question out: the sandbox is not known to be
+     on (`sandboxEnabled` must be `true`: an unset value is Claude Code's default, off, so it counts
+     as disabled here), no herdr evidence, every herdr entry already in place (`herdr.present`; a
+     hand-written `~` form counts), or an earlier No for this same entry set. Then ask
      **one `AskUserQuestion`**:
      *"Also let /maestro-manager start worker sessions in herdr by itself? This is a sandbox
      escape: any sandboxed command can then run anything unsandboxed through `herdr pane run`.
      Without it the manager prints the `claude -n ...` commands for you to run."* Options:
-     `No (Recommended)`, `Yes, add the herdr entries`. No answer, or no herdr evidence at all,
-     means No. On Yes, run the dry run again with `--herdr` appended and use its output below: its
-     `applyCommand` adds the herdr entries along with the rest.
+     `No (Recommended)`, `Yes, add the herdr entries`. No answer means No, without recording
+     anything. On **No**, remember it by running `herdr.declineCommand` (it writes only
+     `.claude/maestro-sandbox/herdr-decline.json`, a gitignored record, and no setting). On Yes,
+     run the dry run again with `--herdr` appended and use its output below: its `applyCommand`
+     adds the herdr entries along with the rest.
+   - **`herdr.declined` is `true`, while the opt-in would otherwise be asked** (`sandboxEnabled` is
+     `true`, herdr is in evidence, and `herdr.present` is `false`): don't ask. When `herdr.present`
+     is `true` say nothing about a decline. Add one line to the report: *"The herdr sandbox
+     opt-in was declined earlier. To opt in, run `! <applyCommand with --herdr>`, or ask me to
+     offer it again."* If the user asks to be offered it again, re-run the dry run with
+     `--ask-herdr` appended and ask the question above. A changed entry set (`herdr.declineStale`
+     is `true`) is asked again as a fresh question.
    - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
      `value` with its `why`, point to
      [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md), and
@@ -138,6 +149,9 @@ place the refresh procedure is written down.
    step 1 was skipped); a failed `command -v herdr` alone never means "not installed", because the
    sandbox hides the binary. Add at most one line to the report, never a question, and never more
    than once per run:
+   - **`sandboxEnabled` is not `true`, or `herdr.declined` is `true` with `herdr.present` `false`:**
+     say nothing here (step 1 already reported the decline). With `herdr.present` `true` the
+     entries are in, so the rules below apply as usual.
    - **`herdr.binary` is non-null:** say nothing about it.
    - **`herdr.binary` is null but `herdr.inUse` is `true`:** *"herdr is running, but this project's
      sandbox can't see it. To let it, run `! <applyCommand with --herdr>`"* (step 1's
