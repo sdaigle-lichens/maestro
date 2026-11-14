@@ -206,6 +206,12 @@
         "source": "github",
         "repo": "sdaigle-lichens/code-graph"
       }
+    },
+    "lichens-ai-dev-tools": {
+      "source": {
+        "source": "github",
+        "repo": "Lichens-Innovation/ai-dev-tools"
+      }
     }
   },
   "autoCompactWindow": 150000
