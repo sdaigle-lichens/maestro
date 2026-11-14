@@ -889,7 +889,7 @@
     "epic": "containerized-workers"
   },
   "178-maestro-update-remembers-a-declined-herdr-sandbox-opt-in.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "179-containerized-workers-can-verify-their-own-work-project-toolchain-python3-git-identity-and-the-claude-cli-in-the-worker-image.md": {
@@ -910,7 +910,8 @@
     "epic": "containerized-workers"
   },
   "182-landing-steps-stop-guessing-main-when-origin-head-is-unset-and-name-the-branch-they-merge-into-and-where-it-came-from.md": {
-    "status": "ready",
-    "blockedBy": []
+    "status": "done",
+    "blockedBy": [],
+    "unmerged": true
   }
 }

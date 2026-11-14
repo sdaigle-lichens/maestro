@@ -1345,5 +1345,6 @@
   },
   "use_maestro_tasks": true,
   "worker_model": "sonnet",
-  "worker_runtime": "host"
+  "worker_runtime": "docker",
+  "manager_approval": true
 }
