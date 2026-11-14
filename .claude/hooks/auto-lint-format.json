@@ -1,0 +1,39 @@
+{
+  "ignore": [
+    ".claude/**",
+    "**/out/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/routeTree.gen.ts",
+    "plugins/*/scripts/lib/**"
+  ],
+  "rules": [
+    {
+      "match": ["*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs", "*.json", "*.css"],
+      "commands": ["pnpm exec prettier --write --ignore-path .prettierignore {file}"]
+    },
+    {
+      "match": ["apps/maestro/**/*.ts", "apps/maestro/**/*.tsx", "apps/maestro/**/*.js", "apps/maestro/**/*.mjs"],
+      "cwd": "apps/maestro",
+      "timeout": 60,
+      "commands": ["pnpm exec eslint {file}"]
+    },
+    {
+      "match": ["packages/ui/**/*.ts", "packages/ui/**/*.tsx", "packages/ui/**/*.js", "packages/ui/**/*.mjs"],
+      "cwd": "packages/ui",
+      "timeout": 60,
+      "commands": ["pnpm exec eslint {file}"]
+    },
+    {
+      "match": ["packages/claude-fs/**/*.ts", "packages/claude-fs/**/*.tsx", "packages/claude-fs/**/*.js", "packages/claude-fs/**/*.mjs"],
+      "cwd": "packages/claude-fs",
+      "timeout": 60,
+      "commands": ["pnpm exec eslint {file}"]
+    },
+    {
+      "match": ["plugins/maestro/scripts/*"],
+      "timeout": 60,
+      "commands": ["pnpm exec eslint {file}"]
+    }
+  ]
+}

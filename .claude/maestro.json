@@ -26,7 +26,8 @@
     "agents-view",
     "log-view",
     "test-maestro-desktop",
-    "code-graph:scribe"
+    "code-graph:scribe",
+    "react-stack:react-stack"
   ],
   "workflow_instances": [
     {
@@ -54,7 +55,8 @@
         "workflow-view",
         "rule-view",
         "agents-view",
-        "log-view"
+        "log-view",
+        "react-stack:react-stack"
       ]
     },
     {

@@ -1,15 +1,8 @@
 {
-  "autoCompactWindow": 150000,
-  "extraKnownMarketplaces": {
-    "code-graph": {
-      "source": {
-        "source": "github",
-        "repo": "sdaigle-lichens/code-graph"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "code-graph@code-graph": true
+  "permissions": {
+    "allow": [
+      "Write(/.claude/channels/**)"
+    ]
   },
   "hooks": {
     "UserPromptExpansion": [
@@ -98,6 +91,15 @@
             "command": "node \"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")/.claude/scripts/maestro-human-review-gate.cjs\""
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/use-just-commands.mjs\""
+          }
+        ]
       }
     ],
     "SubagentStart": [
@@ -144,6 +146,15 @@
             "command": "node \"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")/.claude/scripts/maestro-human-review-gate.cjs\""
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-lint-format.mjs\""
+          }
+        ]
       }
     ],
     "SessionEnd": [
@@ -184,9 +195,18 @@
       }
     ]
   },
-  "permissions": {
-    "allow": [
-      "Write(/.claude/channels/**)"
-    ]
-  }
+  "enabledPlugins": {
+    "code-graph@code-graph": true,
+    "react-forms@lichens-ai-dev-tools": true,
+    "react-stack@lichens-ai-dev-tools": true
+  },
+  "extraKnownMarketplaces": {
+    "code-graph": {
+      "source": {
+        "source": "github",
+        "repo": "sdaigle-lichens/code-graph"
+      }
+    }
+  },
+  "autoCompactWindow": 150000
 }

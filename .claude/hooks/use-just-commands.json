@@ -1,0 +1,16 @@
+{
+  "justfile": "justfile",
+  "blocked": [
+    { "command": "pnpm install", "message": "Use `just install`." },
+    { "command": "pnpm dev", "message": "Use `just dev`." },
+    { "command": "pnpm start", "message": "Use `just start`." },
+    { "command": "pnpm build", "message": "Use `just build`." },
+    { "command": "pnpm --filter maestro build:plugin-libs", "message": "Use `just plugin-libs`." },
+    { "command": "pnpm lint", "message": "Use `just lint`." },
+    { "command": "pnpm check", "message": "Use `just check`." },
+    { "command": "pnpm typecheck", "message": "Use `just typecheck`." },
+    { "command": "pnpm test", "message": "Use `just test`." },
+    { "command": "pnpm verify", "message": "Use `just verify`." },
+    { "command": "pnpm format", "message": "Use `just format`." }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "justfile": "justfile",
+  "blocked": [
+    { "command": "pnpm dev", "message": "Use `just dev`." },
+    { "command": "pnpm build", "message": "Use `just build`." },
+    { "command": "pnpm start", "message": "Use `just start`." },
+    { "command": "pnpm build:plugin-libs", "message": "Use `just build-plugin-libs`." },
+    { "command": "pnpm typecheck", "message": "Use `just typecheck`." },
+    { "command": "pnpm test", "message": "Use `just test`." },
+    { "command": "pnpm check", "message": "Use `just lint` (here it runs the prettier check)." },
+    { "command": "pnpm format", "message": "Use `just format`." }
+  ]
+}
