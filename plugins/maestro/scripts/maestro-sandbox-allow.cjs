@@ -32,6 +32,14 @@
 //   written absolute; the herdr CLI's socket-API commands touch nothing under ~/.config/herdr but
 //   the socket (checked with strace on herdr 0.9.5).
 //
+// Remembering a No (see DECLINE_FILE below for where and why; it never touches a settings file):
+//   --decline-herdr   record that the user declined the opt-in for the entries it would add now
+//                     (a dry run otherwise: it writes only that record). Run by the skill itself.
+//   --ask-herdr       ignore a recorded decline for this run, so the question is asked again.
+//   An opt-in (`--apply --herdr`) removes the record. A changed entry set no longer matches it.
+//   The dry run's herdr.ask is the verdict: sandbox known to be on, herdr in evidence, entries not
+//   already present, no matching decline. herdr.declined / declineStale / fingerprint say why.
+//
 // Entries are recognised as ours by their exact text (plus any older plugin path for the installer,
 // which changes with every plugin version), so --apply replaces stale ones and --remove never
 // touches an entry the user wrote. A plain --apply leaves earlier herdr entries alone; a plain
@@ -48,6 +56,7 @@
 //   any holds. `binary: null` alone never means herdr is not installed: the sandbox hides it.
 // Exit 0, except 1 when settings.local.json exists but does not parse (nothing is written then).
 
+const crypto = require("crypto");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -99,7 +108,14 @@ function parseArgs(argv) {
   // Without --apply / --remove nothing is written; `--remove --dry-run` previews a removal.
   const dryRun = flags.has("--dry-run") || !(flags.has("--apply") || flags.has("--remove"));
   const projectDir = path.resolve(positional[0] || process.env.CLAUDE_PROJECT_DIR || process.cwd());
-  return { mode, dryRun, projectDir, herdr: flags.has("--herdr") };
+  return {
+    mode,
+    dryRun,
+    projectDir,
+    herdr: flags.has("--herdr"),
+    declineHerdr: flags.has("--decline-herdr"),
+    askHerdr: flags.has("--ask-herdr"),
+  };
 }
 
 function readJson(file) {
@@ -203,6 +219,46 @@ function herdrInfo(projectDir) {
     readBinary: binary && underHome(binary) ? binary : null,
     allowAllUnixSockets: allowAll === true,
   };
+}
+
+// The decline record for the herdr opt-in. It is project-local state this script owns, NOT a sandbox
+// or permission setting: it is only ever read to decide whether /maestro-update asks again, and it
+// grants nothing. It lives in `.claude/maestro-sandbox/herdr-decline.json`, a directory of its own
+// holding a `*` .gitignore (like maestro-tasks/claims/), rather than in maestro.json, because:
+//   - the opt-in it stands for is personal and per machine (its entries live in the uncommitted
+//     settings.local.json, with this machine's herdr path), so a declined answer must not travel to
+//     teammates through a committed maestro.json;
+//   - a fresh clone has neither file, so it is asked once, as it should be;
+//   - the installer and a purge-and-reinstall rewrite maestro.json and the hooks but never this
+//     directory, so a decline survives them; deleting the directory is the manual reset.
+// The record holds a fingerprint of the entries the opt-in would add, so a changed set (a herdr
+// binary that moved, another socket path) no longer matches and the question is asked again.
+const DECLINE_DIR = (projectDir) => path.join(projectDir, ".claude", "maestro-sandbox");
+const DECLINE_FILE = (projectDir) => path.join(DECLINE_DIR(projectDir), "herdr-decline.json");
+
+function herdrFingerprint(h) {
+  const entries = Object.entries(herdrEntries(h, false))
+    .flatMap(([kind, ws]) => ws.map((w) => `${kind}\t${w.value}`))
+    .sort();
+  return crypto.createHash("sha256").update(entries.join("\n")).digest("hex").slice(0, 16);
+}
+
+function readDecline(projectDir) {
+  try {
+    const r = readJson(DECLINE_FILE(projectDir));
+    return r.ok && r.value && typeof r.value.fingerprint === "string" ? r.value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeDecline(projectDir, fingerprint) {
+  fs.mkdirSync(DECLINE_DIR(projectDir), { recursive: true });
+  fs.writeFileSync(path.join(DECLINE_DIR(projectDir), ".gitignore"), "*\n");
+  fs.writeFileSync(
+    DECLINE_FILE(projectDir),
+    JSON.stringify({ fingerprint, declinedAt: new Date().toISOString() }, null, 2) + "\n"
+  );
 }
 
 const ESCAPE = "a sandbox escape: any sandboxed command can then run anything unsandboxed through `herdr pane run`";
@@ -330,7 +386,7 @@ function applyPlan(settings, { added, removed }) {
 }
 
 function main() {
-  const { mode, dryRun, projectDir, herdr } = parseArgs(process.argv.slice(2));
+  const { mode, dryRun, projectDir, herdr, declineHerdr, askHerdr } = parseArgs(process.argv.slice(2));
   const settingsPath = path.join(projectDir, ".claude", "settings.local.json");
   const read = readJson(settingsPath);
   if (!read.ok) {
@@ -356,6 +412,24 @@ function main() {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
   }
 
+  // The decline record, judged against the entries the opt-in would add now.
+  const fingerprint = herdrFingerprint(h);
+  const record = readDecline(projectDir);
+  let declineRecorded = false;
+  if (declineHerdr) {
+    writeDecline(projectDir, fingerprint);
+    declineRecorded = true;
+  } else if (!dryRun && mode === "apply" && herdr) {
+    // The user opted in: the decline no longer stands.
+    fs.rmSync(DECLINE_FILE(projectDir), { force: true });
+  }
+  const declined = declineRecorded || (record !== null && record.fingerprint === fingerprint && !askHerdr);
+  const sandboxEnabled = effectiveBool(projectDir, ["sandbox", "enabled"]);
+  const inUse = h.herdrEnv || h.socketExists || h.settingsEntries.length > 0;
+  // `ask`: whether /maestro-update should put the opt-in question now. The sandbox must be known to
+  // be on (an unset `sandbox.enabled` is Claude Code's default, off, so null is not a reason to ask).
+  const ask = sandboxEnabled === true && (inUse || h.binary !== null) && !herdrPresent && !declined;
+
   const exclusions = (slot(settings, "excludedCommands", false) || {}).excludedCommands || [];
   process.stdout.write(
     JSON.stringify({
@@ -363,7 +437,7 @@ function main() {
       mode,
       dryRun,
       settingsPath,
-      sandboxEnabled: effectiveBool(projectDir, ["sandbox", "enabled"]),
+      sandboxEnabled,
       upToDate,
       added: changes.added,
       removed: changes.removed,
@@ -381,7 +455,16 @@ function main() {
         socketExists: h.socketExists,
         herdrEnv: h.herdrEnv,
         settingsEntries: h.settingsEntries,
-        inUse: h.herdrEnv || h.socketExists || h.settingsEntries.length > 0,
+        inUse,
+        // The opt-in's decline record: `declined` is true when the user said No to exactly this
+        // entry set (`--ask-herdr` makes it false for one run); `stale` when a record exists for a
+        // different set (so the question is asked again); `ask` is the verdict the skill follows.
+        ask,
+        declined,
+        declineStale: record !== null && record.fingerprint !== fingerprint,
+        declineRecorded,
+        fingerprint,
+        declineCommand: `node ${SELF} ${projectDir} --dry-run --decline-herdr`,
         allowAllUnixSockets: h.allowAllUnixSockets,
         // Settings files that exist but do not parse; allowAllUnixSockets is read as unset from them.
         unparseableSettings: h.unparseableSettings,

@@ -207,6 +207,12 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     expect(values(out.added, "allowRead")).toEqual([hh.binary]);
     expect(out.herdr).toEqual({
       optIn: true,
+      ask: false, // no sandbox.enabled in this project's settings
+      declined: false,
+      declineStale: false,
+      declineRecorded: false,
+      fingerprint: expect.stringMatching(/^[0-9a-f]{16}$/),
+      declineCommand: `node ${SCRIPT} ${root} --dry-run --decline-herdr`,
       present: false,
       binary: hh.binary,
       socket: hh.socket,
@@ -531,5 +537,398 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     const { out } = runEnv({ ...hh.env, PATH }, project().root, "--herdr");
     expect(out.herdr.binary).toBe(path.join(real, "herdr"));
     expect(values(out.added, "allowRead")).toEqual([path.join(real, "herdr")]);
+  });
+});
+
+describe("maestro-sandbox-allow.cjs herdr decline record", () => {
+  let d = 0;
+
+  // A fresh HOME with a herdr under it (so herdr.binary is non-null and the entry set is known).
+  function declineHome(binName = ".local/bin") {
+    const hh = path.join(tmp, `decline-home-${d++}`);
+    const binDir = path.join(hh, binName);
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.mkdirSync(path.join(hh, ".claude"), { recursive: true });
+    fs.writeFileSync(path.join(binDir, "herdr"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    return { HOME: hh, PATH: `${binDir}${path.delimiter}${process.env.PATH}`, HERDR_ENV: "" };
+  }
+
+  const enabled = { sandbox: { enabled: true } };
+  const recordFile = (root: string) => path.join(root, ".claude", "maestro-sandbox", "herdr-decline.json");
+
+  it("asks while nothing is recorded, and records a decline without touching any settings file", () => {
+    const env = declineHome();
+    const { root, settingsPath } = project(enabled);
+    const before = fs.readFileSync(settingsPath, "utf8");
+
+    expect(runEnv(env, root).out.herdr).toMatchObject({ ask: true, declined: false });
+
+    const rec = runEnv(env, root, "--decline-herdr").out.herdr;
+    expect(rec).toMatchObject({ declineRecorded: true, declined: true, ask: false });
+    expect(fs.existsSync(recordFile(root))).toBe(true);
+    expect(fs.readFileSync(path.join(root, ".claude", "maestro-sandbox", ".gitignore"), "utf8")).toBe("*\n");
+    expect(fs.readFileSync(settingsPath, "utf8")).toBe(before);
+    expect(fs.existsSync(path.join(root, ".claude", "settings.json"))).toBe(false);
+  });
+
+  it("does not ask again on the next run", () => {
+    const env = declineHome();
+    const { root } = project(enabled);
+    runEnv(env, root, "--decline-herdr");
+    const next = runEnv(env, root).out.herdr;
+    expect(next).toMatchObject({ ask: false, declined: true, declineStale: false, declineRecorded: false });
+  });
+
+  it("asks again when the entries the opt-in would add change", () => {
+    const env = declineHome();
+    const { root } = project(enabled);
+    runEnv(env, root, "--decline-herdr");
+    const moved = declineHome(".local/other-bin"); // another herdr path: a different allowRead entry
+    const out = runEnv(moved, root).out.herdr;
+    expect(out).toMatchObject({ ask: true, declined: false, declineStale: true });
+  });
+
+  it("--ask-herdr re-asks after a decline, and an opt-in adds the same entries and clears the record", () => {
+    const env = declineHome();
+    const { root, settingsPath } = project(enabled);
+    runEnv(env, root, "--decline-herdr");
+    expect(runEnv(env, root, "--ask-herdr").out.herdr).toMatchObject({ ask: true, declined: false });
+
+    const dry = runEnv(env, root, "--herdr").out;
+    expect(runEnv(env, root, "--apply", "--herdr").code).toBe(0);
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.filesystem.allowWrite).toEqual(
+      dry.added.filter((a: { kind: string }) => a.kind === "allowWrite").map((a: { value: string }) => a.value)
+    );
+    expect(fs.existsSync(recordFile(root))).toBe(false);
+    expect(runEnv(env, root).out.herdr).toMatchObject({ present: true, ask: false });
+  });
+
+  it("never asks when the sandbox is disabled, or not known to be on", () => {
+    const env = declineHome();
+    for (const settings of [{ sandbox: { enabled: false } }, {}]) {
+      const { root } = project(settings);
+      expect(runEnv(env, root).out.herdr.ask).toBe(false);
+    }
+    // user-level settings that disable it lose to a project file that enables it
+    fs.writeFileSync(path.join(env.HOME, ".claude", "settings.json"), JSON.stringify({ sandbox: { enabled: false } }));
+    expect(runEnv(env, project(enabled).root).out.herdr.ask).toBe(true);
+    expect(runEnv(env, project({}).root).out.herdr.ask).toBe(false);
+  });
+});
+
+// Gaps in the decline-record coverage above: other commands leaving the record alone, a binary that
+// moves or appears, corrupt and hand-edited records, a decline that writes no file, the precedence of
+// sandbox.enabled and of unparseable settings files, and a `.claude` the script cannot write to.
+describe("maestro-sandbox-allow.cjs herdr decline record, gaps", () => {
+  let g = 0;
+  const enabled = { sandbox: { enabled: true } };
+  const recordFile = (root: string) => path.join(root, ".claude", "maestro-sandbox", "herdr-decline.json");
+
+  // A HOME of its own. `binRel` is where a fake herdr is put and put first on PATH; null hides it.
+  function gapHome(): string {
+    const hh = path.join(tmp, `gap-home-${g++}`);
+    fs.mkdirSync(path.join(hh, ".claude"), { recursive: true });
+    return hh;
+  }
+  function gapEnv(hh: string, binRel: string | null): NodeJS.ProcessEnv {
+    if (binRel === null) {
+      const empty = path.join(hh, "empty-path");
+      fs.mkdirSync(empty, { recursive: true });
+      return { HOME: hh, PATH: empty, HERDR_ENV: "" };
+    }
+    const binDir = path.join(hh, binRel);
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.writeFileSync(path.join(binDir, "herdr"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    return { HOME: hh, PATH: `${binDir}${path.delimiter}${process.env.PATH}`, HERDR_ENV: "" };
+  }
+  // The raw spawn, for a run that may print nothing (an uncaught write error).
+  function rawRun(extra: NodeJS.ProcessEnv, root: string, ...flags: string[]) {
+    return spawnSync(process.execPath, [SCRIPT, root, ...flags], { encoding: "utf8", env: pinnedEnv(home, extra) });
+  }
+  const writeRecord = (root: string, content: string) => {
+    fs.mkdirSync(path.dirname(recordFile(root)), { recursive: true });
+    fs.writeFileSync(recordFile(root), content);
+  };
+
+  it("--herdr (dry), --remove and --remove --herdr leave a recorded decline alone; the record has the documented shape", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root } = project(enabled);
+    const dry = runEnv(env, root).out.herdr;
+    runEnv(env, root, "--decline-herdr");
+    const before = fs.readFileSync(recordFile(root), "utf8");
+
+    const rec = JSON.parse(before);
+    expect(rec.fingerprint).toBe(dry.fingerprint);
+    expect(new Date(rec.declinedAt).toISOString()).toBe(rec.declinedAt);
+
+    expect(runEnv(env, root, "--herdr").code).toBe(0);
+    expect(runEnv(env, root, "--herdr", "--dry-run").code).toBe(0);
+    expect(runEnv(env, root, "--remove").code).toBe(0);
+    expect(runEnv(env, root, "--remove", "--herdr").code).toBe(0);
+    expect(fs.readFileSync(recordFile(root), "utf8")).toBe(before);
+    expect(runEnv(env, root).out.herdr).toMatchObject({ declined: true, ask: false });
+  });
+
+  it("--ask-herdr with nothing recorded asks, and writes no record", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root } = project(enabled);
+    expect(runEnv(env, root, "--ask-herdr").out.herdr).toMatchObject({ ask: true, declined: false });
+    expect(fs.existsSync(path.join(root, ".claude", "maestro-sandbox"))).toBe(false);
+  });
+
+  it("a herdr binary that moves within the same HOME changes the set: asked again, and back in place it is declined again", () => {
+    const hh = gapHome();
+    const { root } = project(enabled);
+    const atHome = gapEnv(hh, ".local/bin");
+    runEnv(atHome, root, "--decline-herdr");
+
+    const moved = runEnv(gapEnv(hh, ".local/moved-bin"), root).out.herdr;
+    expect(moved).toMatchObject({ ask: true, declined: false, declineStale: true });
+    expect(moved.fingerprint).not.toBe(runEnv(atHome, root).out.herdr.fingerprint);
+
+    expect(runEnv(atHome, root).out.herdr).toMatchObject({ ask: false, declined: true, declineStale: false });
+  });
+
+  it("a herdr binary that appears after a decline made while it was hidden re-asks", () => {
+    const hh = gapHome();
+    const { root } = project(enabled);
+    runEnv(gapEnv(hh, null), root, "--decline-herdr");
+    // hidden: no evidence at all, so the question is not due in the first place
+    expect(runEnv(gapEnv(hh, null), root).out.herdr).toMatchObject({ ask: false, declined: true });
+
+    expect(runEnv(gapEnv(hh, ".local/bin"), root).out.herdr).toMatchObject({
+      ask: true,
+      declined: false,
+      declineStale: true,
+    });
+  });
+
+  it("with no herdr evidence at all the question is not asked, even with the sandbox on", () => {
+    const env = gapEnv(gapHome(), null);
+    const { root } = project(enabled);
+    expect(runEnv(env, root).out.herdr).toMatchObject({ inUse: false, binary: null, ask: false });
+  });
+
+  it.each([
+    ["not JSON", "{ not json"],
+    ["JSON null", "null"],
+    ["a JSON array", "[]"],
+    ["an object with no fingerprint", "{}"],
+    ["a non-string fingerprint", '{"fingerprint": 42}'],
+  ])(
+    "a record that is %s never counts as a decline: asks, exits 0, and a dry run leaves it alone",
+    (_label, content) => {
+      const env = gapEnv(gapHome(), ".local/bin");
+      const { root, settingsPath } = project(enabled);
+      writeRecord(root, content);
+
+      const res = runEnv(env, root);
+      expect(res.code).toBe(0);
+      expect(res.out.ok).toBe(true);
+      expect(res.out.herdr).toMatchObject({ ask: true, declined: false, declineStale: false });
+      expect(fs.readFileSync(recordFile(root), "utf8")).toBe(content);
+      expect(fs.readFileSync(settingsPath, "utf8")).toBe(JSON.stringify(enabled));
+    }
+  );
+
+  it("a record naming another entry set is stale: asked again, and a fresh decline replaces it", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root } = project(enabled);
+    writeRecord(root, '{"fingerprint": "0000000000000000"}');
+    expect(runEnv(env, root).out.herdr).toMatchObject({ ask: true, declined: false, declineStale: true });
+
+    runEnv(env, root, "--decline-herdr");
+    expect(runEnv(env, root).out.herdr).toMatchObject({ ask: false, declined: true, declineStale: false });
+  });
+
+  it("a hand-edited record that still names the current set, with extra keys, counts as a decline", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root } = project(enabled);
+    const fingerprint = runEnv(env, root).out.herdr.fingerprint;
+    writeRecord(root, JSON.stringify({ fingerprint, declinedAt: "by hand", note: "no thanks" }));
+    expect(runEnv(env, root).out.herdr).toMatchObject({ ask: false, declined: true, declineStale: false });
+  });
+
+  it("--decline-herdr writes no settings file, whatever the project and user settings already hold", () => {
+    const hh = gapHome();
+    const env = gapEnv(hh, ".local/bin");
+    const { root, settingsPath } = project({
+      model: "opus",
+      sandbox: { enabled: true, excludedCommands: ["gh *"], filesystem: { allowWrite: ["/data/out"] } },
+      permissions: { allow: ["Bash(ls)"] },
+    });
+    const projectShared = path.join(root, ".claude", "settings.json");
+    const userShared = path.join(hh, ".claude", "settings.json");
+    fs.writeFileSync(projectShared, JSON.stringify({ permissions: { deny: ["Bash(rm)"] } }));
+    fs.writeFileSync(userShared, JSON.stringify({ sandbox: { enabled: true } }));
+    const files = [settingsPath, projectShared, userShared];
+    const before = files.map((f) => fs.readFileSync(f, "utf8"));
+
+    const rec = runEnv(env, root, "--decline-herdr").out;
+    expect(rec.dryRun).toBe(true);
+    expect(rec.herdr.declineRecorded).toBe(true);
+    expect(files.map((f) => fs.readFileSync(f, "utf8"))).toEqual(before);
+    expect(fs.existsSync(recordFile(root))).toBe(true);
+  });
+
+  it("--decline-herdr against an unparseable settings.local.json exits 1 and writes no record", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root, settingsPath } = project("{ not json");
+    const res = runEnv(env, root, "--decline-herdr");
+    expect(res.code).toBe(1);
+    expect(res.out.ok).toBe(false);
+    expect(fs.existsSync(recordFile(root))).toBe(false);
+    expect(fs.readFileSync(settingsPath, "utf8")).toBe("{ not json");
+  });
+
+  it("a No recorded while the sandbox is off still holds once the sandbox is turned on", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root, settingsPath } = project({ sandbox: { enabled: false } });
+    expect(runEnv(env, root, "--decline-herdr").out.herdr).toMatchObject({ declineRecorded: true });
+
+    fs.writeFileSync(settingsPath, JSON.stringify(enabled));
+    expect(runEnv(env, root).out.herdr).toMatchObject({ ask: false, declined: true });
+  });
+
+  it("sandbox.enabled is read from the highest-precedence file that sets it: local, then project, then user", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+
+    const localOff = project({ sandbox: { enabled: false } });
+    fs.writeFileSync(path.join(localOff.root, ".claude", "settings.json"), JSON.stringify(enabled));
+    expect(runEnv(env, localOff.root).out.herdr.ask).toBe(false);
+
+    const localOn = project({ sandbox: { enabled: true } });
+    fs.writeFileSync(
+      path.join(localOn.root, ".claude", "settings.json"),
+      JSON.stringify({ sandbox: { enabled: false } })
+    );
+    expect(runEnv(env, localOn.root).out.herdr.ask).toBe(true);
+
+    const projectOnly = project();
+    fs.writeFileSync(path.join(projectOnly.root, ".claude", "settings.json"), JSON.stringify(enabled));
+    expect(runEnv(env, projectOnly.root).out.herdr.ask).toBe(true);
+  });
+
+  it("an unparseable project settings.json is skipped (reported, not guessed at): the next file decides, and local still wins", () => {
+    const hh = gapHome();
+    fs.writeFileSync(path.join(hh, ".claude", "settings.json"), JSON.stringify({ sandbox: { enabled: false } }));
+    const env = gapEnv(hh, ".local/bin");
+
+    const userOff = project();
+    fs.writeFileSync(path.join(userOff.root, ".claude", "settings.json"), "{ not json");
+    const off = runEnv(env, userOff.root).out.herdr;
+    expect(off.unparseableSettings).toHaveLength(1);
+    expect(off.ask).toBe(false);
+
+    const localOn = project(enabled);
+    fs.writeFileSync(path.join(localOn.root, ".claude", "settings.json"), "{ not json");
+    expect(runEnv(env, localOn.root).out.herdr).toMatchObject({ ask: true, unparseableSettings: [expect.anything()] });
+  });
+
+  it("turning allowAllUnixSockets on after a decline changes the entry set (one entry fewer), so it is asked again", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root, settingsPath } = project(enabled);
+    runEnv(env, root, "--decline-herdr");
+    fs.writeFileSync(
+      settingsPath,
+      JSON.stringify({ sandbox: { enabled: true, network: { allowAllUnixSockets: true } } })
+    );
+    expect(runEnv(env, root).out.herdr).toMatchObject({ ask: true, declined: false, declineStale: true });
+  });
+
+  it.skipIf(process.getuid?.() === 0)(
+    "--decline-herdr that cannot create the record exits non-zero, reports no recording, and changes no settings",
+    () => {
+      const env = gapEnv(gapHome(), ".local/bin");
+      const { root, settingsPath } = project(enabled);
+      const before = fs.readFileSync(settingsPath, "utf8");
+      const claude = path.join(root, ".claude");
+      fs.chmodSync(claude, 0o555);
+      try {
+        const res = rawRun(env, root, "--decline-herdr");
+        expect(res.status).not.toBe(0);
+        expect(res.stdout).not.toMatch(/"declineRecorded":true/);
+        expect(fs.existsSync(recordFile(root))).toBe(false);
+      } finally {
+        fs.chmodSync(claude, 0o755);
+      }
+      expect(fs.readFileSync(settingsPath, "utf8")).toBe(before);
+    }
+  );
+
+  it("a plain --apply (no --herdr) after a decline keeps the record, and the next run is still declined", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root } = project(enabled);
+    runEnv(env, root, "--decline-herdr");
+    const before = fs.readFileSync(recordFile(root), "utf8");
+
+    expect(runEnv(env, root, "--apply").code).toBe(0);
+    expect(fs.readFileSync(recordFile(root), "utf8")).toBe(before);
+    expect(runEnv(env, root).out.herdr).toMatchObject({ declined: true, ask: false });
+  });
+
+  it("--ask-herdr, even with --apply, leaves the record in place: the run after it is declined again", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root } = project(enabled);
+    runEnv(env, root, "--decline-herdr");
+    const before = fs.readFileSync(recordFile(root), "utf8");
+
+    expect(runEnv(env, root, "--ask-herdr").out.herdr).toMatchObject({
+      ask: true,
+      declined: false,
+      declineRecorded: false,
+    });
+    expect(runEnv(env, root, "--ask-herdr", "--apply").code).toBe(0);
+    expect(fs.readFileSync(recordFile(root), "utf8")).toBe(before);
+    expect(runEnv(env, root).out.herdr).toMatchObject({ ask: false, declined: true });
+  });
+
+  it("a user-level sandbox.enabled true counts when the project sets nothing; a local false beats it", () => {
+    const hh = gapHome();
+    fs.writeFileSync(path.join(hh, ".claude", "settings.json"), JSON.stringify(enabled));
+    const env = gapEnv(hh, ".local/bin");
+    expect(runEnv(env, project().root).out.herdr.ask).toBe(true);
+
+    const localOff = project({ sandbox: { enabled: false } });
+    expect(runEnv(env, localOff.root).out.herdr.ask).toBe(false);
+  });
+
+  it("an unparseable user-level settings.json is reported and skipped: alone it gives no answer, and a local enable still decides", () => {
+    const hh = gapHome();
+    fs.writeFileSync(path.join(hh, ".claude", "settings.json"), "{ not json");
+    const env = gapEnv(hh, ".local/bin");
+
+    const none = runEnv(env, project().root).out.herdr;
+    expect(none.ask).toBe(false);
+    expect(none.unparseableSettings).toHaveLength(1);
+
+    const local = runEnv(env, project(enabled).root).out.herdr;
+    expect(local.ask).toBe(true);
+    expect(local.unparseableSettings).toHaveLength(1);
+  });
+
+  it.each([
+    ["a string", "true"],
+    ["null", null],
+    ["a number", 1],
+  ])("sandbox.enabled that is %s is not a boolean, so the herdr question is not asked", (_label, value) => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root } = project({ sandbox: { enabled: value } });
+    expect(runEnv(env, root).out.herdr.ask).toBe(false);
+  });
+
+  it("a directory where the record file should be is read as no record (asked, exit 0); --decline-herdr then fails and changes no settings", () => {
+    const env = gapEnv(gapHome(), ".local/bin");
+    const { root, settingsPath } = project(enabled);
+    const before = fs.readFileSync(settingsPath, "utf8");
+    fs.mkdirSync(recordFile(root), { recursive: true });
+
+    const res = runEnv(env, root);
+    expect(res.code).toBe(0);
+    expect(res.out.herdr).toMatchObject({ ask: true, declined: false });
+
+    expect(rawRun(env, root, "--decline-herdr").status).not.toBe(0);
+    expect(fs.readFileSync(settingsPath, "utf8")).toBe(before);
   });
 });
