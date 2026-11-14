@@ -1759,6 +1759,9 @@ function defaultBranch(git2, root) {
   }
   return null;
 }
+function originHeadUnsetMessage(root) {
+  return `origin/HEAD is not set in ${root}, so the default branch cannot be determined (Maestro never guesses main or master). Set it with \`git remote set-head origin --auto\`, or \`git remote set-head origin <branch>\` when your team integrates into a branch other than the remote's default`;
+}
 var SHA_CANDIDATE = /(?<![0-9A-Za-z_])[0-9a-fA-F]{7,40}(?![0-9A-Za-z_])/g;
 function shaCandidates(body) {
   return [...new Set((body.match(SHA_CANDIDATE) ?? []).map((c) => c.toLowerCase()))];
@@ -1806,7 +1809,7 @@ function checkReportCommit(git2, root, input) {
   const branch = worktreeBranchFor(base);
   const def = defaultBranch(git2, root);
   const hasBranch = branch !== null && branchExists(git2, root, branch);
-  const ownCommits = hasBranch && (def === null || commitsBeyond(git2, root, def, branch) > 0);
+  const ownCommits = hasBranch && def !== null && commitsBeyond(git2, root, def, branch) > 0;
   let onDefaultOnly = null;
   for (const { short, sha } of resolved) {
     if (ownCommits) {
@@ -1830,7 +1833,7 @@ function checkReportCommit(git2, root, input) {
   if (def === null)
     return refuse(
       "not-on-branch",
-      `there is no task branch ${branch ?? "(the task has no number)"} and no default branch to look on`
+      hasBranch ? `the task branch ${branch} exists, but there is no default branch to measure it against: ${originHeadUnsetMessage(root)}` : `there is no task branch ${branch ?? "(the task has no number)"} and no default branch to look on: ${originHeadUnsetMessage(root)}`
     );
   const where = hasBranch ? `the task branch ${branch} has no commits of its own beyond ${def} (origin/HEAD)` : `there is no task branch ${branch ?? "(the task has no number)"}`;
   const proof = branch ? `the \`Merge ${branch}\` commit or a commit whose message names ${branch} or ${base}` : `a commit whose message names ${base}`;

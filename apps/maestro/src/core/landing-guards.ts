@@ -536,7 +536,10 @@ export function checkReportCommit(
   // The branch holds work of its own only while it has commits the default branch lacks. An empty
   // branch (created, never committed to) and a merged one both have none, so ancestry cannot tell
   // the task's commits from the base: both fall through to the message rule below.
-  const ownCommits = hasBranch && (def === null || commitsBeyond(git, root, def, branch as string) > 0);
+  // With no default branch there is nothing to measure "beyond" against, so no branch counts as
+  // holding work of its own: an empty branch's base commit would pass as the task's. The report is
+  // refused below with the set-head fix.
+  const ownCommits = hasBranch && def !== null && commitsBeyond(git, root, def, branch as string) > 0;
   let onDefaultOnly: string | null = null;
   for (const { short, sha } of resolved) {
     if (ownCommits) {
@@ -563,7 +566,9 @@ export function checkReportCommit(
   if (def === null)
     return refuse(
       "not-on-branch",
-      `there is no task branch ${branch ?? "(the task has no number)"} and no default branch to look on`
+      hasBranch
+        ? `the task branch ${branch} exists, but there is no default branch to measure it against: ${originHeadUnsetMessage(root)}`
+        : `there is no task branch ${branch ?? "(the task has no number)"} and no default branch to look on: ${originHeadUnsetMessage(root)}`
     );
   const where = hasBranch
     ? `the task branch ${branch} has no commits of its own beyond ${def} (origin/HEAD)`

@@ -357,10 +357,9 @@ describe("epic report commit check names the default branch with origin/HEAD (18
     expect(v).toEqual({ ok: true, checked: true, sha: own, on: "task-001" });
   });
 
-  // Known gap, pinned as it is today: with origin/HEAD unset, the report check still refuses a commit
-  // that names no task branch, but its message says "no default branch to look on" and does not give
-  // the set-head command. Not a landing step in the ticket's list, so it is recorded, not failed.
-  it("with origin/HEAD unset and no task branch, the report check refuses (wording gap recorded)", async () => {
+  // With origin/HEAD unset the report check refuses a commit that names no task branch, and the
+  // message carries the shared set-head fix. It never falls back to main.
+  it("with origin/HEAD unset and no task branch, the report check refuses and names both set-head commands", async () => {
     const root = await project();
     const base = git(root, "rev-parse", "main");
 
@@ -371,7 +370,15 @@ describe("epic report commit check names the default branch with origin/HEAD (18
     });
 
     expect(v.ok).toBe(false);
-    if (!v.ok) expect(v.message).toContain("no default branch to look on");
+    if (!v.ok) {
+      expect(v.missing).toBe("not-on-branch");
+      expect(v.message).toContain("there is no task branch task-001");
+      expect(v.message).toContain("no default branch to look on");
+      expect(v.message).toContain("origin/HEAD is not set");
+      expect(v.message).toContain("git remote set-head origin --auto");
+      expect(v.message).toContain("git remote set-head origin <branch>");
+      expect(v.message).not.toContain("already on main");
+    }
   });
 });
 

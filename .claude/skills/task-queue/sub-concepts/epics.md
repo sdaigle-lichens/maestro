@@ -71,6 +71,11 @@ scheme.
   - otherwise: a default-branch commit whose message names `task-NNN` or the task file (the
     `Merge task-NNN (...)` commit `merge` writes, or a squash, hand merge or fast-forward naming the task).
   The refusal says what is missing (no SHA, no such commit, or not on the branch).
+- **Unset `origin/HEAD` (`182`).** With no default branch every done report is refused, even when
+  `task-NNN` has commits of its own: nothing measures the branch against a base. The refusal names
+  `git remote set-head origin --auto` or `git remote set-head origin <branch>`. Maestro never falls back
+  to `main` or `master`. A dangling `origin/HEAD` (set, but naming a branch that does not exist) gets
+  no set-head hint; known, not handled.
 - **Sender fallback.** `report` without `--from` uses the claim's `session_name`
   (`claimSessionName` in `claims.ts`), else leaves the sender unset.
 - **`of <NNN-task.md>`** prints the task's epic slug, or nothing when it is in none (`epicOfTask`);
