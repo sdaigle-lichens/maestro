@@ -56,7 +56,11 @@ async function project(
   const repo = path.join(tmp, "p");
   const root = opts.nested ? path.join(repo, "sub", "proj") : repo;
   fs.mkdirSync(root, { recursive: true });
-  if (opts.repo !== false) execFileSync("git", ["init", "-q"], { cwd: repo });
+  if (opts.repo !== false) {
+    execFileSync("git", ["init", "-q", "-b", "main"], { cwd: repo });
+    // `182`: the default branch comes only from origin/HEAD
+    execFileSync("git", ["symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"], { cwd: repo });
+  }
   writeConfig(root, {
     ...defaultish,
     start_skills: { maestro: [], to_maestro_tasks: [], maestro_manager: lists.start ?? [] },

@@ -103,6 +103,7 @@ async function project(rules: string, extra?: (root: string) => void): Promise<s
   extra?.(root);
   git(root, "add", "-A");
   git(root, "commit", "-q", "-m", "init");
+  git(root, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   return root;
 }
 

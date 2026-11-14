@@ -89,7 +89,7 @@ script refusal, not prose:
 | Step | Guard | Refuses with |
 | --- | --- | --- |
 | 6 report | a done report must name an existing commit on `task-NNN` (or, with no branch, a default-branch commit naming the task) | nothing written |
-| 8 merge | the main checkout is on the default branch with no tracked changes outside `.claude/maestro-tasks/` and `.claude/epics/` | the reason and the `switch-back` hand-off |
+| 8 merge | the main checkout is on the default branch (`origin/HEAD`; unset, refuses naming `git remote set-head origin --auto`) with no tracked changes outside `.claude/maestro-tasks/` and `.claude/epics/` | the reason and the `switch-back` hand-off |
 | 8 merge, after | runs the verify command on the merged result | `VERIFY PASSED`, `VERIFY FAILED (exit N)` (the merge stays), or `VERIFY NOT CONFIGURED` |
 
 The `land-the-task` end skill (`plugins/maestro/skills/land-the-task/`, published in maestro 0.15.0)

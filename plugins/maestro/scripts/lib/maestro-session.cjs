@@ -173,6 +173,7 @@ __export(maestro_session_exports, {
   nodeLabel: () => nodeLabel,
   noteDispatch: () => noteDispatch,
   noteEntrance: () => noteEntrance,
+  originHeadUnsetMessage: () => originHeadUnsetMessage,
   overwrittenByMerge: () => overwrittenByMerge,
   ownerRunFor: () => ownerRunFor,
   ownerRunLeftovers: () => ownerRunLeftovers,
@@ -2797,10 +2798,10 @@ function defaultBranch(git, root) {
     const name = remote.out.trim().replace(/^origin\//, "");
     if (name) return name;
   }
-  for (const name of ["main", "master"]) {
-    if (git(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${name}`]).ok) return name;
-  }
   return null;
+}
+function originHeadUnsetMessage(root) {
+  return `origin/HEAD is not set in ${root}, so the default branch cannot be determined (Maestro never guesses main or master). Set it with \`git remote set-head origin --auto\`, or \`git remote set-head origin <branch>\` when your team integrates into a branch other than the remote's default`;
 }
 function currentBranch(git, root) {
   const r = git(root, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
@@ -2842,15 +2843,11 @@ function checkTargetCheckout(git, root) {
     return no("detached", `the main checkout (${root}) is on a detached HEAD \u2014 check out the base branch first`);
   if (git(root, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok)
     return no("mid-merge", `the main checkout (${root}) is in the middle of a merge \u2014 finish or abort it first`);
-  if (!def)
-    return no(
-      "no-default",
-      `the default branch of ${root} cannot be determined (no origin/HEAD, and no local main or master branch)`
-    );
+  if (!def) return no("no-default", originHeadUnsetMessage(root));
   if (branch !== def)
     return no(
       "not-default",
-      `the main checkout (${root}) is on branch ${branch}, not the default branch ${def} \u2014 a merge here would land in ${branch}`
+      `the main checkout (${root}) is on branch ${branch}, not the default branch ${def} (origin/HEAD) \u2014 a merge here would land in ${branch}`
     );
   const dirty = dirtyTrackedPaths(git, root);
   if (dirty === null) return no("unreadable", `could not read the status of ${root}`);
@@ -3894,6 +3891,7 @@ function meetingNotice(meeting, agentType) {
   nodeLabel,
   noteDispatch,
   noteEntrance,
+  originHeadUnsetMessage,
   overwrittenByMerge,
   ownerRunFor,
   ownerRunLeftovers,

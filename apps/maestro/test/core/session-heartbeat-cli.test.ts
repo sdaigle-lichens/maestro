@@ -63,7 +63,9 @@ afterEach(async () => {
 async function installed(name: string): Promise<string> {
   const root = path.join(tmp, name);
   fs.mkdirSync(root, { recursive: true });
-  execFileSync("git", ["init", "-q"], { cwd: root });
+  execFileSync("git", ["init", "-q", "-b", "main"], { cwd: root });
+  // `182`: the default branch comes only from origin/HEAD
+  execFileSync("git", ["symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"], { cwd: root });
   writeConfig(root, defaultish);
   await installRuntime(
     root,

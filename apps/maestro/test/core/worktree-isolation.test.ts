@@ -74,6 +74,7 @@ async function installed(name = "repo"): Promise<string> {
   writeTask(root, "003-c.md", "C");
   git(root, "add", "-A");
   git(root, "commit", "-q", "-m", "init");
+  git(root, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   return root;
 }
 

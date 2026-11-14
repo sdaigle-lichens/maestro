@@ -102,6 +102,7 @@ async function project(nested: boolean): Promise<string> {
   expect(run(root, "maestro-epic.cjs", ["link", "e1", "001-a.md", "002-b.md"]).code).toBe(0);
   git(repo, "add", "-A");
   git(repo, "commit", "-q", "-m", "init");
+  git(repo, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); // `182`: the default branch comes only from origin/HEAD
   return root;
 }
 

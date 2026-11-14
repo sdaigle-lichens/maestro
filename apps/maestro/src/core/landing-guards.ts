@@ -45,8 +45,10 @@ export type { GitRunner };
 // ── the default branch ──────────────────────────────────────────────────────
 
 /**
- * The repository's default branch: what `origin/HEAD` points at, else a local `main`, else a local
- * `master`, else `null`. Never guessed past that: a caller with `null` refuses and says why.
+ * The repository's default branch: what `origin/HEAD` points at, and nothing else, or `null` when
+ * `origin/HEAD` is unset. Never guessed (no fallback to a local `main` or `master`, which would land
+ * task work in main when the remote's default is `dev`): a caller with `null` refuses and says why,
+ * with `originHeadUnsetMessage`.
  */
 export function defaultBranch(git: GitRunner, root: string): string | null {
   const remote = git(root, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"]);
@@ -54,10 +56,18 @@ export function defaultBranch(git: GitRunner, root: string): string | null {
     const name = remote.out.trim().replace(/^origin\//, "");
     if (name) return name;
   }
-  for (const name of ["main", "master"]) {
-    if (git(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${name}`]).ok) return name;
-  }
   return null;
+}
+
+/**
+ * Why a landing step refused for want of a default branch, and how the user fixes the clone.
+ * Maestro has no setting for this: the one source is `origin/HEAD`.
+ */
+export function originHeadUnsetMessage(root: string): string {
+  return (
+    `origin/HEAD is not set in ${root}, so the default branch cannot be determined (Maestro never guesses main or master). ` +
+    `Set it with \`git remote set-head origin --auto\`, or \`git remote set-head origin <branch>\` when your team integrates into a branch other than the remote's default`
+  );
 }
 
 /** The branch `root` has checked out, or `null` on a detached HEAD (or outside a repository). */
@@ -165,15 +175,11 @@ export function checkTargetCheckout(git: GitRunner, root: string): TargetCheckou
     return no("detached", `the main checkout (${root}) is on a detached HEAD — check out the base branch first`);
   if (git(root, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok)
     return no("mid-merge", `the main checkout (${root}) is in the middle of a merge — finish or abort it first`);
-  if (!def)
-    return no(
-      "no-default",
-      `the default branch of ${root} cannot be determined (no origin/HEAD, and no local main or master branch)`
-    );
+  if (!def) return no("no-default", originHeadUnsetMessage(root));
   if (branch !== def)
     return no(
       "not-default",
-      `the main checkout (${root}) is on branch ${branch}, not the default branch ${def} — a merge here would land in ${branch}`
+      `the main checkout (${root}) is on branch ${branch}, not the default branch ${def} (origin/HEAD) — a merge here would land in ${branch}`
     );
   const dirty = dirtyTrackedPaths(git, root);
   if (dirty === null) return no("unreadable", `could not read the status of ${root}`);
@@ -551,7 +557,7 @@ export function checkReportCommit(
   if (onDefaultOnly)
     return refuse(
       "not-on-branch",
-      `commit ${onDefaultOnly} is already on ${def}, so it is what ${branch} started from, not a commit with the task's work`
+      `commit ${onDefaultOnly} is already on ${def} (origin/HEAD), so it is what ${branch} started from, not a commit with the task's work`
     );
   if (ownCommits) return refuse("not-on-branch", `commit ${named} is not on the task branch ${branch}`);
   if (def === null)
@@ -560,13 +566,13 @@ export function checkReportCommit(
       `there is no task branch ${branch ?? "(the task has no number)"} and no default branch to look on`
     );
   const where = hasBranch
-    ? `the task branch ${branch} has no commits of its own beyond ${def}`
+    ? `the task branch ${branch} has no commits of its own beyond ${def} (origin/HEAD)`
     : `there is no task branch ${branch ?? "(the task has no number)"}`;
   const proof = branch
     ? `the \`Merge ${branch}\` commit or a commit whose message names ${branch} or ${base}`
     : `a commit whose message names ${base}`;
   return refuse(
     "not-on-branch",
-    `${where}, and commit ${named} is not ${proof} on ${def} (it could be the commit the task started from)`
+    `${where}, and commit ${named} is not ${proof} on ${def} (origin/HEAD; it could be the commit the task started from)`
   );
 }
